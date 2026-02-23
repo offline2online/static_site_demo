@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Board — API Reference</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #1E293B;
+      --text2: #64748B;
+      --text3: #94A3B8;
+      --primary: #3B82F6;
+      --success: #059669;
+      --warning: #D97706;
+      --danger: #DC2626;
+      --code-bg: #0F172A;
+      --radius: 10px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; min-width: 260px; background: var(--surface); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 24px 0; }
+    .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .sidebar-logo h1 { font-size: 16px; font-weight: 800; color: var(--text); }
+    .sidebar-logo p { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .sidebar-section { padding: 8px 20px 4px; font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+    .sidebar-link { display: block; padding: 7px 20px; font-size: 13px; color: var(--text2); text-decoration: none; border-left: 2px solid transparent; transition: all 0.14s; }
+    .sidebar-link:hover { color: var(--text); background: var(--bg); }
+    .sidebar-link.active { color: var(--primary); border-left-color: var(--primary); background: #EFF6FF; font-weight: 600; }
+
+    /* Main content */
+    .main { flex: 1; max-width: 900px; padding: 40px 48px; }
+    h1.page-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .page-intro { font-size: 15px; color: var(--text2); line-height: 1.7; margin-bottom: 40px; }
+
+    /* Section */
+    .section { margin-bottom: 52px; }
+    h2.section-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+    .section-desc { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 20px; }
+
+    /* Endpoint card */
+    .endpoint { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
+    .endpoint-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .method { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; flex-shrink: 0; }
+    .method-get { background: #DCFCE7; color: #166534; }
+    .method-post { background: #DBEAFE; color: #1E3A8A; }
+    .method-put { background: #FEF9C3; color: #713F12; }
+    .method-delete { background: #FEE2E2; color: #7F1D1D; }
+    .endpoint-path { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); font-weight: 500; }
+    .endpoint-desc { font-size: 12px; color: var(--text2); margin-left: auto; }
+    .endpoint-body { padding: 18px; }
+
+    /* Params table */
+    .params-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; margin-top: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+    thead th { background: var(--bg); padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid var(--border); }
+    tbody td { padding: 9px 12px; border: 1px solid var(--border); vertical-align: top; }
+    .param-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); font-weight: 600; }
+    .param-type { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); }
+    .param-req { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+    .req-yes { background: #FEE2E2; color: #7F1D1D; }
+    .req-no  { background: var(--bg); color: var(--text3); }
+
+    /* Code block */
+    .code-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; margin-top: 16px; }
+    pre { background: var(--code-bg); color: #E2E8F0; border-radius: 8px; padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.6; overflow-x: auto; }
+    .hl-key { color: #93C5FD; }
+    .hl-str { color: #86EFAC; }
+    .hl-num { color: #FCA5A5; }
+    .hl-bool { color: #F9A8D4; }
+    .hl-null { color: #94A3B8; }
+    .hl-comment { color: #64748B; font-style: italic; }
+
+    /* Note box */
+    .note { display: flex; gap: 10px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #1E3A8A; margin-top: 12px; line-height: 1.6; }
+    .note-icon { flex-shrink: 0; }
+    .warn { background: #FFFBEB; border-color: #FDE68A; color: #713F12; }
+
+    /* Response codes */
+    .response-codes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .resp-code { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+    .resp-200 { background: #DCFCE7; color: #166534; }
+    .resp-201 { background: #DCFCE7; color: #166534; }
+    .resp-400 { background: #FEF9C3; color: #713F12; }
+    .resp-404 { background: #FEE2E2; color: #7F1D1D; }
+    .resp-409 { background: #FEE2E2; color: #7F1D1D; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR NAV -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>Menu Board API</h1>
+      <p>localStorage + REST Reference</p>
+    </div>
+    <div class="sidebar-section">Overview</div>
+    <a class="sidebar-link active" href="#overview">Introduction</a>
+    <a class="sidebar-link" href="#storage">Data Storage</a>
+    <a class="sidebar-link" href="#schema">Item Schema</a>
+    <div class="sidebar-section">Product API</div>
+    <a class="sidebar-link" href="#get-product">GET /product/:sku</a>
+    <a class="sidebar-link" href="#get-products">GET /products</a>
+    <a class="sidebar-link" href="#post-product">POST /product</a>
+    <a class="sidebar-link" href="#put-product">PUT /product/:sku</a>
+    <a class="sidebar-link" href="#delete-product">DELETE /product/:sku</a>
+    <div class="sidebar-section">Menu Control API</div>
+    <a class="sidebar-link" href="#post-menu-skus">POST /menu/:type/skus</a>
+    <a class="sidebar-link" href="#get-menu-skus">GET /menu/:type/skus</a>
+    <a class="sidebar-link" href="#delete-menu-skus">DELETE /menu/:type/skus</a>
+    <div class="sidebar-section">Settings API</div>
+    <a class="sidebar-link" href="#get-settings">GET /settings</a>
+    <a class="sidebar-link" href="#put-settings">PUT /settings</a>
+    <div class="sidebar-section">Implementation</div>
+    <a class="sidebar-link" href="#localStorage-api">localStorage Bridge</a>
+    <a class="sidebar-link" href="#webhook">Change Webhooks</a>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <h1 class="page-title">Menu Board API Reference</h1>
+    <p class="page-intro">
+      The Menu Board system stores all data in browser <code>localStorage</code>. These API specifications
+      describe both the <strong>localStorage key/value schema</strong> (for direct integration) and a
+      <strong>proposed REST API layer</strong> that can be implemented server-side as a thin bridge to the
+      same data model. All endpoints use JSON payloads.
+    </p>
+
+    <!-- ── OVERVIEW ───────────────────────────────── -->
+    <div id="overview" class="section">
+      <h2 class="section-title">Introduction</h2>
+      <p class="section-desc">
+        The Menu Board is a browser-based system. Data lives in <code>localStorage</code> on each
+        device. The REST API specifications below describe the contract for a server-side relay service
+        that syncs data to/from localStorage across devices. Base URL for all endpoints:
+      </p>
+      <pre><span class="hl-str">https://api.your-domain.com/v1/menuboard</span></pre>
+      <div class="note">
+        <span class="note-icon">ℹ️</span>
+        <span>All requests must include <strong>Content-Type: application/json</strong> and an
+        <strong>Authorization: Bearer &lt;token&gt;</strong> header. The localStorage bridge
+        implementation is described in the <a href="#localStorage-api">localStorage Bridge</a> section.</span>
+      </div>
+    </div>
+
+    <!-- ── STORAGE KEYS ───────────────────────────── -->
+    <div id="storage" class="section">
+      <h2 class="section-title">Data Storage Keys</h2>
+      <p class="section-desc">The following localStorage keys are used by the system:</p>
+      <table>
+        <thead><tr><th>Key</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">mb_items</td><td class="param-type">JSON Array</td><td>All menu item objects</td></tr>
+          <tr><td class="param-name">mb_settings</td><td class="param-type">JSON Object</td><td>Restaurant settings, logo, colours, orientation</td></tr>
+          <tr><td class="param-name">mb_categories</td><td class="param-type">JSON Array&lt;string&gt;</td><td>Category name strings</td></tr>
+          <tr><td class="param-name">mb_stock_{STORECODE}</td><td class="param-type">JSON Object</td><td>Per-store out-of-stock flags keyed by SKU</td></tr>
+          <tr><td class="param-name">mb_last_updated</td><td class="param-type">ISO 8601 string</td><td>Timestamp of last data change — menu boards poll this to detect updates</td></tr>
+          <tr><td class="param-name">mb_menu_skus_{type}</td><td class="param-type">JSON Array&lt;string&gt; | null</td><td>Optional SKU whitelist for a specific menu type. When set, only listed SKUs appear on that menu.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── SCHEMA ─────────────────────────────────── -->
+    <div id="schema" class="section">
+      <h2 class="section-title">Product Item Schema</h2>
+      <p class="section-desc">Full schema for a product item object:</p>
+      <div class="code-label">Product Object</div>
+      <pre>{
+  <span class="hl-key">"id"</span>:          <span class="hl-str">"lxk3m2abc9"</span>,          <span class="hl-comment">// Internal ID (base36 + random)</span>
+  <span class="hl-key">"sku"</span>:         <span class="hl-str">"BRK001"</span>,              <span class="hl-comment">// Unique product SKU — used for external references</span>
+  <span class="hl-key">"name"</span>:        <span class="hl-str">"Classic Eggs Benedict"</span>,<span class="hl-comment">// Display name</span>
+  <span class="hl-key">"description"</span>: <span class="hl-str">"Poached eggs on toasted English muffin with hollandaise sauce"</span>,
+  <span class="hl-key">"category"</span>:    <span class="hl-str">"Mains"</span>,               <span class="hl-comment">// Must match a value in mb_categories</span>
+  <span class="hl-key">"price"</span>:       <span class="hl-num">16.50</span>,                 <span class="hl-comment">// Decimal price (no currency symbol)</span>
+  <span class="hl-key">"active"</span>:      <span class="hl-bool">true</span>,                  <span class="hl-comment">// false = hidden from all menu boards</span>
+  <span class="hl-key">"menuTypes"</span>:   [<span class="hl-str">"breakfast"</span>, <span class="hl-str">"specials"</span>],<span class="hl-comment">// Values: breakfast|lunch|dinner|drinks|specials</span>
+  <span class="hl-key">"images"</span>:      [<span class="hl-str">"data:image/png;base64,..."</span>], <span class="hl-comment">// Array of base64 data URIs; first = primary</span>
+  <span class="hl-key">"calories"</span>:    <span class="hl-num">520</span>,                   <span class="hl-comment">// null if not provided</span>
+  <span class="hl-key">"fat"</span>:         <span class="hl-num">28.5</span>,                  <span class="hl-comment">// grams, null if not provided</span>
+  <span class="hl-key">"carbs"</span>:       <span class="hl-num">34.0</span>,                  <span class="hl-comment">// grams, null if not provided</span>
+  <span class="hl-key">"protein"</span>:     <span class="hl-num">22.0</span>,                  <span class="hl-comment">// grams, null if not provided</span>
+  <span class="hl-key">"createdAt"</span>:   <span class="hl-str">"2026-02-22T10:00:00.000Z"</span>,
+  <span class="hl-key">"updatedAt"</span>:   <span class="hl-str">"2026-02-22T11:30:00.000Z"</span>
+}</pre>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PRODUCT API
+    ═══════════════════════════════════════════════ -->
+
+    <!-- GET /product/:sku -->
+    <div id="get-product" class="section">
+      <h2 class="section-title">Product API</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-path">/product/{sku}</span>
+          <span class="endpoint-desc">Retrieve a single product by SKU</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="params-label">Path Parameters</div>
+          <table>
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">sku</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>The product's unique SKU identifier (case-insensitive)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-label">Example Request</div>
+          <pre>GET /v1/menuboard/product/BRK001
+Authorization: Bearer eyJhbGciOi...</pre>
+
+          <div class="code-label">200 OK — Success Response</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"data"</span>: {
+    <span class="hl-key">"id"</span>:          <span class="hl-str">"lxk3m2abc9"</span>,
+    <span class="hl-key">"sku"</span>:         <span class="hl-str">"BRK001"</span>,
+    <span class="hl-key">"name"</span>:        <span class="hl-str">"Classic Eggs Benedict"</span>,
+    <span class="hl-key">"description"</span>: <span class="hl-str">"Poached eggs on toasted English muffin with hollandaise sauce"</span>,
+    <span class="hl-key">"category"</span>:    <span class="hl-str">"Mains"</span>,
+    <span class="hl-key">"price"</span>:       <span class="hl-num">16.50</span>,
+    <span class="hl-key">"active"</span>:      <span class="hl-bool">true</span>,
+    <span class="hl-key">"menuTypes"</span>:   [<span class="hl-str">"breakfast"</span>, <span class="hl-str">"specials"</span>],
+    <span class="hl-key">"images"</span>:      [<span class="hl-str">"data:image/png;base64,iVBORw0KGgo..."</span>],
+    <span class="hl-key">"calories"</span>:    <span class="hl-num">520</span>,
+    <span class="hl-key">"fat"</span>:         <span class="hl-num">28.5</span>,
+    <span class="hl-key">"carbs"</span>:       <span class="hl-num">34.0</span>,
+    <span class="hl-key">"protein"</span>:     <span class="hl-num">22.0</span>,
+    <span class="hl-key">"createdAt"</span>:   <span class="hl-str">"2026-02-22T10:00:00.000Z"</span>,
+    <span class="hl-key">"updatedAt"</span>:   <span class="hl-str">"2026-02-22T11:30:00.000Z"</span>
+  }
+}</pre>
+
+          <div class="code-label">404 Not Found</div>
+          <pre>{ <span class="hl-key">"success"</span>: <span class="hl-bool">false</span>, <span class="hl-key">"error"</span>: <span class="hl-str">"Product with SKU 'BRK001' not found"</span> }</pre>
+
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+            <span class="resp-code resp-404">404 Not Found</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- GET /products -->
+      <div id="get-products" class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-path">/products</span>
+          <span class="endpoint-desc">List all products with optional filters</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="params-label">Query Parameters</div>
+          <table>
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">menu</td><td class="param-type">string</td><td><span class="param-req req-no">Optional</span></td><td>Filter by menu type: <code>breakfast</code>, <code>lunch</code>, <code>dinner</code>, <code>drinks</code>, <code>specials</code></td></tr>
+              <tr><td class="param-name">active</td><td class="param-type">boolean</td><td><span class="param-req req-no">Optional</span></td><td>Filter by active status: <code>true</code> or <code>false</code></td></tr>
+              <tr><td class="param-name">category</td><td class="param-type">string</td><td><span class="param-req req-no">Optional</span></td><td>Filter by category name (exact match)</td></tr>
+              <tr><td class="param-name">q</td><td class="param-type">string</td><td><span class="param-req req-no">Optional</span></td><td>Full-text search on name, SKU, description</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-label">Example Request</div>
+          <pre>GET /v1/menuboard/products?menu=breakfast&amp;active=true
+Authorization: Bearer eyJhbGciOi...</pre>
+
+          <div class="code-label">200 OK — Success Response</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"count"</span>: <span class="hl-num">12</span>,
+  <span class="hl-key">"data"</span>: [
+    { <span class="hl-comment">/* product object */</span> },
+    { <span class="hl-comment">/* product object */</span> }
+  ]
+}</pre>
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST /product -->
+      <div id="post-product" class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-path">/product</span>
+          <span class="endpoint-desc">Create a new product</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="params-label">Request Body Fields</div>
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">sku</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>Unique SKU. Must not already exist.</td></tr>
+              <tr><td class="param-name">name</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>Product display name</td></tr>
+              <tr><td class="param-name">category</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>Category name (must exist in mb_categories)</td></tr>
+              <tr><td class="param-name">price</td><td class="param-type">number</td><td><span class="param-req req-yes">Required</span></td><td>Price as decimal (e.g. 16.50)</td></tr>
+              <tr><td class="param-name">menuTypes</td><td class="param-type">string[]</td><td><span class="param-req req-yes">Required</span></td><td>At least one of: breakfast, lunch, dinner, drinks, specials</td></tr>
+              <tr><td class="param-name">description</td><td class="param-type">string</td><td><span class="param-req req-no">Optional</span></td><td>Product description</td></tr>
+              <tr><td class="param-name">active</td><td class="param-type">boolean</td><td><span class="param-req req-no">Optional</span></td><td>Default: <code>true</code></td></tr>
+              <tr><td class="param-name">images</td><td class="param-type">string[]</td><td><span class="param-req req-no">Optional</span></td><td>Array of base64 data URIs or HTTPS image URLs</td></tr>
+              <tr><td class="param-name">calories</td><td class="param-type">number</td><td><span class="param-req req-no">Optional</span></td><td>Calorie count</td></tr>
+              <tr><td class="param-name">fat</td><td class="param-type">number</td><td><span class="param-req req-no">Optional</span></td><td>Fat in grams</td></tr>
+              <tr><td class="param-name">carbs</td><td class="param-type">number</td><td><span class="param-req req-no">Optional</span></td><td>Carbohydrates in grams</td></tr>
+              <tr><td class="param-name">protein</td><td class="param-type">number</td><td><span class="param-req req-no">Optional</span></td><td>Protein in grams</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-label">Example Request Body</div>
+          <pre>POST /v1/menuboard/product
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOi...
+
+{
+  <span class="hl-key">"sku"</span>:         <span class="hl-str">"BRK002"</span>,
+  <span class="hl-key">"name"</span>:        <span class="hl-str">"Smashed Avo Toast"</span>,
+  <span class="hl-key">"description"</span>: <span class="hl-str">"Sourdough toast with smashed avocado, feta, chilli flakes"</span>,
+  <span class="hl-key">"category"</span>:    <span class="hl-str">"Mains"</span>,
+  <span class="hl-key">"price"</span>:       <span class="hl-num">14.00</span>,
+  <span class="hl-key">"active"</span>:      <span class="hl-bool">true</span>,
+  <span class="hl-key">"menuTypes"</span>:   [<span class="hl-str">"breakfast"</span>, <span class="hl-str">"lunch"</span>],
+  <span class="hl-key">"calories"</span>:    <span class="hl-num">380</span>,
+  <span class="hl-key">"fat"</span>:         <span class="hl-num">18.0</span>,
+  <span class="hl-key">"carbs"</span>:       <span class="hl-num">42.0</span>,
+  <span class="hl-key">"protein"</span>:     <span class="hl-num">12.0</span>
+}</pre>
+
+          <div class="code-label">201 Created</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"data"</span>: { <span class="hl-comment">/* full product object with generated id and timestamps */</span> }
+}</pre>
+          <div class="response-codes">
+            <span class="resp-code resp-201">201 Created</span>
+            <span class="resp-code resp-400">400 Validation Error</span>
+            <span class="resp-code resp-409">409 SKU Already Exists</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PUT /product/:sku -->
+      <div id="put-product" class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-put">PUT</span>
+          <span class="endpoint-path">/product/{sku}</span>
+          <span class="endpoint-desc">Update all fields of an existing product</span>
+        </div>
+        <div class="endpoint-body">
+          <p class="section-desc" style="margin-bottom:12px;">Send only the fields you want to update (partial updates supported). Always updates <code>updatedAt</code> and triggers <code>mb_last_updated</code>.</p>
+
+          <div class="code-label">Example Request Body</div>
+          <pre>PUT /v1/menuboard/product/BRK002
+Content-Type: application/json
+
+{
+  <span class="hl-key">"price"</span>:   <span class="hl-num">15.50</span>,
+  <span class="hl-key">"active"</span>:  <span class="hl-bool">false</span>,
+  <span class="hl-key">"calories"</span>: <span class="hl-num">395</span>
+}</pre>
+
+          <div class="code-label">200 OK</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"data"</span>: { <span class="hl-comment">/* updated product object */</span> }
+}</pre>
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+            <span class="resp-code resp-400">400 Validation Error</span>
+            <span class="resp-code resp-404">404 Not Found</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DELETE /product/:sku -->
+      <div id="delete-product" class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-delete">DELETE</span>
+          <span class="endpoint-path">/product/{sku}</span>
+          <span class="endpoint-desc">Permanently delete a product</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="code-label">Example Request</div>
+          <pre>DELETE /v1/menuboard/product/BRK002
+Authorization: Bearer eyJhbGciOi...</pre>
+
+          <div class="code-label">200 OK</div>
+          <pre>{ <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>, <span class="hl-key">"message"</span>: <span class="hl-str">"Product 'BRK002' deleted"</span> }</pre>
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+            <span class="resp-code resp-404">404 Not Found</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MENU CONTROL API
+    ═══════════════════════════════════════════════ -->
+    <div id="post-menu-skus" class="section">
+      <h2 class="section-title">Menu Control API</h2>
+      <p class="section-desc">
+        An external party (e.g. a POS system, campaign manager, or digital signage CMS) can push a list
+        of product SKUs to control exactly which items appear on a specific menu type. When a SKU
+        whitelist is set for a menu type, <strong>only those SKUs</strong> will be shown on that menu
+        board (provided they are also active). Clearing the list restores the default
+        (all active items for that menu type).
+      </p>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-path">/menu/{type}/skus</span>
+          <span class="endpoint-desc">Set the SKU whitelist for a menu type</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="params-label">Path Parameters</div>
+          <table>
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">type</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>Menu type: <code>breakfast</code> | <code>lunch</code> | <code>dinner</code> | <code>drinks</code> | <code>specials</code></td></tr>
+            </tbody>
+          </table>
+
+          <div class="params-label">Request Body</div>
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">skus</td><td class="param-type">string[]</td><td><span class="param-req req-yes">Required</span></td><td>Ordered array of SKUs to show on this menu. Order determines display order.</td></tr>
+              <tr><td class="param-name">store</td><td class="param-type">string</td><td><span class="param-req req-no">Optional</span></td><td>Store code. If omitted, applies globally to all stores.</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-label">Example Request — Set Today's Specials</div>
+          <pre>POST /v1/menuboard/menu/specials/skus
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOi...
+
+{
+  <span class="hl-key">"skus"</span>: [
+    <span class="hl-str">"BRK001"</span>,
+    <span class="hl-str">"LCH005"</span>,
+    <span class="hl-str">"DRK012"</span>,
+    <span class="hl-str">"DSR003"</span>
+  ],
+  <span class="hl-key">"store"</span>: <span class="hl-str">"STORE001"</span>
+}</pre>
+
+          <div class="code-label">200 OK</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"menu"</span>: <span class="hl-str">"specials"</span>,
+  <span class="hl-key">"store"</span>: <span class="hl-str">"STORE001"</span>,
+  <span class="hl-key">"skus"</span>: [<span class="hl-str">"BRK001"</span>, <span class="hl-str">"LCH005"</span>, <span class="hl-str">"DRK012"</span>, <span class="hl-str">"DSR003"</span>],
+  <span class="hl-key">"count"</span>: <span class="hl-num">4</span>,
+  <span class="hl-key">"message"</span>: <span class="hl-str">"Specials menu whitelist updated. Menu boards will refresh within 5 seconds."</span>
+}</pre>
+
+          <div class="note warn">
+            <span class="note-icon">⚠️</span>
+            <span>SKUs not found in the product catalogue are silently ignored. Only existing, <strong>active</strong> products matching the SKU whitelist will appear on the menu board.</span>
+          </div>
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+            <span class="resp-code resp-400">400 Invalid menu type</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- GET /menu/:type/skus -->
+      <div id="get-menu-skus" class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-path">/menu/{type}/skus</span>
+          <span class="endpoint-desc">Get the current SKU whitelist for a menu type</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="code-label">Example Request</div>
+          <pre>GET /v1/menuboard/menu/specials/skus?store=STORE001
+Authorization: Bearer eyJhbGciOi...</pre>
+
+          <div class="code-label">200 OK — Active whitelist</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"menu"</span>: <span class="hl-str">"specials"</span>,
+  <span class="hl-key">"whitelist_active"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"skus"</span>: [<span class="hl-str">"BRK001"</span>, <span class="hl-str">"LCH005"</span>, <span class="hl-str">"DRK012"</span>, <span class="hl-str">"DSR003"</span>],
+  <span class="hl-key">"resolved_products"</span>: [ <span class="hl-comment">/* array of matching product objects */</span> ]
+}</pre>
+
+          <div class="code-label">200 OK — No whitelist (show all)</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"menu"</span>: <span class="hl-str">"specials"</span>,
+  <span class="hl-key">"whitelist_active"</span>: <span class="hl-bool">false</span>,
+  <span class="hl-key">"skus"</span>: <span class="hl-null">null</span>,
+  <span class="hl-key">"message"</span>: <span class="hl-str">"No whitelist set. All active specials items are shown."</span>
+}</pre>
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DELETE /menu/:type/skus -->
+      <div id="delete-menu-skus" class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-delete">DELETE</span>
+          <span class="endpoint-path">/menu/{type}/skus</span>
+          <span class="endpoint-desc">Clear the SKU whitelist — restore default (show all active items)</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="code-label">Example Request</div>
+          <pre>DELETE /v1/menuboard/menu/specials/skus?store=STORE001
+Authorization: Bearer eyJhbGciOi...</pre>
+
+          <div class="code-label">200 OK</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"message"</span>: <span class="hl-str">"Whitelist cleared. All active specials items will now be shown."</span>
+}</pre>
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS API ────────────────────────────── -->
+    <div id="get-settings" class="section">
+      <h2 class="section-title">Settings API</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-path">/settings</span>
+          <span class="endpoint-desc">Retrieve restaurant settings</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="code-label">200 OK</div>
+          <pre>{
+  <span class="hl-key">"success"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"data"</span>: {
+    <span class="hl-key">"restaurantName"</span>: <span class="hl-str">"Starbucks"</span>,
+    <span class="hl-key">"currency"</span>:       <span class="hl-str">"$"</span>,
+    <span class="hl-key">"orientation"</span>:    <span class="hl-str">"landscape"</span>,  <span class="hl-comment">// "portrait" | "landscape"</span>
+    <span class="hl-key">"colors"</span>: {
+      <span class="hl-key">"header"</span>:  <span class="hl-str">"#ffffff"</span>,
+      <span class="hl-key">"accent"</span>:  <span class="hl-str">"#006241"</span>,
+      <span class="hl-key">"catBar"</span>:  <span class="hl-str">"#006241"</span>,
+      <span class="hl-key">"body"</span>:    <span class="hl-str">"#f9f4ec"</span>,
+      <span class="hl-key">"text"</span>:    <span class="hl-str">"#1a1a1a"</span>,
+      <span class="hl-key">"price"</span>:   <span class="hl-str">"#004d33"</span>
+    },
+    <span class="hl-key">"logo"</span>:     <span class="hl-str">"data:image/png;base64,..."</span>,
+    <span class="hl-key">"logoRight"</span>:<span class="hl-str">"data:image/png;base64,..."</span>
+  }
+}</pre>
+        </div>
+      </div>
+
+      <div id="put-settings" class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-put">PUT</span>
+          <span class="endpoint-path">/settings</span>
+          <span class="endpoint-desc">Update restaurant settings (partial update supported)</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="code-label">Example — Update orientation and colour scheme</div>
+          <pre>PUT /v1/menuboard/settings
+Content-Type: application/json
+
+{
+  <span class="hl-key">"orientation"</span>: <span class="hl-str">"portrait"</span>,
+  <span class="hl-key">"colors"</span>: {
+    <span class="hl-key">"accent"</span>:  <span class="hl-str">"#1a73e8"</span>,
+    <span class="hl-key">"catBar"</span>:  <span class="hl-str">"#1a73e8"</span>
+  }
+}</pre>
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LOCALSTORAGE BRIDGE ────────────────────── -->
+    <div id="localStorage-api" class="section">
+      <h2 class="section-title">localStorage Bridge Implementation</h2>
+      <p class="section-desc">
+        For a lightweight integration without a server, external systems can write directly to
+        <code>localStorage</code> on the menu board device using this JavaScript bridge. Call this
+        from a CMS, kiosk controller, or parent frame.
+      </p>
+
+      <div class="code-label">Inject via postMessage (cross-origin)</div>
+      <pre><span class="hl-comment">// In the controlling CMS / parent window:</span>
+menuBoardIframe.contentWindow.postMessage({
+  type: <span class="hl-str">'MB_SET_MENU_SKUS'</span>,
+  menu: <span class="hl-str">'specials'</span>,
+  skus: [<span class="hl-str">'BRK001'</span>, <span class="hl-str">'LCH005'</span>, <span class="hl-str">'DRK012'</span>]
+}, <span class="hl-str">'https://your-menu-board-domain.com'</span>);
+
+<span class="hl-comment">// In menu-board.html (already listens for this):</span>
+window.addEventListener(<span class="hl-str">'message'</span>, (e) => {
+  if (e.data.type === <span class="hl-str">'MB_SET_MENU_SKUS'</span>) {
+    localStorage.setItem(<span class="hl-str">'mb_menu_skus_'</span> + e.data.menu, JSON.stringify(e.data.skus));
+    localStorage.setItem(<span class="hl-str">'mb_last_updated'</span>, new Date().toISOString());
+    <span class="hl-comment">// Menu board auto-detects the change within 5 seconds</span>
+  }
+});</pre>
+
+      <div class="code-label">Direct localStorage (same origin)</div>
+      <pre><span class="hl-comment">// Push a product update from a same-origin app:</span>
+function pushProductUpdate(sku, fields) {
+  const items = JSON.parse(localStorage.getItem(<span class="hl-str">'mb_items'</span>) || <span class="hl-str">'[]'</span>);
+  const idx = items.findIndex(i => i.sku === sku);
+  if (idx === -1) return false;
+  items[idx] = { ...items[idx], ...fields, updatedAt: new Date().toISOString() };
+  localStorage.setItem(<span class="hl-str">'mb_items'</span>, JSON.stringify(items));
+  localStorage.setItem(<span class="hl-str">'mb_last_updated'</span>, new Date().toISOString());
+  return true;
+}
+
+<span class="hl-comment">// Example: mark BRK001 as out of stock at store STORE001</span>
+const stock = JSON.parse(localStorage.getItem(<span class="hl-str">'mb_stock_STORE001'</span>) || <span class="hl-str">'{}'</span>);
+stock[<span class="hl-str">'BRK001'</span>] = { outOfStock: true, updatedAt: new Date().toISOString() };
+localStorage.setItem(<span class="hl-str">'mb_stock_STORE001'</span>, JSON.stringify(stock));
+localStorage.setItem(<span class="hl-str">'mb_last_updated'</span>, new Date().toISOString());</pre>
+    </div>
+
+    <!-- ── WEBHOOKS ────────────────────────────────── -->
+    <div id="webhook" class="section">
+      <h2 class="section-title">Change Webhooks</h2>
+      <p class="section-desc">
+        Configure a webhook URL in settings to receive a POST notification whenever product data
+        changes. This allows external systems to stay in sync without polling.
+      </p>
+
+      <div class="code-label">Webhook Payload (sent on every data change)</div>
+      <pre>POST https://your-cms.example.com/webhook/menuboard
+Content-Type: application/json
+X-MenuBoard-Secret: &lt;your-shared-secret&gt;
+
+{
+  <span class="hl-key">"event"</span>:       <span class="hl-str">"items.updated"</span>,       <span class="hl-comment">// items.created | items.updated | items.deleted | stock.changed</span>
+  <span class="hl-key">"timestamp"</span>:   <span class="hl-str">"2026-02-22T12:00:00.000Z"</span>,
+  <span class="hl-key">"affected_skus"</span>: [<span class="hl-str">"BRK001"</span>],
+  <span class="hl-key">"store"</span>:       <span class="hl-null">null</span>                    <span class="hl-comment">// store code for stock events, null for global changes</span>
+}</pre>
+
+      <div class="note">
+        <span class="note-icon">💡</span>
+        <span>Menu boards poll <code>mb_last_updated</code> every 5 seconds. Any write to this key (from any source) causes all connected menu boards on that device to re-render immediately.</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

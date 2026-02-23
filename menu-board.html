@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Board</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:            #006241;
+      --green-dark:       #004d33;
+      --green-light:      #d4edda;
+      --cream:            #f9f4ec;
+      --cream2:           #f0e9dc;
+      --white:            #ffffff;
+      --text:             #1a1a1a;
+      --text2:            #444444;
+      --border:           #d4c8b8;
+      --border-lt:        #e8dfd3;
+      --danger:           #c0392b;
+      --board-header-bg:  #ffffff;
+      --cat-bar-bg:       #006241;
+      --price-color:      #004d33;
+      --item-color:       #004d33;
+      --header-text:      #006241;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── BOARD WRAPPER ─────────────────────── */
+    .board {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: var(--cream);
+    }
+
+    /* ── HEADER ────────────────────────────── */
+    .board-header {
+      background: var(--board-header-bg, #ffffff);
+      border-bottom: 3px solid var(--green);
+      padding: clamp(14px, 2.5vw, 36px) clamp(20px, 4vw, 60px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    /* Portrait: bigger header padding */
+    .board.portrait .board-header {
+      padding: clamp(18px, 3vw, 48px) clamp(24px, 4.5vw, 70px);
+    }
+
+    .header-logo-wrap {
+      width: clamp(64px, 9vw, 130px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-logo-wrap img {
+      max-width: 100%;
+      max-height: clamp(60px, 8vw, 120px);
+      object-fit: contain;
+    }
+    .header-logo-wrap.no-logo {
+      width: clamp(64px, 9vw, 130px);
+    }
+
+    .header-center {
+      flex: 1;
+      text-align: center;
+      color: var(--header-text);
+    }
+    .header-brand {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(20px, 4vw, 56px);
+      font-weight: 700;
+      letter-spacing: clamp(2px, 0.5vw, 8px);
+      text-transform: uppercase;
+      line-height: 1.1;
+      color: var(--header-text);
+    }
+    .board.portrait .header-brand {
+      font-size: clamp(28px, 5vw, 72px);
+    }
+    .header-menu-type {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(14px, 2.5vw, 36px);
+      font-weight: 500;
+      letter-spacing: clamp(3px, 0.8vw, 12px);
+      text-transform: uppercase;
+      color: var(--header-text);
+      margin-top: clamp(2px, 0.4vw, 6px);
+    }
+    .board.portrait .header-menu-type {
+      font-size: clamp(18px, 3vw, 44px);
+    }
+
+    /* ── CLOCK BAR ─────────────────────────── */
+    .clock-bar {
+      background: #f0f4f8;
+      border-top: 1px solid #dde5ee;
+      border-bottom: 1px solid #dde5ee;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: clamp(6px, 1vw, 12px) clamp(20px, 4vw, 60px);
+      flex-shrink: 0;
+    }
+    .board.portrait .clock-bar {
+      padding: clamp(10px, 1.5vw, 20px) clamp(24px, 4.5vw, 70px);
+    }
+    .board.landscape .clock-bar {
+      padding: clamp(4px, 0.7vw, 8px) clamp(20px, 4vw, 60px);
+    }
+    .clock-bar .store-label {
+      font-size: clamp(10px, 1.1vw, 14px);
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .clock-bar .time-display {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(13px, 1.5vw, 20px);
+      color: #1e293b;
+      letter-spacing: 1px;
+    }
+
+    /* ── ITEMS SECTION ─────────────────────── */
+    .board-body {
+      flex: 1;
+      background: var(--cream);
+    }
+
+    /* Category section label — kept for colour-scheme compatibility but hidden */
+    .cat-header { display: none; }
+
+    /* Per-tile category badge */
+    .item-cat-badge {
+      display: inline-block;
+      background: var(--cat-bar-bg, var(--green));
+      color: rgba(255,255,255,0.95);
+      font-size: clamp(7px, 0.7vw, 10px);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: clamp(1px, 0.2vw, 3px) clamp(5px, 0.6vw, 9px);
+      border-radius: 3px;
+      margin-top: auto;
+      align-self: flex-start;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Default grid (landscape, 5 cols) */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    /* Portrait: 3-column grid */
+    .board.portrait .items-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* Landscape: 5-column grid (explicit, same as default) */
+    .board.landscape .items-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    /* Single item cell */
+    .item-cell {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: var(--white);
+      position: relative;
+      min-height: 140px;
+    }
+    .board.portrait .item-cell {
+      min-height: 160px;
+    }
+    .board.landscape .item-cell {
+      min-height: 140px;
+    }
+
+    /* Border-right removal for last in row */
+    .board.portrait .item-cell:nth-child(3n) { border-right: none; }
+    .board.landscape .item-cell:nth-child(5n) { border-right: none; }
+    /* Default (5 cols) */
+    .item-cell:nth-child(5n) { border-right: none; }
+
+    .item-cell.oos-cell { background: #fdf8f5; }
+
+    /* Thumbnail — LEFT side */
+    .item-thumb {
+      width: clamp(60px, 7vw, 100px);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+      order: 0;
+    }
+    .board.portrait .item-thumb {
+      width: clamp(80px, 10vw, 130px);
+    }
+    .board.landscape .item-thumb {
+      width: clamp(60px, 7vw, 100px);
+    }
+    .item-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .item-thumb-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(16px, 2.5vw, 32px);
+      color: var(--border);
+    }
+
+    /* Text portion — RIGHT side */
+    .item-text {
+      flex: 1;
+      padding: clamp(8px, 1.3vw, 18px) clamp(10px, 1.5vw, 20px);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      min-width: 0;
+      order: 1;
+    }
+    .item-name {
+      font-size: clamp(11px, 1.25vw, 17px);
+      font-weight: 700;
+      color: var(--item-color);
+      line-height: 1.3;
+      margin-bottom: clamp(4px, 0.5vw, 8px);
+    }
+
+    /* Nutrition table-style */
+    .nutrition-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px clamp(6px, 0.8vw, 12px);
+      margin-top: clamp(2px, 0.3vw, 4px);
+    }
+    .nutr-row {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+    }
+    .nutr-val {
+      font-size: clamp(11px, 1.2vw, 16px);
+      font-weight: 800;
+      color: var(--item-color);
+      line-height: 1;
+    }
+    .nutr-unit {
+      font-size: clamp(8px, 0.85vw, 11px);
+      color: var(--text2);
+      font-weight: 500;
+    }
+    /* Full-width calories row */
+    .nutr-calories {
+      grid-column: 1 / -1;
+      margin-bottom: clamp(2px, 0.3vw, 4px);
+    }
+    .nutr-calories .nutr-val {
+      font-size: clamp(14px, 1.6vw, 22px);
+      color: var(--item-color);
+    }
+    .nutr-calories .nutr-unit {
+      font-size: clamp(9px, 1vw, 13px);
+      color: var(--item-color);
+    }
+
+    /* Item price */
+    .item-price {
+      font-size: clamp(15px, 1.8vw, 24px);
+      font-weight: 800;
+      color: var(--price-color, var(--green-dark));
+      letter-spacing: -0.3px;
+      line-height: 1;
+      margin-bottom: clamp(3px, 0.4vw, 6px);
+    }
+
+    /* ── OUT OF STOCK ───────────────────────── */
+    .oos-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.65);
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+    }
+    .item-cell.oos-cell .oos-overlay { display: flex; }
+
+    .oos-stamp {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: clamp(2px, 0.3vw, 3px) solid var(--danger);
+      border-radius: 4px;
+      padding: clamp(4px, 0.5vw, 8px) clamp(8px, 1.2vw, 18px);
+      transform: rotate(-12deg);
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 2px 10px rgba(192,57,43,0.25);
+    }
+    .oos-stamp-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(9px, 1.1vw, 14px);
+      font-weight: 700;
+      color: var(--danger);
+      letter-spacing: clamp(1px, 0.3vw, 4px);
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    /* ── FOOTER ────────────────────────────── */
+    .board-footer {
+      background: #f0f4f8;
+      border-top: 1px solid #dde5ee;
+      padding: clamp(8px, 1.2vw, 16px) clamp(20px, 4vw, 60px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .board.landscape .board-footer {
+      padding: clamp(5px, 0.8vw, 10px) clamp(20px, 4vw, 60px);
+    }
+    .footer-text {
+      font-size: clamp(9px, 1vw, 13px);
+      color: #64748b;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .footer-page-info {
+      font-size: clamp(9px, 1vw, 13px);
+      color: #64748b;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .footer-refresh {
+      font-size: clamp(9px, 0.9vw, 12px);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .refresh-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── ROTATION PROGRESS BAR ──────────────── */
+    .rotation-bar-wrap {
+      height: 3px;
+      background: rgba(0,0,0,0.06);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .rotation-bar {
+      height: 100%;
+      background: var(--green, #006241);
+      width: 0%;
+      transition: none;
+    }
+
+    /* ── EMPTY / ERROR STATES ──────────────── */
+    .board-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 32px;
+      text-align: center;
+      background: var(--cream);
+    }
+    .board-empty .icon { font-size: 56px; margin-bottom: 20px; opacity: 0.35; }
+    .board-empty h2 { font-family: 'Oswald',sans-serif; font-size: 28px; color: var(--green); margin-bottom: 10px; }
+    .board-empty p  { font-size: 15px; color: var(--text2); line-height: 1.7; }
+
+    .error-board {
+      min-height: 100vh;
+      background: var(--green);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      text-align: center;
+      color: white;
+    }
+    .error-board .icon { font-size: 60px; margin-bottom: 20px; }
+    .error-board h2 { font-family: 'Oswald',sans-serif; font-size: 32px; margin-bottom: 12px; letter-spacing: 2px; }
+    .error-board p  { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.7; max-width: 440px; }
+    .error-board code {
+      background: rgba(255,255,255,0.15); border-radius: 6px;
+      padding: 3px 10px; font-size: 13px; font-family: monospace;
+      color: #fff; display: inline-block; margin-top: 6px; word-break: break-all;
+    }
+    .error-board a {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 24px; background: white; color: var(--green);
+      font-weight: 700; padding: 10px 24px; border-radius: 8px;
+      text-decoration: none; font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+// ── URL PARAMS ──────────────────────────────────────────────────────────────
+const urlParams  = new URLSearchParams(window.location.search);
+const STORE_CODE = (urlParams.get('store') || '').trim().toUpperCase();
+const MENU_TYPE  = (urlParams.get('menu')  || '').trim().toLowerCase();
+const SCREEN_LOCK = urlParams.get('screen') ? parseInt(urlParams.get('screen'), 10) : null;
+
+const KEY_ITEMS    = 'mb_items';
+const KEY_SETTINGS = 'mb_settings';
+const STOCK_KEY    = 'mb_stock_' + STORE_CODE;
+
+const ROTATION_INTERVAL = 8000; // ms
+
+const MENU_META = {
+  breakfast: { label: 'Breakfast Menu',        emoji: '🌅' },
+  lunch:     { label: 'Lunch Menu',             emoji: '☀️' },
+  dinner:    { label: 'Dinner Menu',            emoji: '🌙' },
+  drinks:    { label: 'Drinks Menu',            emoji: '🥤' },
+  specials:  { label: "Today's Specials Menu",  emoji: '⭐' },
+};
+
+// ── HELPERS ─────────────────────────────────────────────────────────────────
+function getData(k, fb) {
+  try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(fb)); }
+  catch { return fb; }
+}
+function getItems()    { return getData(KEY_ITEMS, []); }
+function getSettings() { return getData(KEY_SETTINGS, { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' }); }
+function getStock()    { return getData(STOCK_KEY, {}); }
+function isOos(sku)    { const s = getStock(); return !!(s[sku] && s[sku].outOfStock); }
+function esc(str)      { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtTime(d)    { return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+function fmtDate(d)    { return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }); }
+
+// ── ORIENTATION ─────────────────────────────────────────────────────────────
+// URL param > default 'portrait'
+const ORIENTATION = urlParams.get('orientation') || 'portrait';
+
+// ── BRAND SUPPORT ────────────────────────────────────────────────────────────
+const BRAND_ID = (urlParams.get('brand') || '').trim();
+const KEY_BRANDS = 'mb_brands';
+
+function getBrands() {
+  try { return JSON.parse(localStorage.getItem(KEY_BRANDS) || '[]'); }
+  catch { return []; }
+}
+
+// Returns brand object. If no brands in storage, builds legacy compat from mb_settings.
+// Matches ?brand= param against brand name (case-insensitive). Falls back to first brand.
+function getActiveBrand() {
+  const brands = getBrands();
+
+  // No brands at all — legacy fallback from mb_settings
+  if (!brands.length) {
+    const s = getSettings();
+    return {
+      id: 'default',
+      name:      s.restaurantName || 'Our Restaurant',
+      currency:  s.currency       || '$',
+      logo:      s.logo           || '',
+      logoRight: s.logoRight      || s.logo || '',
+      colors:    s.colors         || {},
+      showClock: true,
+      timeFormat: 'british',
+      display: {
+        portrait:  { cols: 3, rows: 5, maxItems: 15 },
+        landscape: { cols: 5, rows: 3, maxItems: 15 }
+      }
+    };
+  }
+
+  // If a brand name was supplied in the URL, match it case-insensitively
+  if (BRAND_ID) {
+    const found = brands.find(b => b.name.toLowerCase() === BRAND_ID.toLowerCase());
+    if (found) return found;
+  }
+
+  // No param or no match — always fall back to the first brand
+  return brands[0];
+}
+
+// ── COLOR SCHEME ─────────────────────────────────────────────────────────────
+function applyColorScheme(brand) {
+  const colors = (brand && brand.colors) || {};
+  const root = document.documentElement.style;
+  if (colors.header)     root.setProperty('--board-header-bg', colors.header);
+  if (colors.header)     root.setProperty('--item-color',      colors.header);
+  if (colors.headerText) root.setProperty('--header-text',     colors.headerText);
+  if (colors.accent)     root.setProperty('--green',           colors.accent);
+  if (colors.catBar) root.setProperty('--cat-bar-bg',      colors.catBar);
+  if (colors.body)   root.setProperty('--cream',           colors.body);
+  if (colors.text)   root.setProperty('--text',            colors.text);
+  if (colors.price)  root.setProperty('--price-color',     colors.price);
+}
+
+// ── CLOCK ────────────────────────────────────────────────────────────────────
+function updateClock() {
+  const el = document.getElementById('clockDisplay');
+  if (!el) return;
+  const brand  = getActiveBrand();
+  const fmt    = brand && brand.timeFormat;
+  const n      = new Date();
+
+  let timeStr, dateStr;
+  if (fmt === 'us') {
+    timeStr = n.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    dateStr = n.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  } else if (fmt === 'british') {
+    timeStr = n.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+    dateStr = n.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  } else {
+    // Default: use original system-locale formatting (no seconds — same as before)
+    timeStr = fmtTime(n);
+    dateStr = fmtDate(n);
+  }
+  el.textContent = timeStr + '  ·  ' + dateStr;
+}
+
+// ── BUILD NUTRITION HTML ─────────────────────────────────────────────────────
+function buildNutrition(item) {
+  const hasCal  = item.calories != null;
+  const hasFat  = item.fat      != null;
+  const hasCarb = item.carbs    != null;
+  const hasProt = item.protein  != null;
+
+  if (!hasCal && !hasFat && !hasCarb && !hasProt) return '';
+
+  let rows = '<div class="nutrition-grid">';
+
+  if (hasCal) {
+    rows += `<div class="nutr-row nutr-calories">
+      <span class="nutr-val">${item.calories}</span>
+      <span class="nutr-unit">&nbsp;Calories</span>
+    </div>`;
+  }
+
+  const macros = [];
+  if (hasFat)  macros.push(`<span class="nutr-val">${item.fat}</span><span class="nutr-unit">g Fat</span>`);
+  if (hasCarb) macros.push(`<span class="nutr-val">${item.carbs}</span><span class="nutr-unit">g Carbs</span>`);
+  if (hasProt) macros.push(`<span class="nutr-val">${item.protein}</span><span class="nutr-unit">g Protein</span>`);
+
+  macros.forEach(m => { rows += `<div class="nutr-row">${m}</div>`; });
+
+  rows += '</div>';
+  return rows;
+}
+
+// ── ROTATION STATE ───────────────────────────────────────────────────────────
+let currentPage    = SCREEN_LOCK || 1;
+let rotationTimer  = null;
+
+function startRotation(totalPages) {
+  if (SCREEN_LOCK || totalPages <= 1) return;
+  clearTimeout(rotationTimer);
+
+  // Animate progress bar from 0 → 100%
+  const bar = document.getElementById('rotationBar');
+  if (bar) {
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    setTimeout(() => {
+      bar.style.transition = `width ${ROTATION_INTERVAL}ms linear`;
+      bar.style.width = '100%';
+    }, 50);
+  }
+
+  rotationTimer = setTimeout(() => {
+    currentPage = currentPage >= totalPages ? 1 : currentPage + 1;
+    render();
+  }, ROTATION_INTERVAL);
+}
+
+// ── LIVE UPDATE DETECTION ────────────────────────────────────────────────────
+let lastKnownUpdate = localStorage.getItem('mb_last_updated') || '';
+
+function checkForUpdates() {
+  const current = localStorage.getItem('mb_last_updated') || '';
+  if (current !== lastKnownUpdate) {
+    lastKnownUpdate = current;
+    render();
+  }
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  const meta     = MENU_META[MENU_TYPE];
+  const brand    = getActiveBrand();
+
+  // brand is always populated (falls back to first brand) — no error screen needed
+
+  applyColorScheme(brand);
+
+  // Apply orientation class to boardRoot
+  const boardRoot = document.getElementById('boardRoot');
+  boardRoot.className = 'board ' + ORIENTATION;
+
+  // Compute display settings from brand
+  const dispCfg  = (brand.display && brand.display[ORIENTATION]) || {};
+  const COLS     = Math.max(1, parseInt(dispCfg.cols)     || (ORIENTATION === 'portrait' ? 3 : 5));
+  const ROWS     = Math.max(1, parseInt(dispCfg.rows)     || (ORIENTATION === 'portrait' ? 5 : 3));
+  const PAGE_SIZE = Math.min(
+    Math.max(1, parseInt(dispCfg.maxItems) || (COLS * ROWS)),
+    COLS * ROWS
+  );
+
+  // Dynamic CSS for grid columns and nth-child border removal
+  let dynStyle = document.getElementById('dynamic-grid-css');
+  if (!dynStyle) {
+    dynStyle = document.createElement('style');
+    dynStyle.id = 'dynamic-grid-css';
+    document.head.appendChild(dynStyle);
+  }
+  dynStyle.textContent = `
+    .items-grid { grid-template-columns: repeat(${COLS}, 1fr) !important; }
+    .item-cell:nth-child(${COLS}n) { border-right: none !important; }
+  `;
+
+  const items     = getItems();
+  const logoLeft  = brand.logo      || '';
+  const logoRight = brand.logoRight || brand.logo || '';
+  const brandName = esc(brand.name  || 'Our Restaurant');
+  const currency  = esc(brand.currency || '$');
+
+  // Filter: active + matching menu type + matching brand (backward compat: items with no brand show on all boards)
+  const allFiltered = items.filter(i =>
+    i.active &&
+    (i.menuTypes || []).includes(MENU_TYPE) &&
+    (!i.brand || i.brand === brand.id)
+  );
+
+  // Sort: in-stock first, then by category, then name
+  allFiltered.sort((a, b) => {
+    const ao = isOos(a.sku), bo = isOos(b.sku);
+    if (ao !== bo) return ao ? 1 : -1;
+    if ((a.category || '') !== (b.category || '')) return (a.category || '').localeCompare(b.category || '');
+    return a.name.localeCompare(b.name);
+  });
+
+  const totalItems = allFiltered.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+
+  // Clamp currentPage
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  // Slice page
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = allFiltered.slice(pageStart, pageStart + PAGE_SIZE);
+
+  // ── HEADER ──────────────────────────────────────────────────────────────────
+  const logoSlot = (src, side) => src
+    ? `<div class="header-logo-wrap"><img src="${src}" alt="${esc(side)} logo"></div>`
+    : `<div class="header-logo-wrap no-logo"></div>`;
+
+  const showClock = brand.showClock !== false;
+  const headerHtml = `
+    <div class="board-header">
+      ${logoSlot(logoLeft, 'Left')}
+      <div class="header-center">
+        <div class="header-brand">${brandName}</div>
+        <div class="header-menu-type">${esc(meta.label)}</div>
+      </div>
+      ${logoSlot(logoRight, 'Right')}
+    </div>
+    ${showClock ? `<div class="clock-bar"><div class="time-display" id="clockDisplay"></div></div>` : ''}
+  `;
+
+  // ── BODY ────────────────────────────────────────────────────────────────────
+  let bodyHtml = '';
+
+  if (!totalItems) {
+    bodyHtml = `
+      <div class="board-empty">
+        <div class="icon">${meta.emoji}</div>
+        <h2>No Items Available</h2>
+        <p>There are currently no active ${esc(meta.label)} items for this location.</p>
+      </div>
+    `;
+  } else {
+    // Flat grid — all items on this page
+    const cells = pageItems.map(item => {
+      const oos = isOos(item.sku);
+      const cat = item.category || '';
+
+      const thumbInner = (item.images && item.images[0])
+        ? `<img src="${item.images[0]}" alt="${esc(item.name)}" loading="lazy">`
+        : `<div class="item-thumb-placeholder">🍽️</div>`;
+
+      return `
+        <div class="item-cell${oos ? ' oos-cell' : ''}">
+          <div class="item-thumb">${thumbInner}</div>
+          <div class="item-text">
+            <div class="item-price">${currency}${parseFloat(item.price || 0).toFixed(2)}</div>
+            <div class="item-name">${esc(item.name)}</div>
+            ${buildNutrition(item)}
+            ${cat ? `<div class="item-cat-badge">${esc(cat)}</div>` : ''}
+          </div>
+          <div class="oos-overlay">
+            <div class="oos-stamp">
+              <div class="oos-stamp-text">Out of</div>
+              <div class="oos-stamp-text">Stock</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    bodyHtml = `<div class="board-body"><div class="items-grid">${cells}</div></div>`;
+  }
+
+  // ── FOOTER ──────────────────────────────────────────────────────────────────
+  let pageInfoText = '';
+  if (totalPages > 1) {
+    pageInfoText = SCREEN_LOCK
+      ? `Screen ${currentPage} of ${totalPages} (locked)`
+      : `Screen ${currentPage} of ${totalPages}`;
+  }
+
+  const showProgressBar = !SCREEN_LOCK && totalPages > 1;
+
+  const footerHtml = `
+    <div class="board-footer">
+      <div class="footer-text">${brandName} — ${esc(meta.label)}</div>
+      <div class="footer-page-info">${esc(pageInfoText)}</div>
+      <div class="footer-refresh">
+        <span class="refresh-dot"></span> Auto-updates every 30s
+      </div>
+    </div>
+    ${showProgressBar ? '<div class="rotation-bar-wrap"><div class="rotation-bar" id="rotationBar"></div></div>' : ''}
+  `;
+
+  // ── INJECT ──────────────────────────────────────────────────────────────────
+  boardRoot.innerHTML = headerHtml + bodyHtml + footerHtml;
+
+  updateClock();
+
+  if (!SCREEN_LOCK && totalPages > 1) {
+    startRotation(totalPages);
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (!STORE_CODE || !MENU_TYPE || !MENU_META[MENU_TYPE]) {
+    const missing = !MENU_TYPE || !MENU_META[MENU_TYPE]
+      ? 'a valid Menu Type (<code>?menu=breakfast</code>)'
+      : 'a Store Code (<code>?store=STORE001</code>)';
+    document.getElementById('boardRoot').innerHTML = `
+      <div class="error-board">
+        <div class="icon">📺</div>
+        <h2>Invalid Menu Board URL</h2>
+        <p>This menu board requires ${missing}.</p>
+        <br>
+        <p>Example URL:</p>
+        <code>menu-board.html?store=STORE001&amp;menu=breakfast</code>
+        <br><br>
+        <p>Valid menu types: breakfast · lunch · dinner · drinks · specials</p>
+        <a href="index.html">← Back to Portal</a>
+      </div>
+    `;
+    return;
+  }
+
+  const brand = getActiveBrand();
+  document.title = MENU_META[MENU_TYPE].label + (brand ? ' — ' + brand.name : ' — ' + STORE_CODE);
+
+  render();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(render, 30000);        // fallback full refresh every 30s
+  setInterval(checkForUpdates, 5000); // live update check every 5s
+});
+</script>
+
+<!-- ROOT -->
+<div class="board portrait" id="boardRoot">
+  <div class="board-empty">
+    <div class="icon" style="font-size:40px;margin-bottom:16px;">⏳</div>
+    <h2>Loading…</h2>
+  </div>
+</div>
+
+</body>
+</html>
