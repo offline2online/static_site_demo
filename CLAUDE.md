@@ -1,10 +1,10 @@
-# static_site_demo
+# rob_ph_demos
 
 ## Project Overview
 
 This is a static site repository used to publish HTML and static resources (CSS, JS, images, etc.) to the internet via GitHub.
 
-- **Remote**: git@github.com:offline2online/static_site_demo.git
+- **Remote**: git@github.com:offline2online/rob_ph_demos.git
 - **Branch**: `main` (default publishing branch)
 - **Purpose**: Upload static files and push to GitHub for hosting
 
