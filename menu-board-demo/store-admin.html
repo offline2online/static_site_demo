@@ -748,9 +748,24 @@
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toastContainer"></div>
 
-<script>
-const KEY_ITEMS = 'mb_items';
-const KEY_SETTINGS = 'mb_settings';
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+// ===== FIREBASE INIT =====
+const firebaseConfig = {
+  apiKey: "AIzaSyDrUKPNep2uxbZjYJ4i0vImdG7Xn_UuSXo",
+  authDomain: "rob-ph-demos.firebaseapp.com",
+  projectId: "rob-ph-demos",
+  storageBucket: "rob-ph-demos.firebasestorage.app",
+  messagingSenderId: "199417645406",
+  appId: "1:199417645406:web:0e7a54d00083b41ea9e7cf"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const MB         = 'menuboard';
+const ITEMS_COLL = 'items';
+const STOCK_COLL = 'stock';
 
 const MENU_TYPES = [
   { id: 'breakfast', label: 'Breakfast', emoji: '🌅', color: '#f59e0b' },
@@ -765,7 +780,27 @@ const urlParams = new URLSearchParams(window.location.search);
 const STORE_CODE = (urlParams.get('store') || '').trim().toUpperCase();
 const STAFF_ID = (urlParams.get('staff') || '').trim().toUpperCase();
 
-const STOCK_KEY = 'mb_stock_' + STORE_CODE;
+// ===== IN-MEMORY CACHE =====
+let _items    = [];
+let _stock    = {};
+let _settings = { currency: '$' };
+
+// ===== FIRESTORE LISTENERS =====
+onSnapshot(collection(db, ITEMS_COLL), snap => {
+  _items = snap.docs.map(d => d.data()).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  if (STORE_CODE && document.getElementById('mainPage').style.display !== 'none') renderItems();
+});
+
+onSnapshot(doc(db, MB, 'settings'), snap => {
+  _settings = snap.exists() ? snap.data() : { currency: '$' };
+});
+
+if (STORE_CODE) {
+  onSnapshot(doc(db, STOCK_COLL, STORE_CODE), snap => {
+    _stock = snap.exists() ? snap.data() : {};
+    if (document.getElementById('mainPage').style.display !== 'none') renderItems();
+  });
+}
 
 let menuFilter = '';
 let stockFilter = 'all';
@@ -794,9 +829,6 @@ function init() {
   document.title = 'Store ' + STORE_CODE + ' — Menu Admin';
 
   renderItems();
-
-  // Auto-refresh every 30s
-  setInterval(refresh, 30000);
 }
 
 function refresh() {
@@ -804,10 +836,14 @@ function refresh() {
 }
 
 // DATA
-function getItems() { return JSON.parse(localStorage.getItem(KEY_ITEMS) || '[]'); }
-function getSettings() { return JSON.parse(localStorage.getItem(KEY_SETTINGS) || '{"restaurantName":"","currency":"$"}'); }
-function getStock() { return JSON.parse(localStorage.getItem(STOCK_KEY) || '{}'); }
-function saveStock(s) { localStorage.setItem(STOCK_KEY, JSON.stringify(s)); }
+function getItems()    { return _items; }
+function getSettings() { return _settings; }
+function getStock()    { return _stock; }
+function saveStock(s) {
+  _stock = s;
+  setDoc(doc(db, STOCK_COLL, STORE_CODE), s)
+    .catch(err => toast('\u274C Sync failed: ' + (err.message || err), 'error'));
+}
 
 function isOos(sku) {
   const stock = getStock();
@@ -962,7 +998,7 @@ function toggleOos(sku, name, currentlyOos) {
 function doToggleOos() {
   if (!pendingOos) return;
   const { sku, currentlyOos } = pendingOos;
-  const stock = getStock();
+  const stock = { ...getStock() };
   const now = new Date().toISOString();
 
   if (!stock[sku]) stock[sku] = {};
@@ -1007,6 +1043,15 @@ function toast(msg, type = 'info') {
   document.getElementById('toastContainer').appendChild(el);
   setTimeout(() => { el.style.animation = 'toastOut 0.2s ease forwards'; setTimeout(() => el.remove(), 200); }, 3000);
 }
+
+// ===== WINDOW EXPORTS (for inline event handlers) =====
+window.setMenuFilter = setMenuFilter;
+window.setStockFilter = setStockFilter;
+window.refresh = refresh;
+window.renderItems = renderItems;
+window.toggleOos = toggleOos;
+window.doToggleOos = doToggleOos;
+window.closeConfirm = closeConfirm;
 
 // INIT
 init();

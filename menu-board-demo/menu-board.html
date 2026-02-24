@@ -435,18 +435,38 @@
 </head>
 <body>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+// ===== FIREBASE INIT =====
+const firebaseConfig = {
+  apiKey: "AIzaSyDrUKPNep2uxbZjYJ4i0vImdG7Xn_UuSXo",
+  authDomain: "rob-ph-demos.firebaseapp.com",
+  projectId: "rob-ph-demos",
+  storageBucket: "rob-ph-demos.firebasestorage.app",
+  messagingSenderId: "199417645406",
+  appId: "1:199417645406:web:0e7a54d00083b41ea9e7cf"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const MB         = 'menuboard';
+const ITEMS_COLL = 'items';
+const STOCK_COLL = 'stock';
+
 // ── URL PARAMS ──────────────────────────────────────────────────────────────
 const urlParams  = new URLSearchParams(window.location.search);
 const STORE_CODE = (urlParams.get('store') || '').trim().toUpperCase();
 const MENU_TYPE  = (urlParams.get('menu')  || '').trim().toLowerCase();
 const SCREEN_LOCK = urlParams.get('screen') ? parseInt(urlParams.get('screen'), 10) : null;
 
-const KEY_ITEMS    = 'mb_items';
-const KEY_SETTINGS = 'mb_settings';
-const STOCK_KEY    = 'mb_stock_' + STORE_CODE;
-
 const ROTATION_INTERVAL = 8000; // ms
+
+// ── IN-MEMORY CACHE ──────────────────────────────────────────────────────────
+let _items    = [];
+let _settings = { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
+let _brands   = [];
+let _stock    = {};
 
 const MENU_META = {
   breakfast: { label: 'Breakfast Menu',        emoji: '🌅' },
@@ -457,14 +477,10 @@ const MENU_META = {
 };
 
 // ── HELPERS ─────────────────────────────────────────────────────────────────
-function getData(k, fb) {
-  try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(fb)); }
-  catch { return fb; }
-}
-function getItems()    { return getData(KEY_ITEMS, []); }
-function getSettings() { return getData(KEY_SETTINGS, { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' }); }
-function getStock()    { return getData(STOCK_KEY, {}); }
-function isOos(sku)    { const s = getStock(); return !!(s[sku] && s[sku].outOfStock); }
+function getItems()    { return _items; }
+function getSettings() { return _settings; }
+function getStock()    { return _stock; }
+function isOos(sku)    { return !!(_stock[sku] && _stock[sku].outOfStock); }
 function esc(str)      { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtTime(d)    { return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
 function fmtDate(d)    { return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }); }
@@ -475,12 +491,8 @@ const ORIENTATION = urlParams.get('orientation') || 'portrait';
 
 // ── BRAND SUPPORT ────────────────────────────────────────────────────────────
 const BRAND_ID = (urlParams.get('brand') || '').trim();
-const KEY_BRANDS = 'mb_brands';
 
-function getBrands() {
-  try { return JSON.parse(localStorage.getItem(KEY_BRANDS) || '[]'); }
-  catch { return []; }
-}
+function getBrands() { return _brands; }
 
 // Returns brand object. If no brands in storage, builds legacy compat from mb_settings.
 // Matches ?brand= param against brand name (case-insensitive). Falls back to first brand.
@@ -607,19 +619,29 @@ function startRotation(totalPages) {
   }, ROTATION_INTERVAL);
 }
 
-// ── LIVE UPDATE DETECTION ────────────────────────────────────────────────────
-let lastKnownUpdate = localStorage.getItem('mb_last_updated') || '';
+// ── FIRESTORE LISTENERS ──────────────────────────────────────────────────────
+onSnapshot(collection(db, ITEMS_COLL), snap => {
+  _items = snap.docs.map(d => d.data()).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  render();
+});
 
-function checkForUpdates() {
-  const current = localStorage.getItem('mb_last_updated') || '';
-  if (current !== lastKnownUpdate) {
-    lastKnownUpdate = current;
-    render();
+onSnapshot(doc(db, MB, 'brands'), snap => {
+  _brands = snap.exists() ? (snap.data().data || []) : [];
+  const brand = getActiveBrand();
+  if (MENU_TYPE && MENU_META[MENU_TYPE]) {
+    document.title = MENU_META[MENU_TYPE].label + (brand ? ' \u2014 ' + brand.name : ' \u2014 ' + STORE_CODE);
   }
-}
+  render();
+});
+
+onSnapshot(doc(db, MB, 'settings'), snap => {
+  _settings = snap.exists() ? snap.data() : { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
+  render();
+});
 
 // ── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
+  if (!STORE_CODE || !MENU_TYPE || !MENU_META[MENU_TYPE]) return;
   const meta     = MENU_META[MENU_TYPE];
   const brand    = getActiveBrand();
 
@@ -760,7 +782,7 @@ function render() {
       <div class="footer-text">${brandName} — ${esc(meta.label)}</div>
       <div class="footer-page-info">${esc(pageInfoText)}</div>
       <div class="footer-refresh">
-        <span class="refresh-dot"></span> Auto-updates every 30s
+        <span class="refresh-dot"></span> Live sync enabled
       </div>
     </div>
     ${showProgressBar ? '<div class="rotation-bar-wrap"><div class="rotation-bar" id="rotationBar"></div></div>' : ''}
@@ -798,14 +820,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  const brand = getActiveBrand();
-  document.title = MENU_META[MENU_TYPE].label + (brand ? ' — ' + brand.name : ' — ' + STORE_CODE);
+  // Per-store stock listener (started here so STORE_CODE is validated first)
+  onSnapshot(doc(db, STOCK_COLL, STORE_CODE), snap => {
+    _stock = snap.exists() ? snap.data() : {};
+    render();
+  });
 
-  render();
   updateClock();
   setInterval(updateClock, 1000);
-  setInterval(render, 30000);        // fallback full refresh every 30s
-  setInterval(checkForUpdates, 5000); // live update check every 5s
+  // Live updates are driven by onSnapshot listeners — no polling needed
 });
 </script>
 

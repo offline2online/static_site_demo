@@ -638,7 +638,7 @@
               <input type="file" id="importFile2" accept=".json" style="display:none" onchange="importData(event)">
               <button class="btn btn-danger" onclick="clearAllData()">&#x1F5D1;&#xFE0F; Clear All Data</button>
             </div>
-            <p style="margin-top:10px;font-size:12px;color:var(--text2);">&#x26A0;&#xFE0F; Data is stored in browser localStorage. Export regularly to prevent data loss.</p>
+            <p style="margin-top:10px;font-size:12px;color:var(--text2);">&#x2601;&#xFE0F; Data is stored in Firebase Firestore and synced in real-time across all devices.</p>
           </div>
         </div>
 
@@ -909,11 +909,24 @@
 
 <div class="toast-container" id="toastContainer"></div>
 
-<script>
-// ===== DATA KEYS =====
-const KEY_ITEMS    = 'mb_items';
-const KEY_SETTINGS = 'mb_settings';
-const KEY_CATS     = 'mb_categories';
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+// ===== FIREBASE INIT =====
+const firebaseConfig = {
+  apiKey: "AIzaSyDrUKPNep2uxbZjYJ4i0vImdG7Xn_UuSXo",
+  authDomain: "rob-ph-demos.firebaseapp.com",
+  projectId: "rob-ph-demos",
+  storageBucket: "rob-ph-demos.firebasestorage.app",
+  messagingSenderId: "199417645406",
+  appId: "1:199417645406:web:0e7a54d00083b41ea9e7cf"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const MB         = 'menuboard';
+const ITEMS_COLL = 'items';
+const STOCK_COLL = 'stock';
 
 const MENU_TYPES = [
   { id: 'breakfast', label: 'Breakfast',        emoji: '\u{1F305}' },
@@ -935,20 +948,23 @@ const DEFAULT_COLORS = {
   price:      '#004d33'
 };
 
-const KEY_BRANDS = 'mb_brands';
-
 const DEFAULT_DISPLAY = {
   portrait:  { cols: 3, rows: 5, maxItems: 15 },
   landscape: { cols: 5, rows: 3, maxItems: 15 }
 };
 
-function getBrands() {
-  try { return JSON.parse(localStorage.getItem(KEY_BRANDS) || '[]'); }
-  catch { return []; }
-}
+// ===== IN-MEMORY CACHE =====
+let _items    = [];
+let _settings = { restaurantName: 'My Restaurant', currency: '$', logo: '' };
+let _cats     = [];
+let _brands   = [];
+let _allStock = {};
+
+function getBrands() { return _brands; }
 function saveBrands(brands) {
-  localStorage.setItem(KEY_BRANDS, JSON.stringify(brands));
-  localStorage.setItem('mb_last_updated', new Date().toISOString());
+  _brands = brands;
+  setDoc(doc(db, MB, 'brands'), { data: brands })
+    .catch(err => toast('\u274C Failed to save brands: ' + (err.message || err), 'error'));
 }
 
 function createDefaultBrand(overrides) {
@@ -983,31 +999,54 @@ function migrateToBrands() {
   saveBrands([migrated]);
 }
 
-// ===== STORAGE =====
-function getItems()    { return JSON.parse(localStorage.getItem(KEY_ITEMS) || '[]'); }
+// ===== STORAGE (Firestore-backed, cache-first) =====
+function getItems()    { return _items; }
 function saveItems(items) {
-  try {
-    localStorage.setItem(KEY_ITEMS, JSON.stringify(items));
-    localStorage.setItem('mb_last_updated', new Date().toISOString());
-  } catch (err) {
-    if (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-      toast('\u26A0\uFE0F Storage limit reached \u2014 try removing some product images to free up space.', 'error');
-    } else {
+  // Compute which item IDs were removed so we can delete their documents
+  const oldIds   = new Set(_items.map(i => i.id));
+  const newIds   = new Set(items.map(i => i.id));
+  const toDelete = [...oldIds].filter(id => !newIds.has(id));
+  _items = items;
+
+  const CHUNK = 500; // Firestore batch limit
+  const allOps = [
+    ...items.map(item  => ({ type: 'set', id: item.id, data: item })),
+    ...toDelete.map(id => ({ type: 'del', id }))
+  ];
+  if (!allOps.length) return;
+
+  (async () => {
+    try {
+      for (let i = 0; i < allOps.length; i += CHUNK) {
+        const batch = writeBatch(db);
+        allOps.slice(i, i + CHUNK).forEach(op => {
+          const ref = doc(db, ITEMS_COLL, op.id);
+          if (op.type === 'set') batch.set(ref, op.data);
+          else                   batch.delete(ref);
+        });
+        await batch.commit();
+      }
+    } catch (err) {
       toast('\u274C Failed to save: ' + (err.message || err), 'error');
     }
-  }
+  })();
 }
-function getSettings() {
-  return JSON.parse(localStorage.getItem(KEY_SETTINGS) || '{"restaurantName":"My Restaurant","currency":"$","logo":""}');
+function getSettings() { return _settings; }
+function saveSettingsData(s) {
+  _settings = s;
+  setDoc(doc(db, MB, 'settings'), s)
+    .catch(err => toast('\u274C Failed to save settings', 'error'));
 }
-function saveSettingsData(s) { localStorage.setItem(KEY_SETTINGS, JSON.stringify(s)); }
 
 // Fix: normalize categories — could be stored as objects from old imports
 function getCats() {
-  const raw = JSON.parse(localStorage.getItem(KEY_CATS) || JSON.stringify(DEFAULT_CATS));
-  return raw.map(c => typeof c === 'object' ? (c.name || c.id || String(c)) : String(c)).filter(Boolean);
+  return _cats.map(c => typeof c === 'object' ? (c.name || c.id || String(c)) : String(c)).filter(Boolean);
 }
-function saveCats(c) { localStorage.setItem(KEY_CATS, JSON.stringify(c)); }
+function saveCats(c) {
+  _cats = c;
+  setDoc(doc(db, MB, 'categories'), { data: c })
+    .catch(err => toast('\u274C Failed to save categories', 'error'));
+}
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,6); }
 function genSku() {
@@ -1098,15 +1137,15 @@ function renderDashboard() {
 
   // ── OOS STORE SUMMARY ──────────────────────────────────────────
   const oosSummaryEl = document.getElementById('oosSummaryContent');
-  const storeStockKeys = Object.keys(localStorage).filter(k => k.startsWith('mb_stock_'));
+  const storeStockKeys = Object.keys(_allStock);
 
   if (!storeStockKeys.length) {
     oosSummaryEl.innerHTML = `<div style="color:var(--text2);font-size:13px;padding:4px 0;">No store stock data found. Data is populated when stores use the Store Admin interface.</div>`;
   } else {
     // Build per-store reports
     const storeReports = storeStockKeys.map(key => {
-      const storeCode = key.replace('mb_stock_', '');
-      const stock = JSON.parse(localStorage.getItem(key) || '{}');
+      const storeCode = key;
+      const stock = _allStock[key];
       const oosSkus = Object.keys(stock).filter(sku => stock[sku] && stock[sku].outOfStock);
       const oosItems = oosSkus.map(sku => items.find(i => i.sku === sku)).filter(Boolean);
       const unknownSkus = oosSkus.filter(sku => !items.find(i => i.sku === sku));
@@ -1773,7 +1812,6 @@ function importData(event) {
       if (data.settings)   saveSettingsData(data.settings);
       if (data.categories) saveCats(data.categories);
       if (data.brands)     saveBrands(data.brands);
-      localStorage.setItem('mb_last_updated', new Date().toISOString());
       renderDashboard();
       renderItems();
       toast('\u{1F4E5} Data imported successfully', 'success');
@@ -1789,16 +1827,27 @@ function clearAllData() {
   pendingDeleteId = 'ALL';
   document.getElementById('confirmTitle').textContent = 'Clear All Data?';
   document.getElementById('confirmMsg').textContent   = 'All menu items, categories, brands, and settings will be permanently deleted. Export first to backup your data.';
-  document.getElementById('confirmBtn').onclick = () => {
-    localStorage.removeItem(KEY_ITEMS);
-    localStorage.removeItem(KEY_SETTINGS);
-    localStorage.removeItem(KEY_CATS);
-    localStorage.removeItem(KEY_BRANDS);
-    localStorage.setItem('mb_last_updated', new Date().toISOString());
+  document.getElementById('confirmBtn').onclick = async () => {
     closeConfirm();
-    renderDashboard();
-    renderItems();
-    toast('\u{1F5D1}\uFE0F All data cleared', 'info');
+    try {
+      // Batch-delete every item document
+      const itemSnaps = await getDocs(collection(db, ITEMS_COLL));
+      const CHUNK = 500;
+      for (let i = 0; i < itemSnaps.docs.length; i += CHUNK) {
+        const batch = writeBatch(db);
+        itemSnaps.docs.slice(i, i + CHUNK).forEach(d => batch.delete(d.ref));
+        await batch.commit();
+      }
+      // Delete the other single documents
+      await Promise.all([
+        deleteDoc(doc(db, MB, 'settings')),
+        deleteDoc(doc(db, MB, 'categories')),
+        deleteDoc(doc(db, MB, 'brands')),
+      ]);
+      toast('\u{1F5D1}\uFE0F All data cleared', 'info');
+    } catch (err) {
+      toast('\u274C Failed to clear: ' + (err.message || err), 'error');
+    }
   };
   document.getElementById('confirmOverlay').classList.add('open');
 }
@@ -1833,16 +1882,73 @@ document.querySelectorAll('.mt-option').forEach(el => {
   });
 });
 
-// ===== INIT =====
-(function init() {
+// ===== WINDOW EXPORTS (for inline event handlers) =====
+window.showView           = showView;
+window.openAddModal       = openAddModal;
+window.closeModal         = closeModal;
+window.saveItem           = saveItem;
+window.toggleActive       = toggleActive;
+window.confirmDelete      = confirmDelete;
+window.closeConfirm       = closeConfirm;
+window.genSku             = genSku;
+window.handleImages       = handleImages;
+window.removeImage        = removeImage;
+window.addCategory        = addCategory;
+window.deleteCategory     = deleteCategory;
+window.openAddBrandModal  = openAddBrandModal;
+window.openEditBrandModal = openEditBrandModal;
+window.closeBrandModal    = closeBrandModal;
+window.saveBrand          = saveBrand;
+window.confirmDeleteBrand = confirmDeleteBrand;
+window.exportData         = exportData;
+window.importData         = importData;
+window.clearAllData       = clearAllData;
+window.uploadBrandLogo    = uploadBrandLogo;
+window.renderItems        = renderItems;
+window.openEditModal      = openEditModal;
+
+// ===== FIRESTORE LISTENERS + INIT =====
+onSnapshot(collection(db, ITEMS_COLL), snap => {
+  _items = snap.docs.map(d => d.data()).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  document.getElementById('navBadgeItems').textContent = _items.length;
+  const activeView = document.querySelector('.view.active');
+  if (activeView) {
+    if (activeView.id === 'view-items')     renderItems();
+    if (activeView.id === 'view-dashboard') renderDashboard();
+  }
+});
+
+onSnapshot(doc(db, MB, 'brands'), snap => {
+  _brands = snap.exists() ? (snap.data().data || []) : [];
   migrateToBrands();
-  // Set currency symbol from first brand
-  const brands = getBrands();
-  const firstBrand = brands[0];
-  document.getElementById('currSymbol').textContent  = firstBrand ? firstBrand.currency : '$';
-  document.getElementById('navBadgeItems').textContent = getItems().length;
-  renderDashboard();
-})();
+  const firstBrand = _brands[0];
+  const currEl = document.getElementById('currSymbol');
+  if (currEl) currEl.textContent = firstBrand ? firstBrand.currency : '$';
+  const activeView = document.querySelector('.view.active');
+  if (activeView) {
+    if (activeView.id === 'view-brands')    renderBrands();
+    if (activeView.id === 'view-dashboard') renderDashboard();
+  }
+});
+
+onSnapshot(doc(db, MB, 'categories'), snap => {
+  _cats = snap.exists() ? (snap.data().data || [...DEFAULT_CATS]) : [...DEFAULT_CATS];
+  const activeView = document.querySelector('.view.active');
+  if (activeView && activeView.id === 'view-categories') renderCategories();
+});
+
+onSnapshot(doc(db, MB, 'settings'), snap => {
+  _settings = snap.exists() ? snap.data() : { restaurantName: 'My Restaurant', currency: '$', logo: '' };
+});
+
+onSnapshot(collection(db, STOCK_COLL), snapshot => {
+  _allStock = {};
+  snapshot.forEach(d => { _allStock[d.id] = d.data(); });
+  const activeView = document.querySelector('.view.active');
+  if (activeView && activeView.id === 'view-dashboard') renderDashboard();
+});
+
+renderDashboard();
 </script>
 </body>
 </html>
