@@ -29,6 +29,7 @@
 
     html, body {
       height: 100%;
+      overflow: hidden;
       background: var(--cream);
       color: var(--text);
       font-family: 'Inter', sans-serif;
@@ -38,7 +39,8 @@
     .board {
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       background: var(--cream);
     }
 
@@ -139,6 +141,8 @@
     /* ── ITEMS SECTION ─────────────────────── */
     .board-body {
       flex: 1;
+      min-height: 0;
+      overflow: hidden;
       background: var(--cream);
     }
 
@@ -163,11 +167,17 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .board.portrait .item-cat-badge {
+      font-size: clamp(9px, 1.1vw, 13px);
+      padding: clamp(2px, 0.4vw, 5px) clamp(7px, 1vw, 12px);
+      border-radius: 4px;
+    }
 
     /* Default grid (landscape, 5 cols) */
     .items-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
+      height: 100%;
     }
 
     /* Portrait: 3-column grid */
@@ -189,13 +199,16 @@
       border-right: 1px solid var(--border);
       background: var(--white);
       position: relative;
-      min-height: 140px;
-    }
-    .board.portrait .item-cell {
-      min-height: 160px;
+      min-height: 0;
+      overflow: hidden;
     }
     .board.landscape .item-cell {
-      min-height: 140px;
+      min-height: 120px;
+    }
+
+    /* Portrait: vertical card layout — image on top, text below */
+    .board.portrait .item-cell {
+      flex-direction: column;
     }
 
     /* Border-right removal for last in row */
@@ -206,17 +219,21 @@
 
     .item-cell.oos-cell { background: #fdf8f5; }
 
-    /* Thumbnail — LEFT side */
+    /* Thumbnail — LEFT side (landscape) / TOP (portrait) */
     .item-thumb {
       width: clamp(60px, 7vw, 100px);
       flex-shrink: 0;
       position: relative;
       overflow: hidden;
-      background: #ffffff;
+      background: #f5f0e8;
       order: 0;
     }
+    /* Portrait: full-width image strip at top of cell — use flex to allocate ~45% */
     .board.portrait .item-thumb {
-      width: clamp(80px, 10vw, 130px);
+      width: 100%;
+      flex: 0 0 45%;
+      min-height: 80px;
+      max-height: 220px;
     }
     .board.landscape .item-thumb {
       width: clamp(60px, 7vw, 100px);
@@ -224,7 +241,7 @@
     .item-thumb img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
       display: block;
     }
     .item-thumb-placeholder {
@@ -237,7 +254,7 @@
       color: var(--border);
     }
 
-    /* Text portion — RIGHT side */
+    /* Text portion — RIGHT side (landscape) / BOTTOM (portrait) */
     .item-text {
       flex: 1;
       padding: clamp(8px, 1.3vw, 18px) clamp(10px, 1.5vw, 20px);
@@ -245,7 +262,12 @@
       flex-direction: column;
       justify-content: flex-start;
       min-width: 0;
+      min-height: 0;
+      overflow: hidden;
       order: 1;
+    }
+    .board.portrait .item-text {
+      padding: clamp(8px, 1.8vw, 20px) clamp(10px, 2vw, 22px);
     }
     .item-name {
       font-size: clamp(11px, 1.25vw, 17px);
@@ -253,6 +275,10 @@
       color: var(--item-color);
       line-height: 1.3;
       margin-bottom: clamp(4px, 0.5vw, 8px);
+    }
+    .board.portrait .item-name {
+      font-size: clamp(12px, 2.1vw, 24px);
+      margin-bottom: clamp(3px, 0.5vw, 6px);
     }
 
     /* Nutrition table-style */
@@ -291,6 +317,19 @@
       font-size: clamp(9px, 1vw, 13px);
       color: var(--item-color);
     }
+    /* Portrait: scale up nutrition */
+    .board.portrait .nutr-val {
+      font-size: clamp(12px, 1.8vw, 20px);
+    }
+    .board.portrait .nutr-unit {
+      font-size: clamp(9px, 1.2vw, 14px);
+    }
+    .board.portrait .nutr-calories .nutr-val {
+      font-size: clamp(15px, 2.2vw, 26px);
+    }
+    .board.portrait .nutr-calories .nutr-unit {
+      font-size: clamp(10px, 1.4vw, 16px);
+    }
 
     /* Item price */
     .item-price {
@@ -300,6 +339,10 @@
       letter-spacing: -0.3px;
       line-height: 1;
       margin-bottom: clamp(3px, 0.4vw, 6px);
+    }
+    .board.portrait .item-price {
+      font-size: clamp(16px, 2.8vw, 32px);
+      margin-bottom: clamp(3px, 0.5vw, 6px);
     }
 
     /* ── OUT OF STOCK ───────────────────────── */
@@ -670,7 +713,10 @@ function render() {
     document.head.appendChild(dynStyle);
   }
   dynStyle.textContent = `
-    .items-grid { grid-template-columns: repeat(${COLS}, 1fr) !important; }
+    .items-grid {
+      grid-template-columns: repeat(${COLS}, 1fr) !important;
+      grid-template-rows: repeat(${ROWS}, 1fr) !important;
+    }
     .item-cell:nth-child(${COLS}n) { border-right: none !important; }
   `;
 
