@@ -712,10 +712,12 @@ function render() {
     dynStyle.id = 'dynamic-grid-css';
     document.head.appendChild(dynStyle);
   }
+  // Use actual rows needed so the grid fills the screen with no empty rows
+  const gridRows = Math.max(1, Math.ceil(pageItems.length / COLS));
   dynStyle.textContent = `
     .items-grid {
       grid-template-columns: repeat(${COLS}, 1fr) !important;
-      grid-template-rows: repeat(${ROWS}, 1fr) !important;
+      grid-template-rows: repeat(${gridRows}, 1fr) !important;
     }
     .item-cell:nth-child(${COLS}n) { border-right: none !important; }
   `;
