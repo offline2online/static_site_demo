@@ -1801,6 +1801,20 @@ function exportData() {
   toast('\u{1F4E4} Data exported successfully', 'success');
 }
 
+// Firestore documents are capped at ~1 MB. Strip images from any item whose
+// serialised size would exceed the safe threshold, and return a list of names
+// so the caller can warn the user.
+const FIRESTORE_DOC_LIMIT = 900_000; // 900 KB — leaves headroom under the 1 MB hard limit
+function stripOversizedImages(items) {
+  const stripped = [];
+  const sanitized = items.map(item => {
+    if (JSON.stringify(item).length <= FIRESTORE_DOC_LIMIT) return item;
+    stripped.push(item.name || item.id);
+    return { ...item, images: [] };
+  });
+  return { sanitized, stripped };
+}
+
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1808,7 +1822,16 @@ function importData(event) {
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      if (data.items)      saveItems(data.items);
+      if (data.items) {
+        const { sanitized, stripped } = stripOversizedImages(data.items);
+        saveItems(sanitized);
+        if (stripped.length) {
+          toast(
+            `\u26A0\uFE0F ${stripped.length} item${stripped.length > 1 ? 's' : ''} had oversized images removed: ${stripped.join(', ')}`,
+            'error'
+          );
+        }
+      }
       if (data.settings)   saveSettingsData(data.settings);
       if (data.categories) saveCats(data.categories);
       if (data.brands)     saveBrands(data.brands);
@@ -1816,7 +1839,7 @@ function importData(event) {
       renderItems();
       toast('\u{1F4E5} Data imported successfully', 'success');
     } catch(err) {
-      toast('\u274C Invalid file format', 'error');
+      toast('\u274C Import failed: ' + (err.message || err), 'error');
     }
     event.target.value = '';
   };
