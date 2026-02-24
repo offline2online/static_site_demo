@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-import os, sys
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, '')
-from http.server import SimpleHTTPRequestHandler, HTTPServer
-print("Serving at http://localhost:3456", flush=True)
-HTTPServer(('', 3456), SimpleHTTPRequestHandler).serve_forever()
+import http.server, os
+os.chdir('/Users/rgeerdink/Documents/Claude Code/menu-board-demo')
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, fmt, *a): pass
+http.server.HTTPServer(('', 3456), Handler).serve_forever()
