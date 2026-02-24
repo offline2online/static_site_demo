@@ -705,22 +705,13 @@ function render() {
     COLS * ROWS
   );
 
-  // Dynamic CSS for grid columns and nth-child border removal
+  // Dynamic CSS element (content set after pageItems is known below)
   let dynStyle = document.getElementById('dynamic-grid-css');
   if (!dynStyle) {
     dynStyle = document.createElement('style');
     dynStyle.id = 'dynamic-grid-css';
     document.head.appendChild(dynStyle);
   }
-  // Use actual rows needed so the grid fills the screen with no empty rows
-  const gridRows = Math.max(1, Math.ceil(pageItems.length / COLS));
-  dynStyle.textContent = `
-    .items-grid {
-      grid-template-columns: repeat(${COLS}, 1fr) !important;
-      grid-template-rows: repeat(${gridRows}, 1fr) !important;
-    }
-    .item-cell:nth-child(${COLS}n) { border-right: none !important; }
-  `;
 
   const items     = getItems();
   const logoLeft  = brand.logo      || '';
@@ -753,6 +744,16 @@ function render() {
   // Slice page
   const pageStart = (currentPage - 1) * PAGE_SIZE;
   const pageItems = allFiltered.slice(pageStart, pageStart + PAGE_SIZE);
+
+  // Use actual rows needed so the grid fills the screen with no empty rows
+  const gridRows = Math.max(1, Math.ceil(pageItems.length / COLS));
+  dynStyle.textContent = `
+    .items-grid {
+      grid-template-columns: repeat(${COLS}, 1fr) !important;
+      grid-template-rows: repeat(${gridRows}, 1fr) !important;
+    }
+    .item-cell:nth-child(${COLS}n) { border-right: none !important; }
+  `;
 
   // ── HEADER ──────────────────────────────────────────────────────────────────
   const logoSlot = (src, side) => src
