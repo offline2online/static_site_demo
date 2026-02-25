@@ -473,6 +473,65 @@
     @media (max-width: 640px) {
       .form-row { grid-template-columns: 1fr; }
     }
+
+    /* ── TAG-CHIP INPUT ─────────────────────── */
+    .tag-chip-wrap {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface2);
+      padding: 6px 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      cursor: text;
+      transition: border-color 0.15s;
+      min-height: 40px;
+      align-items: center;
+    }
+    .tag-chip-wrap:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0,98,65,0.12);
+    }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0,98,65,0.1);
+      border: 1px solid rgba(0,98,65,0.3);
+      color: #004d33;
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .tag-chip-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #004d33;
+      font-size: 11px;
+      padding: 0;
+      line-height: 1;
+      opacity: 0.6;
+    }
+    .tag-chip-remove:hover { opacity: 1; color: var(--danger, #c0392b); }
+    .tag-chip-input {
+      flex: 1;
+      min-width: 120px;
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      padding: 2px 4px;
+    }
+    .tag-chip-hint {
+      font-size: 10px;
+      color: var(--text2);
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -682,6 +741,34 @@
         <label>Product Description</label>
         <textarea id="fDesc" placeholder="Describe the item, ingredients, or allergens&hellip;" rows="3"></textarea>
       </div>
+      <div class="form-group">
+        <label>Ingredients <span class="opt-tag">Optional</span></label>
+        <div class="tag-chip-wrap" id="ingredientsChips"
+             onclick="this.querySelector('.tag-chip-input').focus()">
+          <input class="tag-chip-input" type="text" placeholder="Type an ingredient, then Enter or comma&hellip;"
+                 onkeydown="if(event.key==='Enter'||event.key===','){event.preventDefault();window._addChip(this,window.editingIngredients,'ingredientsChips','removeIngredient');}">
+        </div>
+        <div class="tag-chip-hint">Press Enter or comma to add &middot; Click &times; to remove</div>
+      </div>
+      <div class="section-divider">&#x270F;&#xFE0F; Customisation Options <span class="opt-tag">Optional &mdash; items a customer can add or remove</span></div>
+      <div class="form-group">
+        <label>Can Add</label>
+        <div class="tag-chip-wrap" id="addOnsChips"
+             onclick="this.querySelector('.tag-chip-input').focus()">
+          <input class="tag-chip-input" type="text" placeholder="e.g. Extra cheese, Avocado&hellip;"
+                 onkeydown="if(event.key==='Enter'||event.key===','){event.preventDefault();window._addChip(this,window.editingAddOns,'addOnsChips','removeAddOn');}">
+        </div>
+        <div class="tag-chip-hint">Things the customer can request to add</div>
+      </div>
+      <div class="form-group">
+        <label>Can Remove</label>
+        <div class="tag-chip-wrap" id="removeOnsChips"
+             onclick="this.querySelector('.tag-chip-input').focus()">
+          <input class="tag-chip-input" type="text" placeholder="e.g. Nuts, Pineapple, Onion&hellip;"
+                 onkeydown="if(event.key==='Enter'||event.key===','){event.preventDefault();window._addChip(this,window.editingRemoveOns,'removeOnsChips','removeRemoveOn');}">
+        </div>
+        <div class="tag-chip-hint">Things the customer can request to remove</div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label>Price <span class="req">*</span></label>
@@ -867,6 +954,15 @@
           <input type="number" id="bLandscapeMax" value="15" min="1" max="60" placeholder="15">
           <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Cap (&#8804; cols &times; rows)</span>
         </div>
+      </div>
+
+      <div class="section-divider">&#x26D4; Sold Out Behaviour</div>
+      <div class="form-group">
+        <label>When a product is Sold Out</label>
+        <select id="bHideOos">
+          <option value="false">Show with &ldquo;Sold Out&rdquo; stamp &mdash; item remains visible</option>
+          <option value="true">Hide completely &mdash; remove from menu board</option>
+        </select>
       </div>
 
       <div class="section-divider">&#x1F551; Date &amp; Time Bar</div>
@@ -1336,6 +1432,44 @@ function toggleActive(id, active) {
   toast(active ? '\u2705 Item activated' : '\u26D4 Item deactivated', active ? 'success' : 'info');
 }
 
+// ===== TAG-CHIP HELPERS =====
+window.editingIngredients = [];
+window.editingAddOns      = [];
+window.editingRemoveOns   = [];
+
+function _escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function _renderTagChips(containerId, arr, removeFnName) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const input = wrap.querySelector('.tag-chip-input');
+  wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  arr.forEach((tag, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `<span>${_escHtml(tag)}</span><button class="tag-chip-remove" type="button" onclick="window.${removeFnName}(${i})" title="Remove">&#x2715;</button>`;
+    wrap.insertBefore(chip, input);
+  });
+}
+window._renderTagChips = _renderTagChips;
+
+function _addChip(inputEl, arr, containerId, removeFnName) {
+  const val = inputEl.value.trim();
+  if (!val) return;
+  val.split(',').map(v => v.trim()).filter(Boolean).forEach(v => {
+    if (!arr.includes(v)) arr.push(v);
+  });
+  inputEl.value = '';
+  _renderTagChips(containerId, arr, removeFnName);
+}
+window._addChip = _addChip;
+
+window.removeIngredient = (i) => { window.editingIngredients.splice(i, 1); _renderTagChips('ingredientsChips', window.editingIngredients, 'removeIngredient'); };
+window.removeAddOn      = (i) => { window.editingAddOns.splice(i, 1);      _renderTagChips('addOnsChips',      window.editingAddOns,      'removeAddOn'); };
+window.removeRemoveOn   = (i) => { window.editingRemoveOns.splice(i, 1);   _renderTagChips('removeOnsChips',   window.editingRemoveOns,   'removeRemoveOn'); };
+
 // ===== MODAL =====
 let editingImages = [];
 
@@ -1357,6 +1491,9 @@ function openAddModal() {
   });
   editingImages = [];
   renderImgPreviews();
+  window.editingIngredients = []; _renderTagChips('ingredientsChips', window.editingIngredients, 'removeIngredient');
+  window.editingAddOns      = []; _renderTagChips('addOnsChips',      window.editingAddOns,      'removeAddOn');
+  window.editingRemoveOns   = []; _renderTagChips('removeOnsChips',   window.editingRemoveOns,   'removeRemoveOn');
   populateCatDropdown('');
   populateBrandDropdown('');
   document.getElementById('itemModal').classList.add('open');
@@ -1389,6 +1526,9 @@ function openEditModal(id) {
   document.getElementById('fProtein').value  = item.protein != null ? item.protein : '';
   editingImages = [...(item.images || [])];
   renderImgPreviews();
+  window.editingIngredients = [...(item.ingredients || [])]; _renderTagChips('ingredientsChips', window.editingIngredients, 'removeIngredient');
+  window.editingAddOns      = [...(item.addOns      || [])]; _renderTagChips('addOnsChips',      window.editingAddOns,      'removeAddOn');
+  window.editingRemoveOns   = [...(item.removeOns   || [])]; _renderTagChips('removeOnsChips',   window.editingRemoveOns,   'removeRemoveOn');
   populateBrandDropdown(item.brand || (getBrands()[0] && getBrands()[0].id) || '');
   document.getElementById('itemModal').classList.add('open');
 }
@@ -1450,11 +1590,11 @@ function saveItem() {
   const now = new Date().toISOString();
   if (id) {
     const idx = items.findIndex(i => i.id === id);
-    items[idx] = { ...items[idx], sku, name, description: desc, price, category, brand, active, menuTypes, images: editingImages, calories, fat, carbs, protein, updatedAt: now };
+    items[idx] = { ...items[idx], sku, name, description: desc, price, category, brand, active, menuTypes, images: editingImages, calories, fat, carbs, protein, ingredients: window.editingIngredients, addOns: window.editingAddOns, removeOns: window.editingRemoveOns, updatedAt: now };
     saveItems(items);
     toast('\u2705 Item updated successfully', 'success');
   } else {
-    items.push({ id: genId(), sku, name, description: desc, price, category, brand, active, menuTypes, images: editingImages, calories, fat, carbs, protein, createdAt: now, updatedAt: now });
+    items.push({ id: genId(), sku, name, description: desc, price, category, brand, active, menuTypes, images: editingImages, calories, fat, carbs, protein, ingredients: window.editingIngredients, addOns: window.editingAddOns, removeOns: window.editingRemoveOns, createdAt: now, updatedAt: now });
     saveItems(items);
     toast('\u2705 Item added successfully', 'success');
   }
@@ -1687,6 +1827,7 @@ function openEditBrandModal(id) {
 
   document.getElementById('bShowClock').value  = brand.showClock === false ? 'false' : 'true';
   document.getElementById('bTimeFormat').value = brand.timeFormat || 'british';
+  document.getElementById('bHideOos').value    = String(!!(brand.display && brand.display.hideOutOfStock));
 
   document.getElementById('brandModal').classList.add('open');
 }
@@ -1740,7 +1881,8 @@ function saveBrand() {
       cols:     parseInt(document.getElementById('bLandscapeCols').value) || 5,
       rows:     parseInt(document.getElementById('bLandscapeRows').value) || 3,
       maxItems: parseInt(document.getElementById('bLandscapeMax').value)  || 15,
-    }
+    },
+    hideOutOfStock: document.getElementById('bHideOos').value === 'true',
   };
 
   const showClock = document.getElementById('bShowClock').value !== 'false';

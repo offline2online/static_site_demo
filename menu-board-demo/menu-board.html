@@ -149,7 +149,7 @@
     /* Category section label — kept for colour-scheme compatibility but hidden */
     .cat-header { display: none; }
 
-    /* Per-tile category badge */
+    /* Per-tile category badge — now lives in .item-meta-bar (right-aligned) */
     .item-cat-badge {
       display: inline-block;
       background: var(--cat-bar-bg, var(--green));
@@ -160,12 +160,11 @@
       letter-spacing: 0.6px;
       padding: clamp(1px, 0.2vw, 3px) clamp(5px, 0.6vw, 9px);
       border-radius: 3px;
-      margin-top: auto;
-      align-self: flex-start;
       white-space: nowrap;
-      max-width: 100%;
+      max-width: 50%;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex-shrink: 0;
     }
     .board.portrait .item-cat-badge {
       font-size: clamp(9px, 1.1vw, 13px);
@@ -254,20 +253,44 @@
       color: var(--border);
     }
 
-    /* Text portion — RIGHT side (landscape) / BOTTOM (portrait) */
+    /* Right-side column wrapper (meta bar + text, stacked vertically) */
+    .item-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Meta bar: price left, category badge right — sits between image and text */
+    .item-meta-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: clamp(4px, 0.5vw, 8px) clamp(8px, 1.2vw, 16px);
+      background: var(--cream2, #f0e9dc);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .board.portrait .item-meta-bar {
+      padding: clamp(6px, 1vw, 12px) clamp(10px, 1.5vw, 18px);
+    }
+
+    /* Text portion — holds item name + nutrition only */
     .item-text {
       flex: 1;
-      padding: clamp(8px, 1.3vw, 18px) clamp(10px, 1.5vw, 20px);
+      padding: clamp(6px, 1vw, 14px) clamp(8px, 1.3vw, 18px);
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
       min-width: 0;
       min-height: 0;
       overflow: hidden;
-      order: 1;
     }
     .board.portrait .item-text {
-      padding: clamp(8px, 1.8vw, 20px) clamp(10px, 2vw, 22px);
+      padding: clamp(8px, 1.5vw, 18px) clamp(10px, 1.8vw, 20px);
     }
     .item-name {
       font-size: clamp(11px, 1.25vw, 17px);
@@ -281,11 +304,8 @@
       margin-bottom: clamp(3px, 0.5vw, 6px);
     }
 
-    /* Nutrition table-style */
-    .nutrition-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px clamp(6px, 0.8vw, 12px);
+    /* Nutrition block */
+    .nutrition-block {
       margin-top: clamp(2px, 0.3vw, 4px);
     }
     .nutr-row {
@@ -304,9 +324,11 @@
       color: var(--text2);
       font-weight: 500;
     }
-    /* Full-width calories row */
+    /* Calories row — full width above macros */
     .nutr-calories {
-      grid-column: 1 / -1;
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
       margin-bottom: clamp(2px, 0.3vw, 4px);
     }
     .nutr-calories .nutr-val {
@@ -316,6 +338,14 @@
     .nutr-calories .nutr-unit {
       font-size: clamp(9px, 1vw, 13px);
       color: var(--item-color);
+    }
+    /* Macros row — fat, carbs, protein side by side */
+    .nutr-macros-row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: clamp(5px, 0.7vw, 12px);
+      align-items: baseline;
     }
     /* Portrait: scale up nutrition */
     .board.portrait .nutr-val {
@@ -331,18 +361,16 @@
       font-size: clamp(10px, 1.4vw, 16px);
     }
 
-    /* Item price */
+    /* Item price — lives in .item-meta-bar */
     .item-price {
       font-size: clamp(15px, 1.8vw, 24px);
       font-weight: 800;
       color: var(--price-color, var(--green-dark));
       letter-spacing: -0.3px;
       line-height: 1;
-      margin-bottom: clamp(3px, 0.4vw, 6px);
     }
     .board.portrait .item-price {
       font-size: clamp(16px, 2.8vw, 32px);
-      margin-bottom: clamp(3px, 0.5vw, 6px);
     }
 
     /* ── OUT OF STOCK ───────────────────────── */
@@ -359,7 +387,6 @@
 
     .oos-stamp {
       display: inline-flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       border: clamp(2px, 0.3vw, 3px) solid var(--danger);
@@ -617,24 +644,26 @@ function buildNutrition(item) {
 
   if (!hasCal && !hasFat && !hasCarb && !hasProt) return '';
 
-  let rows = '<div class="nutrition-grid">';
+  let html = '<div class="nutrition-block">';
 
   if (hasCal) {
-    rows += `<div class="nutr-row nutr-calories">
+    html += `<div class="nutr-calories">
       <span class="nutr-val">${item.calories}</span>
       <span class="nutr-unit">&nbsp;Calories</span>
     </div>`;
   }
 
   const macros = [];
-  if (hasFat)  macros.push(`<span class="nutr-val">${item.fat}</span><span class="nutr-unit">g Fat</span>`);
-  if (hasCarb) macros.push(`<span class="nutr-val">${item.carbs}</span><span class="nutr-unit">g Carbs</span>`);
-  if (hasProt) macros.push(`<span class="nutr-val">${item.protein}</span><span class="nutr-unit">g Protein</span>`);
+  if (hasFat)  macros.push(`<span class="nutr-val">${item.fat}</span><span class="nutr-unit">g&nbsp;Fat</span>`);
+  if (hasCarb) macros.push(`<span class="nutr-val">${item.carbs}</span><span class="nutr-unit">g&nbsp;Carbs</span>`);
+  if (hasProt) macros.push(`<span class="nutr-val">${item.protein}</span><span class="nutr-unit">g&nbsp;Prot</span>`);
 
-  macros.forEach(m => { rows += `<div class="nutr-row">${m}</div>`; });
+  if (macros.length) {
+    html += `<div class="nutr-macros-row">${macros.map(m => `<div class="nutr-row">${m}</div>`).join('')}</div>`;
+  }
 
-  rows += '</div>';
-  return rows;
+  html += '</div>';
+  return html;
 }
 
 // ── ROTATION STATE ───────────────────────────────────────────────────────────
@@ -696,16 +725,7 @@ function render() {
   const boardRoot = document.getElementById('boardRoot');
   boardRoot.className = 'board ' + ORIENTATION;
 
-  // Compute display settings from brand
-  const dispCfg  = (brand.display && brand.display[ORIENTATION]) || {};
-  const COLS     = Math.max(1, parseInt(dispCfg.cols)     || (ORIENTATION === 'portrait' ? 3 : 5));
-  const ROWS     = Math.max(1, parseInt(dispCfg.rows)     || (ORIENTATION === 'portrait' ? 5 : 3));
-  const PAGE_SIZE = Math.min(
-    Math.max(1, parseInt(dispCfg.maxItems) || (COLS * ROWS)),
-    COLS * ROWS
-  );
-
-  // Dynamic CSS element (content set after pageItems is known below)
+  // Dynamic CSS element
   let dynStyle = document.getElementById('dynamic-grid-css');
   if (!dynStyle) {
     dynStyle = document.createElement('style');
@@ -719,22 +739,52 @@ function render() {
   const brandName = esc(brand.name  || 'Our Restaurant');
   const currency  = esc(brand.currency || '$');
 
-  // Filter: active + matching menu type + matching brand (backward compat: items with no brand show on all boards)
+  // ── STEP 1: Filter first so totalItems drives layout ────────────────────────
   const allFiltered = items.filter(i =>
     i.active &&
     (i.menuTypes || []).includes(MENU_TYPE) &&
     (!i.brand || i.brand === brand.id)
   );
 
+  // Apply hideOutOfStock brand option — remove OOS items from display entirely
+  const displayFiltered = (brand.display && brand.display.hideOutOfStock)
+    ? allFiltered.filter(i => !isOos(i.sku))
+    : allFiltered;
+
   // Sort: in-stock first, then by category, then name
-  allFiltered.sort((a, b) => {
+  displayFiltered.sort((a, b) => {
     const ao = isOos(a.sku), bo = isOos(b.sku);
     if (ao !== bo) return ao ? 1 : -1;
     if ((a.category || '') !== (b.category || '')) return (a.category || '').localeCompare(b.category || '');
     return a.name.localeCompare(b.name);
   });
 
-  const totalItems = allFiltered.length;
+  const totalItems = displayFiltered.length;
+
+  // ── STEP 2: Compute layout based on totalItems ───────────────────────────────
+  const dispCfg = (brand.display && brand.display[ORIENTATION]) || {};
+  let COLS, PAGE_SIZE;
+
+  if (totalItems > 0 && totalItems <= 10) {
+    // Dynamic small-count layout — all items on one screen, no pagination
+    if (totalItems === 1) {
+      COLS = 1;
+    } else if (totalItems <= 4) {
+      COLS = 2;
+    } else {
+      COLS = ORIENTATION === 'portrait' ? 3 : 5;
+    }
+    PAGE_SIZE = totalItems;
+  } else {
+    // Standard brand settings + pagination for >10 items (or zero)
+    COLS      = Math.max(1, parseInt(dispCfg.cols)     || (ORIENTATION === 'portrait' ? 3 : 5));
+    const ROWS = Math.max(1, parseInt(dispCfg.rows)    || (ORIENTATION === 'portrait' ? 5 : 3));
+    PAGE_SIZE  = Math.min(
+      Math.max(1, parseInt(dispCfg.maxItems) || (COLS * ROWS)),
+      COLS * ROWS
+    );
+  }
+
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
 
   // Clamp currentPage
@@ -743,17 +793,45 @@ function render() {
 
   // Slice page
   const pageStart = (currentPage - 1) * PAGE_SIZE;
-  const pageItems = allFiltered.slice(pageStart, pageStart + PAGE_SIZE);
+  const pageItems = displayFiltered.slice(pageStart, pageStart + PAGE_SIZE);
 
-  // Use actual rows needed so the grid fills the screen with no empty rows
+  // ── STEP 3: Inject dynamic grid + scale-up CSS ───────────────────────────────
   const gridRows = Math.max(1, Math.ceil(pageItems.length / COLS));
-  dynStyle.textContent = `
+  let dynCss = `
     .items-grid {
       grid-template-columns: repeat(${COLS}, 1fr) !important;
       grid-template-rows: repeat(${gridRows}, 1fr) !important;
     }
     .item-cell:nth-child(${COLS}n) { border-right: none !important; }
   `;
+
+  // Scale up tiles for small item counts so they fill the screen
+  if (totalItems === 1) {
+    dynCss += `
+      .board.portrait .item-thumb { flex: 0 0 65% !important; max-height: none !important; }
+      .board.landscape .item-thumb { width: 55% !important; }
+      .item-name { font-size: clamp(20px, 3.2vw, 40px) !important; }
+      .item-price { font-size: clamp(22px, 3.8vw, 48px) !important; }
+      .nutr-val { font-size: clamp(16px, 2.2vw, 28px) !important; }
+      .nutr-unit { font-size: clamp(12px, 1.6vw, 20px) !important; }
+      .nutr-calories .nutr-val { font-size: clamp(20px, 3vw, 38px) !important; }
+      .item-cat-badge { font-size: clamp(11px, 1.3vw, 16px) !important; padding: 4px 12px !important; }
+      .item-meta-bar { padding: clamp(8px, 1.2vw, 16px) clamp(14px, 2vw, 24px) !important; }
+    `;
+  } else if (totalItems <= 4) {
+    dynCss += `
+      .board.portrait .item-thumb { flex: 0 0 55% !important; max-height: none !important; }
+      .board.landscape .item-thumb { width: 40% !important; }
+      .item-name { font-size: clamp(15px, 2.2vw, 28px) !important; }
+      .item-price { font-size: clamp(17px, 2.8vw, 36px) !important; }
+      .nutr-val { font-size: clamp(13px, 1.8vw, 22px) !important; }
+      .nutr-unit { font-size: clamp(10px, 1.2vw, 15px) !important; }
+      .nutr-calories .nutr-val { font-size: clamp(16px, 2.4vw, 30px) !important; }
+      .item-cat-badge { font-size: clamp(10px, 1.1vw, 13px) !important; }
+    `;
+  }
+
+  dynStyle.textContent = dynCss;
 
   // ── HEADER ──────────────────────────────────────────────────────────────────
   const logoSlot = (src, side) => src
@@ -797,16 +875,19 @@ function render() {
       return `
         <div class="item-cell${oos ? ' oos-cell' : ''}">
           <div class="item-thumb">${thumbInner}</div>
-          <div class="item-text">
-            <div class="item-price">${currency}${parseFloat(item.price || 0).toFixed(2)}</div>
-            <div class="item-name">${esc(item.name)}</div>
-            ${buildNutrition(item)}
-            ${cat ? `<div class="item-cat-badge">${esc(cat)}</div>` : ''}
+          <div class="item-right">
+            <div class="item-meta-bar">
+              <span class="item-price">${currency}${parseFloat(item.price || 0).toFixed(2)}</span>
+              ${cat ? `<span class="item-cat-badge">${esc(cat)}</span>` : ''}
+            </div>
+            <div class="item-text">
+              <div class="item-name">${esc(item.name)}</div>
+              ${buildNutrition(item)}
+            </div>
           </div>
           <div class="oos-overlay">
             <div class="oos-stamp">
-              <div class="oos-stamp-text">Out of</div>
-              <div class="oos-stamp-text">Stock</div>
+              <div class="oos-stamp-text">SOLD OUT</div>
             </div>
           </div>
         </div>
