@@ -946,6 +946,10 @@
           <label>Price</label>
           <input type="color" id="bColorPrice" value="#004d33" style="height:40px;padding:4px;cursor:pointer;">
         </div>
+        <div class="form-group">
+          <label>Clock Bar Text</label>
+          <input type="color" id="bColorClockText" value="#1e293b" style="height:40px;padding:4px;cursor:pointer;">
+        </div>
       </div>
 
       <div class="section-divider">&#x1F4FA; Portrait Display <span class="opt-tag">1080&times;1920px</span></div>
@@ -1068,6 +1072,7 @@ const DEFAULT_COLORS = {
   header:     '#ffffff',
   headerText: '#006241',
   accent:     '#006241',
+  clockText:  '#1e293b',
   catBar:     '#006241',
   body:       '#f9f4ec',
   text:       '#1a1a1a',
@@ -1881,6 +1886,7 @@ function openAddBrandModal() {
   document.getElementById('bColorBody').value        = DEFAULT_COLORS.body;
   document.getElementById('bColorText').value        = DEFAULT_COLORS.text;
   document.getElementById('bColorPrice').value       = DEFAULT_COLORS.price;
+  document.getElementById('bColorClockText').value   = DEFAULT_COLORS.clockText;
   // Display defaults
   document.getElementById('bPortraitCols').value  = DEFAULT_DISPLAY.portrait.cols;
   document.getElementById('bPortraitRows').value  = DEFAULT_DISPLAY.portrait.rows;
@@ -1928,6 +1934,7 @@ function openEditBrandModal(id) {
   document.getElementById('bColorBody').value        = c.body       || DEFAULT_COLORS.body;
   document.getElementById('bColorText').value        = c.text       || DEFAULT_COLORS.text;
   document.getElementById('bColorPrice').value       = c.price      || DEFAULT_COLORS.price;
+  document.getElementById('bColorClockText').value   = c.clockText  || DEFAULT_COLORS.clockText;
 
   document.getElementById('bPortraitCols').value  = pD.cols     || 3;
   document.getElementById('bPortraitRows').value  = pD.rows     || 5;
@@ -1981,6 +1988,7 @@ function saveBrand() {
     body:       document.getElementById('bColorBody').value,
     text:       document.getElementById('bColorText').value,
     price:      document.getElementById('bColorPrice').value,
+    clockText:  document.getElementById('bColorClockText').value,
   };
   const display = {
     portrait: {

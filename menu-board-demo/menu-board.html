@@ -23,6 +23,7 @@
       --price-color:      #004d33;
       --item-color:       #004d33;
       --header-text:      #006241;
+      --clock-text:       #1e293b;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -122,7 +123,7 @@
       padding: clamp(10px, 1.5vw, 20px) clamp(24px, 4.5vw, 70px);
     }
     .board.landscape .clock-bar {
-      padding: clamp(4px, 0.7vw, 8px) clamp(20px, 4vw, 60px);
+      padding: clamp(8px, 1vw, 14px) clamp(20px, 4vw, 60px);
     }
     .clock-bar .store-label {
       font-size: clamp(10px, 1.1vw, 14px);
@@ -133,18 +134,25 @@
     }
     .clock-bar .time-display {
       font-family: 'Oswald', sans-serif;
-      font-size: clamp(13px, 1.5vw, 20px);
-      color: #1e293b;
+      font-size: clamp(15px, 1.8vw, 26px);
+      color: var(--clock-text, #1e293b);
       letter-spacing: 1px;
+    }
+    .board.landscape .clock-bar .time-display {
+      font-size: clamp(20px, 2.4vw, 38px);
+      letter-spacing: 1.5px;
     }
     .clock-bar .greeting-text {
       font-family: 'Oswald', sans-serif;
-      font-size: clamp(11px, 1.3vw, 17px);
+      font-size: clamp(13px, 1.5vw, 22px);
       font-weight: 700;
-      color: var(--green);
+      color: var(--clock-text, #1e293b);
       letter-spacing: 1.5px;
       text-transform: uppercase;
       margin-right: auto; /* pushes .time-display to the far right */
+    }
+    .board.landscape .clock-bar .greeting-text {
+      font-size: clamp(18px, 2.2vw, 34px);
     }
 
     /* ── ITEMS SECTION ─────────────────────── */
@@ -626,10 +634,11 @@ function applyColorScheme(brand) {
   if (colors.header)     root.setProperty('--item-color',      colors.header);
   if (colors.headerText) root.setProperty('--header-text',     colors.headerText);
   if (colors.accent)     root.setProperty('--green',           colors.accent);
-  if (colors.catBar) root.setProperty('--cat-bar-bg',      colors.catBar);
-  if (colors.body)   root.setProperty('--cream',           colors.body);
-  if (colors.text)   root.setProperty('--text',            colors.text);
-  if (colors.price)  root.setProperty('--price-color',     colors.price);
+  if (colors.catBar)     root.setProperty('--cat-bar-bg',      colors.catBar);
+  if (colors.body)       root.setProperty('--cream',           colors.body);
+  if (colors.text)       root.setProperty('--text',            colors.text);
+  if (colors.price)      root.setProperty('--price-color',     colors.price);
+  if (colors.clockText)  root.setProperty('--clock-text',      colors.clockText);
 }
 
 // ── CLOCK ────────────────────────────────────────────────────────────────────
@@ -715,19 +724,31 @@ function startRotation(totalPages) {
 const _ENC_PASS = 'rob-ph-demos-phapi-v1';
 const _ENC_SALT = new TextEncoder().encode('ph-menuboard-salt-2024');
 
+// Cache the key derivation (PBKDF2 is intentionally slow — only do it once)
+let _derivedKeyPromise = null;
 async function _deriveKey() {
-  const mat = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(_ENC_PASS), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: _ENC_SALT, iterations: 100000, hash: 'SHA-256' },
-    mat, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  if (!_derivedKeyPromise) {
+    _derivedKeyPromise = (async () => {
+      const mat = await crypto.subtle.importKey(
+        'raw', new TextEncoder().encode(_ENC_PASS), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: _ENC_SALT, iterations: 100000, hash: 'SHA-256' },
+        mat, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    })();
+  }
+  return _derivedKeyPromise;
 }
 
+// Cache the decrypted token so we never re-run PBKDF2 + AES for the same ciphertext
+let _tokenCache = { b64: null, plain: null };
 async function decryptToken(b64) {
-  const key = await _deriveKey();
-  const buf = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-  const pt  = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
-  return new TextDecoder().decode(pt);
+  if (_tokenCache.b64 === b64) return _tokenCache.plain;
+  const key   = await _deriveKey();
+  const buf   = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const pt    = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
+  const plain = new TextDecoder().decode(pt);
+  _tokenCache = { b64, plain };
+  return plain;
 }
 
 async function pollCampaign() {
@@ -1080,10 +1101,14 @@ document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 1000);
 
-  // Campaign polling — only active when a Device UDID is provided in the URL
+  // Campaign polling — only active when a Device UDID is provided in the URL.
+  // Key derivation is cached so only the first call pays the PBKDF2 cost (~100ms);
+  // subsequent polls reuse the cached token and complete in network time only.
   if (DEVICE_UDID) {
-    pollCampaign();                    // immediate first call
-    setInterval(pollCampaign, 30000);  // then every 30 s
+    // Kick off key derivation immediately so it is ready before the first poll
+    _deriveKey();
+    pollCampaign();                   // immediate first call
+    setInterval(pollCampaign, 5000);  // then every 5 s for near-instant updates
   }
 });
 </script>
