@@ -137,6 +137,15 @@
       color: #1e293b;
       letter-spacing: 1px;
     }
+    .clock-bar .greeting-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(11px, 1.3vw, 17px);
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-right: auto; /* pushes .time-display to the far right */
+    }
 
     /* ── ITEMS SECTION ─────────────────────── */
     .board-body {
@@ -546,7 +555,8 @@ let _settings    = { restaurantName: 'Our Restaurant', currency: '$', logo: '', 
 let _brands      = [];
 let _stock       = {};
 // Campaign SKUs: null = default menu; string[] = personalised override from Personalisation Hub API
-let _campaignSkus = null;
+let _campaignSkus      = null;
+let _campaignFirstName = null; // null = no greeting; string = show personalised greeting in clock bar
 
 const MENU_META = {
   breakfast: { label: 'Breakfast Menu',        emoji: '🌅' },
@@ -729,11 +739,17 @@ async function pollCampaign() {
     const url   = `${phApi.baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`;
     const resp  = await fetch(url, { headers: { accept: 'application/json', 'x-api-key': token } });
     if (!resp.ok) { console.warn(`[Campaign] API returned HTTP ${resp.status}`); return; }
-    const json   = await resp.json();
-    const events = json?.data?.visitor_customer?.events;
-    const newSkus = (Array.isArray(events) && events.length > 0) ? events : null;
-    if (JSON.stringify(newSkus) !== JSON.stringify(_campaignSkus)) {
-      _campaignSkus = newSkus;
+    const json        = await resp.json();
+    const events      = json?.data?.visitor_customer?.events;
+    const firstName   = (json?.data?.visitor_customer?.first_name || '').trim() || null;
+
+    const newSkus     = (Array.isArray(events) && events.length > 0) ? events : null;
+    const skusChanged = JSON.stringify(newSkus) !== JSON.stringify(_campaignSkus);
+    const nameChanged = firstName !== _campaignFirstName;
+
+    if (skusChanged || nameChanged) {
+      _campaignSkus      = newSkus;
+      _campaignFirstName = firstName;
       render();
     }
   } catch (e) {
@@ -948,7 +964,12 @@ function render() {
       </div>
       ${logoSlot(logoRight, 'Right')}
     </div>
-    ${showClock ? `<div class="clock-bar"><div class="time-display" id="clockDisplay"></div></div>` : ''}
+    ${showClock ? `
+      <div class="clock-bar">
+        ${_campaignFirstName ? `<div class="greeting-text">${_campaignFirstName.toUpperCase()} THIS IS WHAT WE RECOMMEND</div>` : ''}
+        <div class="time-display" id="clockDisplay"></div>
+      </div>
+    ` : ''}
   `;
 
   // ── BODY ────────────────────────────────────────────────────────────────────
