@@ -144,7 +144,7 @@
     }
     .clock-bar .greeting-text {
       font-family: 'Oswald', sans-serif;
-      font-size: clamp(13px, 1.5vw, 22px);
+      font-size: clamp(26px, 3vw, 44px);
       font-weight: 700;
       color: var(--clock-text, #1e293b);
       letter-spacing: 1.5px;
@@ -152,7 +152,7 @@
       margin-right: auto; /* pushes .time-display to the far right */
     }
     .board.landscape .clock-bar .greeting-text {
-      font-size: clamp(18px, 2.2vw, 34px);
+      font-size: clamp(36px, 4.4vw, 68px);
     }
 
     /* ── ITEMS SECTION ─────────────────────── */
@@ -987,7 +987,7 @@ function render() {
     </div>
     ${showClock ? `
       <div class="clock-bar">
-        ${_campaignFirstName ? `<div class="greeting-text">${_campaignFirstName.toUpperCase()} THIS IS WHAT WE RECOMMEND</div>` : ''}
+        ${_campaignFirstName ? `<div class="greeting-text">${_campaignFirstName.toUpperCase()}, THIS IS WHAT WE RECOMMEND FOR YOU</div>` : ''}
         <div class="time-display" id="clockDisplay"></div>
       </div>
     ` : ''}
