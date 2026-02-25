@@ -848,6 +848,17 @@ function render() {
       .nutr-unit  { font-size: clamp(9px,  1.1vw, 14px) !important; }
       .nutr-calories .nutr-val { font-size: clamp(14px, 2vw, 26px) !important; }
     `;
+  } else if (totalItems <= 10 && ORIENTATION === 'landscape') {
+    // 5–10 items in landscape: 5-col grid creates portrait-shaped tiles (tall + narrow)
+    // Switch to portrait-card layout: image on top, text below — fills the tall cells properly
+    dynCss += `
+      .board.landscape .item-cell { flex-direction: column !important; }
+      .board.landscape .item-thumb {
+        width: 100% !important;
+        flex: 0 0 60% !important;
+        max-height: none !important;
+      }
+    `;
   }
 
   dynStyle.textContent = dynCss;
