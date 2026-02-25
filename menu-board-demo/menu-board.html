@@ -530,18 +530,23 @@ const ITEMS_COLL = 'items';
 const STOCK_COLL = 'stock';
 
 // ── URL PARAMS ──────────────────────────────────────────────────────────────
-const urlParams  = new URLSearchParams(window.location.search);
-const STORE_CODE = (urlParams.get('store') || '').trim().toUpperCase();
-const MENU_TYPE  = (urlParams.get('menu')  || '').trim().toLowerCase();
+const urlParams   = new URLSearchParams(window.location.search);
+const STORE_CODE  = (urlParams.get('store')   || '').trim().toUpperCase();
+const MENU_TYPE   = (urlParams.get('menu')    || '').trim().toLowerCase();
 const SCREEN_LOCK = urlParams.get('screen') ? parseInt(urlParams.get('screen'), 10) : null;
+// Device UDID — passed by the PWA Player to enable personalised campaign mode
+// Example URL: menu-board.html?store=STORE001&menu=breakfast&device=6cfd0049-40ce-4ac3-9eba-353337b48427
+const DEVICE_UDID = (urlParams.get('device')  || '').trim();
 
 const ROTATION_INTERVAL = 8000; // ms
 
 // ── IN-MEMORY CACHE ──────────────────────────────────────────────────────────
-let _items    = [];
-let _settings = { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
-let _brands   = [];
-let _stock    = {};
+let _items       = [];
+let _settings    = { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
+let _brands      = [];
+let _stock       = {};
+// Campaign SKUs: null = default menu; string[] = personalised override from Personalisation Hub API
+let _campaignSkus = null;
 
 const MENU_META = {
   breakfast: { label: 'Breakfast Menu',        emoji: '🌅' },
@@ -696,6 +701,46 @@ function startRotation(totalPages) {
   }, ROTATION_INTERVAL);
 }
 
+// ── PERSONALISATION HUB API — DECRYPTION + CAMPAIGN POLLING ─────────────────
+const _ENC_PASS = 'rob-ph-demos-phapi-v1';
+const _ENC_SALT = new TextEncoder().encode('ph-menuboard-salt-2024');
+
+async function _deriveKey() {
+  const mat = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(_ENC_PASS), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: _ENC_SALT, iterations: 100000, hash: 'SHA-256' },
+    mat, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+
+async function decryptToken(b64) {
+  const key = await _deriveKey();
+  const buf = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const pt  = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
+  return new TextDecoder().decode(pt);
+}
+
+async function pollCampaign() {
+  if (!DEVICE_UDID) return;
+  const phApi = _settings.phApi;
+  if (!phApi || !phApi.baseUrl || !phApi.authToken) return;
+  try {
+    const token = await decryptToken(phApi.authToken);
+    const url   = `${phApi.baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`;
+    const resp  = await fetch(url, { headers: { accept: 'application/json', 'x-api-key': token } });
+    if (!resp.ok) { console.warn(`[Campaign] API returned HTTP ${resp.status}`); return; }
+    const json   = await resp.json();
+    const events = json?.data?.visitor_customer?.events;
+    const newSkus = (Array.isArray(events) && events.length > 0) ? events : null;
+    if (JSON.stringify(newSkus) !== JSON.stringify(_campaignSkus)) {
+      _campaignSkus = newSkus;
+      render();
+    }
+  } catch (e) {
+    console.warn('[Campaign] poll failed:', e);
+  }
+}
+
 // ── FIRESTORE LISTENERS ──────────────────────────────────────────────────────
 onSnapshot(collection(db, ITEMS_COLL), snap => {
   _items = snap.docs.map(d => d.data()).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
@@ -714,6 +759,9 @@ onSnapshot(doc(db, MB, 'brands'), snap => {
 onSnapshot(doc(db, MB, 'settings'), snap => {
   _settings = snap.exists() ? snap.data() : { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
   render();
+  // Trigger an immediate campaign poll when settings first load (or change) so we
+  // don't have to wait up to 30 s for the interval to fire.
+  if (DEVICE_UDID) pollCampaign();
 });
 
 // ── RENDER ───────────────────────────────────────────────────────────────────
@@ -756,15 +804,37 @@ function render() {
     ? allFiltered.filter(i => !isOos(i.sku))
     : allFiltered;
 
+  // ── STEP 1b: Apply campaign SKU filter (Personalisation Hub) ────────────────
+  // When a Device UDID is in the URL and the API returns SKUs, override the display.
+  let campaignFiltered = displayFiltered;
+  if (_campaignSkus && _campaignSkus.length > 0) {
+    const mode = (_settings.phApi && _settings.phApi.campaignMode) || 'override';
+    if (mode === 'override') {
+      // Ignore menu type — show any active item matching campaign SKUs
+      campaignFiltered = items.filter(i =>
+        i.active &&
+        (!i.brand || i.brand === brand.id) &&
+        _campaignSkus.includes(i.sku)
+      );
+      // Also apply hideOutOfStock if brand requires it
+      if (brand.display && brand.display.hideOutOfStock) {
+        campaignFiltered = campaignFiltered.filter(i => !isOos(i.sku));
+      }
+    } else {
+      // 'filter' mode — campaign SKUs narrowed to current menu type
+      campaignFiltered = displayFiltered.filter(i => _campaignSkus.includes(i.sku));
+    }
+  }
+
   // Sort: in-stock first, then by category, then name
-  displayFiltered.sort((a, b) => {
+  campaignFiltered.sort((a, b) => {
     const ao = isOos(a.sku), bo = isOos(b.sku);
     if (ao !== bo) return ao ? 1 : -1;
     if ((a.category || '') !== (b.category || '')) return (a.category || '').localeCompare(b.category || '');
     return a.name.localeCompare(b.name);
   });
 
-  const totalItems = displayFiltered.length;
+  const totalItems = campaignFiltered.length;
 
   // ── STEP 2: Compute layout based on totalItems ───────────────────────────────
   const dispCfg = (brand.display && brand.display[ORIENTATION]) || {};
@@ -802,7 +872,7 @@ function render() {
 
   // Slice page
   const pageStart = (currentPage - 1) * PAGE_SIZE;
-  const pageItems = displayFiltered.slice(pageStart, pageStart + PAGE_SIZE);
+  const pageItems = campaignFiltered.slice(pageStart, pageStart + PAGE_SIZE);
 
   // ── STEP 3: Inject dynamic grid + scale-up CSS ───────────────────────────────
   const gridRows = Math.max(1, Math.ceil(pageItems.length / COLS));
@@ -988,7 +1058,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateClock();
   setInterval(updateClock, 1000);
-  // Live updates are driven by onSnapshot listeners — no polling needed
+
+  // Campaign polling — only active when a Device UDID is provided in the URL
+  if (DEVICE_UDID) {
+    pollCampaign();                    // immediate first call
+    setInterval(pollCampaign, 30000);  // then every 30 s
+  }
 });
 </script>
 
