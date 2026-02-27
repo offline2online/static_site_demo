@@ -5,7 +5,7 @@
       "sku": "SBX-HC-001",
       "name": "Pike Place Roast",
       "category": "Hot Coffee",
-      "description": "Our signature medium roast with smooth, full-bodied flavour of toasted nuts and cocoa. Brewed fresh every 30 minutes \u2014 the coffee Starbucks was built on.",
+      "description": "Our signature medium roast with smooth, full-bodied flavour of toasted nuts and cocoa. Brewed fresh every 30 minutes — the coffee Starbucks was built on.",
       "price": 3.65,
       "calories": 5,
       "fat": 0.0,
@@ -20,12 +20,124 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-002",
       "sku": "SBX-HC-002",
-      "name": "Caff\u00e8 Americano",
+      "name": "Caffè Americano",
       "category": "Hot Coffee",
       "description": "Bold espresso shots topped with hot water, producing a light crema. A clean, full-bodied drink with a rich, robust flavour profile.",
       "price": 3.75,
@@ -42,12 +154,124 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-003",
       "sku": "SBX-HC-003",
-      "name": "Caff\u00e8 Latte",
+      "name": "Caffè Latte",
       "category": "Hot Coffee",
       "description": "Rich, full-bodied espresso in steamed milk with a light layer of foam. A timeless classic crafted for those who love smooth, milky coffee.",
       "price": 4.65,
@@ -64,7 +288,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-004",
@@ -86,7 +422,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-005",
@@ -108,12 +556,124 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-006",
       "sku": "SBX-HC-006",
-      "name": "Caff\u00e8 Mocha",
+      "name": "Caffè Mocha",
       "category": "Hot Coffee",
       "description": "Full-flavoured espresso combined with bittersweet mocha sauce and steamed milk, finished with a generous swirl of sweetened whipped cream. Indulgent and rich.",
       "price": 5.25,
@@ -130,7 +690,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-007",
@@ -152,7 +824,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-008",
@@ -174,7 +958,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-009",
@@ -196,7 +1092,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-010",
@@ -218,14 +1226,126 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-011",
       "sku": "SBX-HC-011",
       "name": "Honey Oat Milk Latte",
       "category": "Hot Coffee",
-      "description": "Starbucks Blonde\u00ae espresso with oat milk, honey blend, and steamed oat milk. A lightly sweet, creamy latte with a golden honey flavour.",
+      "description": "Starbucks Blonde® espresso with oat milk, honey blend, and steamed oat milk. A lightly sweet, creamy latte with a golden honey flavour.",
       "price": 5.75,
       "calories": 260,
       "fat": 6.0,
@@ -240,7 +1360,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-012",
@@ -262,12 +1494,124 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-013",
       "sku": "SBX-IC-001",
-      "name": "Iced Caff\u00e8 Americano",
+      "name": "Iced Caffè Americano",
       "category": "Iced Coffee",
       "description": "Espresso shots topped with cold water and poured over ice. Full-bodied and refreshing with that classic espresso boldness.",
       "price": 4.25,
@@ -284,12 +1628,124 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-014",
       "sku": "SBX-IC-002",
-      "name": "Iced Caff\u00e8 Latte",
+      "name": "Iced Caffè Latte",
       "category": "Iced Coffee",
       "description": "Espresso with cold milk poured over ice. A refreshing mid-day sipper with the smooth taste of our espresso blend.",
       "price": 5.25,
@@ -306,7 +1762,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-015",
@@ -328,7 +1896,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-016",
@@ -350,7 +2030,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-017",
@@ -372,7 +2164,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-018",
@@ -394,14 +2298,126 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-019",
       "sku": "SBX-CB-001",
       "name": "Cold Brew Coffee",
       "category": "Cold Brew",
-      "description": "Steeped in cool water for 20 hours without heat for an ultra-smooth, naturally sweet flavour. Low acidity, full body \u2014 cold coffee perfected.",
+      "description": "Steeped in cool water for 20 hours without heat for an ultra-smooth, naturally sweet flavour. Low acidity, full body — cold coffee perfected.",
       "price": 4.45,
       "calories": 5,
       "fat": 0.0,
@@ -416,14 +2432,91 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "cold-brew",
+            "label": "Cold Brew Coffee",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Sweet Cream",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-powder",
+            "label": "Vanilla Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-ice",
+            "label": "Light Ice",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-020",
       "sku": "SBX-CB-002",
       "name": "Nitro Cold Brew",
       "category": "Cold Brew",
-      "description": "Our signature Cold Brew infused with nitrogen for a cascading, velvety texture. Served straight from the tap \u2014 no ice needed.",
+      "description": "Our signature Cold Brew infused with nitrogen for a cascading, velvety texture. Served straight from the tap — no ice needed.",
       "price": 5.25,
       "calories": 5,
       "fat": 0.0,
@@ -438,7 +2531,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "cold-brew",
+            "label": "Cold Brew Coffee",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Sweet Cream",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-powder",
+            "label": "Vanilla Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-ice",
+            "label": "Light Ice",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-021",
@@ -460,7 +2630,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "cold-brew",
+            "label": "Cold Brew Coffee",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Sweet Cream",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-powder",
+            "label": "Vanilla Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-ice",
+            "label": "Light Ice",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-022",
@@ -482,7 +2729,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "cold-brew",
+            "label": "Cold Brew Coffee",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Sweet Cream",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-powder",
+            "label": "Vanilla Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-ice",
+            "label": "Light Ice",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-023",
@@ -504,7 +2828,79 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "tea-bags",
+            "label": "Tea Bag",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Hot Water",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "honey",
+            "label": "Honey Blend",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "classic-syrup",
+            "label": "Classic Syrup",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-tea-bag",
+            "label": "Extra Tea Bag",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "lemonade",
+            "label": "Lemonade",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-024",
@@ -526,7 +2922,79 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "tea-bags",
+            "label": "Tea Bag",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Hot Water",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "honey",
+            "label": "Honey Blend",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "classic-syrup",
+            "label": "Classic Syrup",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-tea-bag",
+            "label": "Extra Tea Bag",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "lemonade",
+            "label": "Lemonade",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-025",
@@ -548,7 +3016,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "tea-bags",
+            "label": "Tea Bag",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Cold Water",
+            "removable": false
+          },
+          {
+            "id": "classic-syrup",
+            "label": "Classic Syrup",
+            "removable": true
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "honey",
+            "label": "Honey Blend",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "lemonade",
+            "label": "Lemonade",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-tea-bag",
+            "label": "Extra Tea Bag",
+            "priceAdj": 0.8
+          }
+        ]
+      }
     },
     {
       "id": "sbx-026",
@@ -570,7 +3115,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "tea-bags",
+            "label": "Tea Bag",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Cold Water",
+            "removable": false
+          },
+          {
+            "id": "classic-syrup",
+            "label": "Classic Syrup",
+            "removable": true
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "honey",
+            "label": "Honey Blend",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "lemonade",
+            "label": "Lemonade",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-tea-bag",
+            "label": "Extra Tea Bag",
+            "priceAdj": 0.8
+          }
+        ]
+      }
     },
     {
       "id": "sbx-027",
@@ -592,7 +3214,79 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "tea-bags",
+            "label": "Tea Bag",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Hot Water",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "honey",
+            "label": "Honey Blend",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "classic-syrup",
+            "label": "Classic Syrup",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-tea-bag",
+            "label": "Extra Tea Bag",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "lemonade",
+            "label": "Lemonade",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-028",
@@ -614,14 +3308,86 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "tea-bags",
+            "label": "Tea Bag",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Hot Water",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "honey",
+            "label": "Honey Blend",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "classic-syrup",
+            "label": "Classic Syrup",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-tea-bag",
+            "label": "Extra Tea Bag",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "lemonade",
+            "label": "Lemonade",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-029",
       "sku": "SBX-RE-001",
-      "name": "Strawberry A\u00e7a\u00ed Refresher",
+      "name": "Strawberry Açaí Refresher",
       "category": "Refreshers",
-      "description": "Sweet strawberry flavours and whole dried strawberries shaken with ice and Starbucks Refreshers energy \u2014 45mg natural caffeine per serving.",
+      "description": "Sweet strawberry flavours and whole dried strawberries shaken with ice and Starbucks Refreshers energy — 45mg natural caffeine per serving.",
       "price": 5.25,
       "calories": 90,
       "fat": 0.0,
@@ -636,7 +3402,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "refresher-base",
+            "label": "Refresher Base",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Water",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "fruit-inclus",
+            "label": "Fruit Inclusions",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "lemonade",
+            "label": "Lemonade Base",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "coconut-milk",
+            "label": "Coconut Milk Splash",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-inclus",
+            "label": "Extra Fruit Inclusions",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-030",
@@ -658,14 +3501,91 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "refresher-base",
+            "label": "Refresher Base",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Water",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "fruit-inclus",
+            "label": "Fruit Inclusions",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "lemonade",
+            "label": "Lemonade Base",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "coconut-milk",
+            "label": "Coconut Milk Splash",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-inclus",
+            "label": "Extra Fruit Inclusions",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-031",
       "sku": "SBX-RE-003",
       "name": "Pink Drink",
       "category": "Refreshers",
-      "description": "Strawberry A\u00e7a\u00ed Refresher meets coconut milk for a light, creamy iced beverage with a fresh, fruity taste and beautiful blush colour.",
+      "description": "Strawberry Açaí Refresher meets coconut milk for a light, creamy iced beverage with a fresh, fruity taste and beautiful blush colour.",
       "price": 5.75,
       "calories": 140,
       "fat": 2.5,
@@ -680,7 +3600,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "refresher-base",
+            "label": "Refresher Base",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Water",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "fruit-inclus",
+            "label": "Fruit Inclusions",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "lemonade",
+            "label": "Lemonade Base",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "coconut-milk",
+            "label": "Coconut Milk Splash",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-inclus",
+            "label": "Extra Fruit Inclusions",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-032",
@@ -702,7 +3699,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "refresher-base",
+            "label": "Refresher Base",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Water",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "fruit-inclus",
+            "label": "Fruit Inclusions",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "lemonade",
+            "label": "Lemonade Base",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "coconut-milk",
+            "label": "Coconut Milk Splash",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-inclus",
+            "label": "Extra Fruit Inclusions",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-033",
@@ -724,7 +3798,84 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "refresher-base",
+            "label": "Refresher Base",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Water",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "fruit-inclus",
+            "label": "Fruit Inclusions",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "lemonade",
+            "label": "Lemonade Base",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "coconut-milk",
+            "label": "Coconut Milk Splash",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-inclus",
+            "label": "Extra Fruit Inclusions",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-034",
@@ -746,7 +3897,124 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "frapp-base",
+            "label": "Frappuccino Base",
+            "removable": false
+          },
+          {
+            "id": "milk",
+            "label": "Milk",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-whip",
+            "label": "Extra Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "mocha-drizzle",
+            "label": "Mocha Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "java-chips",
+            "label": "Java Chips",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-035",
@@ -768,7 +4036,124 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "frapp-base",
+            "label": "Frappuccino Base",
+            "removable": false
+          },
+          {
+            "id": "milk",
+            "label": "Milk",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-whip",
+            "label": "Extra Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "mocha-drizzle",
+            "label": "Mocha Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "java-chips",
+            "label": "Java Chips",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-036",
@@ -790,14 +4175,131 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "frapp-base",
+            "label": "Frappuccino Base",
+            "removable": false
+          },
+          {
+            "id": "milk",
+            "label": "Milk",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-whip",
+            "label": "Extra Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "mocha-drizzle",
+            "label": "Mocha Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "java-chips",
+            "label": "Java Chips",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-037",
       "sku": "SBX-FR-004",
-      "name": "Strawberry Cr\u00e8me Frappuccino",
+      "name": "Strawberry Crème Frappuccino",
       "category": "Frappuccino",
-      "description": "Strawberry pur\u00e9e layered with vanilla and milk, blended with ice and finished with whipped cream. A delightful cr\u00e8me Frappuccino \u2014 no coffee.",
+      "description": "Strawberry purée layered with vanilla and milk, blended with ice and finished with whipped cream. A delightful crème Frappuccino — no coffee.",
       "price": 5.25,
       "calories": 370,
       "fat": 11.0,
@@ -812,14 +4314,131 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "frapp-base",
+            "label": "Frappuccino Base",
+            "removable": false
+          },
+          {
+            "id": "milk",
+            "label": "Milk",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-whip",
+            "label": "Extra Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "mocha-drizzle",
+            "label": "Mocha Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "java-chips",
+            "label": "Java Chips",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-038",
       "sku": "SBX-FR-005",
-      "name": "Vanilla Bean Cr\u00e8me Frappuccino",
+      "name": "Vanilla Bean Crème Frappuccino",
       "category": "Frappuccino",
-      "description": "Pure vanilla flavour blended with milk and ice, topped with sweetened whipped cream. Sweet, simple and utterly satisfying \u2014 cr\u00e8me base, no coffee.",
+      "description": "Pure vanilla flavour blended with milk and ice, topped with sweetened whipped cream. Sweet, simple and utterly satisfying — crème base, no coffee.",
       "price": 5.25,
       "calories": 390,
       "fat": 14.0,
@@ -834,14 +4453,131 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "frapp-base",
+            "label": "Frappuccino Base",
+            "removable": false
+          },
+          {
+            "id": "milk",
+            "label": "Milk",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-whip",
+            "label": "Extra Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "mocha-drizzle",
+            "label": "Mocha Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "java-chips",
+            "label": "Java Chips",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-039",
       "sku": "SBX-FR-006",
-      "name": "White Chocolate Cr\u00e8me Frappuccino",
+      "name": "White Chocolate Crème Frappuccino",
       "category": "Frappuccino",
-      "description": "White chocolate sauce blended with milk and ice, topped with sweetened whipped cream. A decadently rich cr\u00e8me-based Frappuccino for white chocolate lovers.",
+      "description": "White chocolate sauce blended with milk and ice, topped with sweetened whipped cream. A decadently rich crème-based Frappuccino for white chocolate lovers.",
       "price": 5.75,
       "calories": 430,
       "fat": 15.0,
@@ -856,14 +4592,131 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "frapp-base",
+            "label": "Frappuccino Base",
+            "removable": false
+          },
+          {
+            "id": "milk",
+            "label": "Milk",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-whip",
+            "label": "Extra Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "mocha-drizzle",
+            "label": "Mocha Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "java-chips",
+            "label": "Java Chips",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-040",
       "sku": "SBX-FR-007",
-      "name": "Matcha Cr\u00e8me Frappuccino",
+      "name": "Matcha Crème Frappuccino",
       "category": "Frappuccino",
-      "description": "Sweet matcha tea blended with milk and ice, topped with sweetened whipped cream. An earthy, vibrant cr\u00e8me Frappuccino with a naturally beautiful green hue.",
+      "description": "Sweet matcha tea blended with milk and ice, topped with sweetened whipped cream. An earthy, vibrant crème Frappuccino with a naturally beautiful green hue.",
       "price": 5.25,
       "calories": 420,
       "fat": 15.0,
@@ -878,7 +4731,124 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "frapp-base",
+            "label": "Frappuccino Base",
+            "removable": false
+          },
+          {
+            "id": "milk",
+            "label": "Milk",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-whip",
+            "label": "Extra Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "mocha-drizzle",
+            "label": "Mocha Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "java-chips",
+            "label": "Java Chips",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-041",
@@ -900,14 +4870,131 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "frapp-base",
+            "label": "Frappuccino Base",
+            "removable": false
+          },
+          {
+            "id": "milk",
+            "label": "Milk",
+            "removable": false
+          },
+          {
+            "id": "ice",
+            "label": "Ice",
+            "removable": true
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-whip",
+            "label": "Extra Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "mocha-drizzle",
+            "label": "Mocha Drizzle",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "java-chips",
+            "label": "Java Chips",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-042",
       "sku": "SBX-SP-001",
       "name": "Pumpkin Spice Latte",
       "category": "Seasonal Coffee",
-      "description": "Our iconic autumn favourite \u2014 espresso with pumpkin, cinnamon, nutmeg, and clove, finished with steamed milk and whipped cream dusted in pumpkin spice. Fall in a cup.",
+      "description": "Our iconic autumn favourite — espresso with pumpkin, cinnamon, nutmeg, and clove, finished with steamed milk and whipped cream dusted in pumpkin spice. Fall in a cup.",
       "price": 6.45,
       "calories": 380,
       "fat": 13.0,
@@ -923,7 +5010,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-043",
@@ -946,14 +5145,126 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-044",
       "sku": "SBX-SP-003",
-      "name": "Caramel Brul\u00e9e Latte",
+      "name": "Caramel Brulée Latte",
       "category": "Seasonal Coffee",
-      "description": "Espresso with caramel brul\u00e9e sauce and steamed milk, topped with whipped cream and caramel brul\u00e9e topping. A festive, caramel-forward holiday treat.",
+      "description": "Espresso with caramel brulée sauce and steamed milk, topped with whipped cream and caramel brulée topping. A festive, caramel-forward holiday treat.",
       "price": 6.45,
       "calories": 450,
       "fat": 15.0,
@@ -969,7 +5280,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-045",
@@ -992,7 +5415,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-046",
@@ -1015,7 +5550,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-047",
@@ -1038,7 +5685,119 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [
+          {
+            "id": "tall",
+            "label": "Tall (12oz)",
+            "priceAdj": -0.4
+          },
+          {
+            "id": "grande",
+            "label": "Grande (16oz)",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "venti",
+            "label": "Venti (20oz)",
+            "priceAdj": 0.5
+          }
+        ],
+        "defaultSize": "grande",
+        "milkOptions": [
+          {
+            "id": "whole",
+            "label": "Whole Milk",
+            "default": true,
+            "priceAdj": 0.0
+          },
+          {
+            "id": "nonfat",
+            "label": "Nonfat Milk",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "oat",
+            "label": "Oat Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "almond",
+            "label": "Almond Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "soy",
+            "label": "Soy Milk",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "coconut",
+            "label": "Coconut Milk",
+            "priceAdj": 0.6
+          }
+        ],
+        "defaultIngredients": [
+          {
+            "id": "espresso",
+            "label": "Espresso Shots (2)",
+            "removable": true
+          },
+          {
+            "id": "steamed-milk",
+            "label": "Steamed Milk",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-shot",
+            "label": "Extra Espresso Shot",
+            "priceAdj": 0.8
+          },
+          {
+            "id": "vanilla-syrup",
+            "label": "Vanilla Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "caramel-syrup",
+            "label": "Caramel Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "hazelnut-syrup",
+            "label": "Hazelnut Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "mocha-sauce",
+            "label": "Mocha Sauce",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar Syrup",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "whipped-cream",
+            "label": "Whipped Cream",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "cinnamon",
+            "label": "Cinnamon Powder",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "caramel-drizzle",
+            "label": "Caramel Drizzle",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-048",
@@ -1060,7 +5819,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Seasonal Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-049",
@@ -1083,7 +5866,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Seasonal Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-050",
@@ -1106,7 +5913,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Seasonal Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-051",
@@ -1128,7 +5959,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Aged Cheddar Cheese",
+            "removable": true
+          },
+          {
+            "id": "bread",
+            "label": "English Muffin / Roll",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-cheese",
+            "label": "Extra Cheese",
+            "priceAdj": 0.5
+          },
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado Spread",
+            "priceAdj": 0.75
+          }
+        ]
+      }
     },
     {
       "id": "sbx-052",
@@ -1150,7 +6020,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Aged Cheddar Cheese",
+            "removable": true
+          },
+          {
+            "id": "bread",
+            "label": "English Muffin / Roll",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-cheese",
+            "label": "Extra Cheese",
+            "priceAdj": 0.5
+          },
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado Spread",
+            "priceAdj": 0.75
+          }
+        ]
+      }
     },
     {
       "id": "sbx-053",
@@ -1172,7 +6081,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Aged Cheddar Cheese",
+            "removable": true
+          },
+          {
+            "id": "bread",
+            "label": "English Muffin / Roll",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-cheese",
+            "label": "Extra Cheese",
+            "priceAdj": 0.5
+          },
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado Spread",
+            "priceAdj": 0.75
+          }
+        ]
+      }
     },
     {
       "id": "sbx-054",
@@ -1194,7 +6142,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Aged Cheddar Cheese",
+            "removable": true
+          },
+          {
+            "id": "bread",
+            "label": "English Muffin / Roll",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-cheese",
+            "label": "Extra Cheese",
+            "priceAdj": 0.5
+          },
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado Spread",
+            "priceAdj": 0.75
+          }
+        ]
+      }
     },
     {
       "id": "sbx-055",
@@ -1216,7 +6203,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Aged Cheddar Cheese",
+            "removable": true
+          },
+          {
+            "id": "bread",
+            "label": "English Muffin / Roll",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-cheese",
+            "label": "Extra Cheese",
+            "priceAdj": 0.5
+          },
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado Spread",
+            "priceAdj": 0.75
+          }
+        ]
+      }
     },
     {
       "id": "sbx-056",
@@ -1238,7 +6264,51 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Cheddar Cheese",
+            "removable": true
+          },
+          {
+            "id": "spinach",
+            "label": "Spinach",
+            "removable": true
+          },
+          {
+            "id": "tortilla",
+            "label": "Flour Tortilla",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-cheese",
+            "label": "Extra Cheese",
+            "priceAdj": 0.5
+          },
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "salsa",
+            "label": "Salsa",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-057",
@@ -1260,14 +6330,58 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Cheddar Cheese",
+            "removable": true
+          },
+          {
+            "id": "spinach",
+            "label": "Spinach",
+            "removable": true
+          },
+          {
+            "id": "tortilla",
+            "label": "Flour Tortilla",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-cheese",
+            "label": "Extra Cheese",
+            "priceAdj": 0.5
+          },
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "salsa",
+            "label": "Salsa",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-058",
       "sku": "SBX-EB-001",
-      "name": "Bacon & Gruy\u00e8re Egg Bites",
+      "name": "Bacon & Gruyère Egg Bites",
       "category": "Egg Bites",
-      "description": "Applewood-smoked bacon and smooth Gruy\u00e8re cheese in a fluffy sous vide egg bite. High-protein, low-carb and impossibly creamy. Two per serving.",
+      "description": "Applewood-smoked bacon and smooth Gruyère cheese in a fluffy sous vide egg bite. High-protein, low-carb and impossibly creamy. Two per serving.",
       "price": 5.25,
       "calories": 310,
       "fat": 21.0,
@@ -1282,7 +6396,41 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": false
+          },
+          {
+            "id": "cheese",
+            "label": "Cheese",
+            "removable": true
+          },
+          {
+            "id": "inclusions",
+            "label": "Bacon / Vegetables",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-order",
+            "label": "Double Order",
+            "priceAdj": 4.95
+          }
+        ]
+      }
     },
     {
       "id": "sbx-059",
@@ -1304,7 +6452,41 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": false
+          },
+          {
+            "id": "cheese",
+            "label": "Cheese",
+            "removable": true
+          },
+          {
+            "id": "inclusions",
+            "label": "Bacon / Vegetables",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-order",
+            "label": "Double Order",
+            "priceAdj": 4.95
+          }
+        ]
+      }
     },
     {
       "id": "sbx-060",
@@ -1326,7 +6508,41 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "eggs",
+            "label": "Cage-Free Eggs",
+            "removable": false
+          },
+          {
+            "id": "cheese",
+            "label": "Cheese",
+            "removable": true
+          },
+          {
+            "id": "inclusions",
+            "label": "Bacon / Vegetables",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "hot-sauce",
+            "label": "Hot Sauce",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "extra-order",
+            "label": "Double Order",
+            "priceAdj": 4.95
+          }
+        ]
+      }
     },
     {
       "id": "sbx-061",
@@ -1348,7 +6564,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-062",
@@ -1370,7 +6610,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-063",
@@ -1392,7 +6656,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-064",
@@ -1414,7 +6702,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-065",
@@ -1436,7 +6748,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-066",
@@ -1458,7 +6794,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-067",
@@ -1481,7 +6841,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-068",
@@ -1505,7 +6889,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-069",
@@ -1528,7 +6936,31 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "item",
+            "label": "Baked Item",
+            "removable": false
+          }
+        ],
+        "additions": [
+          {
+            "id": "warmed",
+            "label": "Warmed",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "butter",
+            "label": "Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-070",
@@ -1550,7 +6982,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "oats",
+            "label": "Rolled Oats",
+            "removable": false
+          },
+          {
+            "id": "water",
+            "label": "Hot Water",
+            "removable": false
+          },
+          {
+            "id": "toppings",
+            "label": "Mixed Nut Medley",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "honey",
+            "label": "Honey",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "brown-sugar",
+            "label": "Brown Sugar",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "dried-fruit",
+            "label": "Dried Fruit Mix",
+            "priceAdj": 0.6
+          }
+        ]
+      }
     },
     {
       "id": "sbx-071",
@@ -1572,7 +7043,41 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "grains",
+            "label": "Ancient Grains",
+            "removable": false
+          },
+          {
+            "id": "dressing",
+            "label": "Dressing",
+            "removable": true
+          },
+          {
+            "id": "toppings",
+            "label": "Toppings",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-protein",
+            "label": "Extra Protein",
+            "priceAdj": 1.25
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado",
+            "priceAdj": 0.75
+          }
+        ]
+      }
     },
     {
       "id": "sbx-072",
@@ -1595,7 +7100,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "protein",
+            "label": "Protein Component",
+            "removable": false
+          },
+          {
+            "id": "fruit",
+            "label": "Fresh Fruit",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Cheese Portion",
+            "removable": true
+          },
+          {
+            "id": "crackers",
+            "label": "Multigrain Crackers",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-fruit",
+            "label": "Extra Fruit",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "peanut-butter",
+            "label": "Peanut Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-073",
@@ -1618,7 +7162,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "protein",
+            "label": "Protein Component",
+            "removable": false
+          },
+          {
+            "id": "fruit",
+            "label": "Fresh Fruit",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Cheese Portion",
+            "removable": true
+          },
+          {
+            "id": "crackers",
+            "label": "Multigrain Crackers",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-fruit",
+            "label": "Extra Fruit",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "peanut-butter",
+            "label": "Peanut Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-074",
@@ -1640,7 +7223,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "protein",
+            "label": "Protein Component",
+            "removable": false
+          },
+          {
+            "id": "fruit",
+            "label": "Fresh Fruit",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Cheese Portion",
+            "removable": true
+          },
+          {
+            "id": "crackers",
+            "label": "Multigrain Crackers",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-fruit",
+            "label": "Extra Fruit",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "peanut-butter",
+            "label": "Peanut Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-075",
@@ -1662,7 +7284,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "protein",
+            "label": "Protein Component",
+            "removable": false
+          },
+          {
+            "id": "fruit",
+            "label": "Fresh Fruit",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Cheese Portion",
+            "removable": true
+          },
+          {
+            "id": "crackers",
+            "label": "Multigrain Crackers",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-fruit",
+            "label": "Extra Fruit",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "peanut-butter",
+            "label": "Peanut Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-076",
@@ -1685,7 +7346,46 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "protein",
+            "label": "Protein Component",
+            "removable": false
+          },
+          {
+            "id": "fruit",
+            "label": "Fresh Fruit",
+            "removable": true
+          },
+          {
+            "id": "cheese",
+            "label": "Cheese Portion",
+            "removable": true
+          },
+          {
+            "id": "crackers",
+            "label": "Multigrain Crackers",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-fruit",
+            "label": "Extra Fruit",
+            "priceAdj": 0.6
+          },
+          {
+            "id": "peanut-butter",
+            "label": "Peanut Butter",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-077",
@@ -1708,7 +7408,56 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "bread",
+            "label": "Artisan Bread",
+            "removable": false
+          },
+          {
+            "id": "filling",
+            "label": "Main Filling",
+            "removable": false
+          },
+          {
+            "id": "lettuce",
+            "label": "Lettuce",
+            "removable": true
+          },
+          {
+            "id": "tomato",
+            "label": "Tomato",
+            "removable": true
+          },
+          {
+            "id": "sauce",
+            "label": "Sauce",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-filling",
+            "label": "Extra Filling",
+            "priceAdj": 1.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado",
+            "priceAdj": 0.75
+          },
+          {
+            "id": "extra-sauce",
+            "label": "Extra Sauce",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-078",
@@ -1731,7 +7480,56 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "bread",
+            "label": "Artisan Bread",
+            "removable": false
+          },
+          {
+            "id": "filling",
+            "label": "Main Filling",
+            "removable": false
+          },
+          {
+            "id": "lettuce",
+            "label": "Lettuce",
+            "removable": true
+          },
+          {
+            "id": "tomato",
+            "label": "Tomato",
+            "removable": true
+          },
+          {
+            "id": "sauce",
+            "label": "Sauce",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-filling",
+            "label": "Extra Filling",
+            "priceAdj": 1.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado",
+            "priceAdj": 0.75
+          },
+          {
+            "id": "extra-sauce",
+            "label": "Extra Sauce",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-079",
@@ -1754,7 +7552,56 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "bread",
+            "label": "Artisan Bread",
+            "removable": false
+          },
+          {
+            "id": "filling",
+            "label": "Main Filling",
+            "removable": false
+          },
+          {
+            "id": "lettuce",
+            "label": "Lettuce",
+            "removable": true
+          },
+          {
+            "id": "tomato",
+            "label": "Tomato",
+            "removable": true
+          },
+          {
+            "id": "sauce",
+            "label": "Sauce",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-filling",
+            "label": "Extra Filling",
+            "priceAdj": 1.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado",
+            "priceAdj": 0.75
+          },
+          {
+            "id": "extra-sauce",
+            "label": "Extra Sauce",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-080",
@@ -1777,7 +7624,56 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "bread",
+            "label": "Artisan Bread",
+            "removable": false
+          },
+          {
+            "id": "filling",
+            "label": "Main Filling",
+            "removable": false
+          },
+          {
+            "id": "lettuce",
+            "label": "Lettuce",
+            "removable": true
+          },
+          {
+            "id": "tomato",
+            "label": "Tomato",
+            "removable": true
+          },
+          {
+            "id": "sauce",
+            "label": "Sauce",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-filling",
+            "label": "Extra Filling",
+            "priceAdj": 1.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado",
+            "priceAdj": 0.75
+          },
+          {
+            "id": "extra-sauce",
+            "label": "Extra Sauce",
+            "priceAdj": 0.0
+          }
+        ]
+      }
     },
     {
       "id": "sbx-081",
@@ -1800,7 +7696,51 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "greens",
+            "label": "Mixed Greens",
+            "removable": false
+          },
+          {
+            "id": "dressing",
+            "label": "House Dressing",
+            "removable": true
+          },
+          {
+            "id": "toppings",
+            "label": "Toppings",
+            "removable": true
+          },
+          {
+            "id": "protein",
+            "label": "Protein",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-dressing",
+            "label": "Extra Dressing",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado",
+            "priceAdj": 0.75
+          },
+          {
+            "id": "extra-protein",
+            "label": "Extra Protein",
+            "priceAdj": 1.25
+          }
+        ]
+      }
     },
     {
       "id": "sbx-082",
@@ -1823,7 +7763,51 @@
       "active": true,
       "createdAt": "2026-02-22T02:40:50Z",
       "updatedAt": "2026-02-22T02:40:50Z",
-      "brand": "sbx-brand-001"
+      "brand": "sbx-brand-001",
+      "customization": {
+        "sizes": [],
+        "defaultSize": null,
+        "milkOptions": [],
+        "defaultIngredients": [
+          {
+            "id": "greens",
+            "label": "Mixed Greens",
+            "removable": false
+          },
+          {
+            "id": "dressing",
+            "label": "House Dressing",
+            "removable": true
+          },
+          {
+            "id": "toppings",
+            "label": "Toppings",
+            "removable": true
+          },
+          {
+            "id": "protein",
+            "label": "Protein",
+            "removable": true
+          }
+        ],
+        "additions": [
+          {
+            "id": "extra-dressing",
+            "label": "Extra Dressing",
+            "priceAdj": 0.0
+          },
+          {
+            "id": "avocado",
+            "label": "Avocado",
+            "priceAdj": 0.75
+          },
+          {
+            "id": "extra-protein",
+            "label": "Extra Protein",
+            "priceAdj": 1.25
+          }
+        ]
+      }
     }
   ],
   "settings": {
@@ -1869,7 +7853,7 @@
     {
       "id": "cat-07",
       "name": "Frappuccino",
-      "description": "Blended Frappuccino\u00ae beverages, coffee and cr\u00e8me bases"
+      "description": "Blended Frappuccino® beverages, coffee and crème bases"
     },
     {
       "id": "cat-08",
@@ -1894,7 +7878,7 @@
     {
       "id": "cat-12",
       "name": "Egg Bites",
-      "description": "Sous vide egg bites \u2014 high protein, low carb"
+      "description": "Sous vide egg bites — high protein, low carb"
     },
     {
       "id": "cat-13",

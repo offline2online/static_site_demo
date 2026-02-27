@@ -295,6 +295,7 @@
     <a href="hq-admin.html" class="quick-link">🏢 HQ Admin Panel</a>
     <span class="quick-link" onclick="document.getElementById('storeCard').scrollIntoView({behavior:'smooth'})">🏪 Store Portal</span>
     <span class="quick-link" onclick="document.getElementById('boardCard').scrollIntoView({behavior:'smooth'})">📺 Menu Board Preview</span>
+    <a href="order.html" class="quick-link">🛍 Customer Order</a>
   </div>
 
   <div class="cards-grid">
@@ -362,6 +363,22 @@
 
   </div>
 
+    <!-- Customer Ordering Card -->
+    <div class="card" id="orderCard">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#006241,#CBA258);">🛍</div>
+        <div>
+          <h2>Customer Ordering</h2>
+          <span class="badge" style="background:rgba(0,98,65,.15);color:#006241;">Mobile / PC / Tablet</span>
+        </div>
+      </div>
+      <p>Responsive ordering site for customers to browse the menu, customise items, and place takeout orders with a unique order number.</p>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <input id="orderStoreCode" placeholder="Store Code (optional)" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;">
+      </div>
+      <button onclick="goToOrder()" class="btn btn-full" style="background:linear-gradient(135deg,#006241,#004d33);color:#fff;margin-top:10px;">Open Ordering Menu →</button>
+    </div>
+
   <div class="url-ref">
     <h3>📋 URL Reference Guide</h3>
     <table class="url-table">
@@ -397,6 +414,10 @@
         <td>Today's Specials</td>
         <td><code>menu-board.html?store=<em>STORE001</em>&amp;menu=specials</code></td>
       </tr>
+      <tr>
+        <td>Customer Ordering <span class="tag" style="background:rgba(0,98,65,.15);color:#006241;">New</span></td>
+        <td><code>order.html?store=<em>STORE001</em></code></td>
+      </tr>
     </table>
     <p style="margin-top:16px;font-size:12px;color:var(--muted);">
       ℹ️ Replace <em>STORE001</em> and <em>STAFF001</em> with your actual codes. Staff identifier is optional for store access.
@@ -423,6 +444,13 @@
     const menu = document.getElementById('boardMenu').value;
     if (!store) { alert('Store Code is required.'); document.getElementById('boardStore').focus(); return; }
     window.open('menu-board.html?store=' + encodeURIComponent(store) + '&menu=' + menu, '_blank');
+  }
+
+  function goToOrder() {
+    const store = document.getElementById('orderStoreCode').value.trim();
+    let url = 'order.html';
+    if (store) url += '?store=' + encodeURIComponent(store);
+    window.open(url, '_blank');
   }
 </script>
 </body>

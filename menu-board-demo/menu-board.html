@@ -803,7 +803,7 @@ onSnapshot(doc(db, MB, 'settings'), snap => {
 
 // ── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
-  if (!STORE_CODE || !MENU_TYPE || !MENU_META[MENU_TYPE]) return;
+  if (!MENU_TYPE || !MENU_META[MENU_TYPE] || (!STORE_CODE && !DEVICE_UDID)) return;
   const meta     = MENU_META[MENU_TYPE];
   const brand    = getActiveBrand();
 
@@ -1072,18 +1072,19 @@ function render() {
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (!STORE_CODE || !MENU_TYPE || !MENU_META[MENU_TYPE]) {
+  if (!MENU_TYPE || !MENU_META[MENU_TYPE] || (!STORE_CODE && !DEVICE_UDID)) {
     const missing = !MENU_TYPE || !MENU_META[MENU_TYPE]
       ? 'a valid Menu Type (<code>?menu=breakfast</code>)'
-      : 'a Store Code (<code>?store=STORE001</code>)';
+      : 'a Store Code (<code>?store=STORE001</code>) or Device UDID (<code>?device=…</code>)';
     document.getElementById('boardRoot').innerHTML = `
       <div class="error-board">
         <div class="icon">📺</div>
         <h2>Invalid Menu Board URL</h2>
         <p>This menu board requires ${missing}.</p>
         <br>
-        <p>Example URL:</p>
-        <code>menu-board.html?store=STORE001&amp;menu=breakfast</code>
+        <p>Example URLs:</p>
+        <code>menu-board.html?store=STORE001&amp;menu=breakfast</code><br>
+        <code>menu-board.html?device=&lt;UDID&gt;&amp;menu=drinks</code>
         <br><br>
         <p>Valid menu types: breakfast · lunch · dinner · drinks · specials</p>
         <a href="index.html">← Back to Portal</a>
@@ -1092,11 +1093,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // Per-store stock listener (started here so STORE_CODE is validated first)
-  onSnapshot(doc(db, STOCK_COLL, STORE_CODE), snap => {
-    _stock = snap.exists() ? snap.data() : {};
-    render();
-  });
+  // Per-store stock listener — only when a store code is present
+  if (STORE_CODE) {
+    onSnapshot(doc(db, STOCK_COLL, STORE_CODE), snap => {
+      _stock = snap.exists() ? snap.data() : {};
+      render();
+    });
+  }
 
   updateClock();
   setInterval(updateClock, 1000);
