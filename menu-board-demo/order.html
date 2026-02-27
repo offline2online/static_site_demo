@@ -27,6 +27,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   --green-dark:   #004d33;
   --green-light:  #e8f5ef;
   --gold:         #CBA258;
+  --gold-dark:    #a8823d;
   --cream:        #f9f4ec;
   --cream-dark:   #f0e8d8;
   --white:        #ffffff;
@@ -41,7 +42,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   --radius-md:    12px;
   --radius-lg:    20px;
   --header-h:     0px;
-  --cat-h:        48px;
+  --cat-h:        60px;
+  --search-h:     54px;
 }
 
 /* ── LAYOUT SCAFFOLDING ────────────────────────────────────────────────── */
@@ -51,9 +53,84 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .header-title { }
 .header-greeting { }
 
+/* ── CATEGORY BAR ──────────────────────────────────────────────────────── */
+.cat-bar {
+  position: fixed; top: var(--header-h); left: 0; right: 0; z-index: 100;
+  height: var(--cat-h);
+  background: var(--green-dark);
+  display: flex; align-items: center;
+  overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 6px; padding: 0 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.cat-bar::-webkit-scrollbar { display: none; }
+.cat-tab {
+  flex-shrink: 0;
+  padding: 9px 18px; border-radius: 24px;
+  font-size: 13px; font-weight: 600;
+  color: rgba(255,255,255,.75);
+  transition: all .15s; white-space: nowrap;
+  letter-spacing: .3px;
+  border: 1.5px solid transparent;
+}
+.cat-tab:active { opacity: .75; }
+.cat-tab.active {
+  background: var(--gold);
+  color: var(--green-dark);
+  font-weight: 700;
+  border-color: var(--gold);
+  box-shadow: 0 2px 8px rgba(203,162,88,.4);
+}
+
+/* ── SEARCH BAR ─────────────────────────────────────────────────────────── */
+.search-bar {
+  position: fixed; top: var(--cat-h); left: 0; right: 0; z-index: 99;
+  height: var(--search-h);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+.search-input-wrap {
+  flex: 1; display: flex; align-items: center;
+  background: var(--cream); border-radius: 24px;
+  border: 1.5px solid var(--border);
+  padding: 0 14px; gap: 8px;
+  height: 40px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.search-input-wrap:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0,98,65,.1);
+}
+.search-icon {
+  color: var(--text-muted); flex-shrink: 0;
+  display: flex; align-items: center;
+}
+.search-input {
+  flex: 1; border: none; background: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px; color: var(--text);
+  outline: none;
+}
+.search-input::placeholder { color: var(--text-muted); }
+/* Remove browser default clear button on search inputs */
+.search-input::-webkit-search-cancel-button { display: none; }
+.search-clear {
+  flex-shrink: 0; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--text-muted);
+  color: var(--white); font-size: 14px; line-height: 1;
+  display: none; align-items: center; justify-content: center;
+  cursor: pointer; font-weight: 700;
+}
+.search-clear.visible { display: flex; }
+
 /* ── GREETING BANNER (personalisation) ─────────────────────────────────── */
 .greeting-banner {
-  position: fixed; top: var(--cat-h); left: 0; right: 0; z-index: 98;
+  position: fixed; top: calc(var(--cat-h) + var(--search-h)); left: 0; right: 0; z-index: 97;
   background: var(--green);
   color: var(--white);
   font-size: 13px; font-weight: 500;
@@ -63,79 +140,64 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   box-shadow: 0 2px 8px rgba(0,0,0,.12);
 }
 
-/* ── FLOATING BAG BUTTON (FAB) ──────────────────────────────────────────── */
+/* ── FLOATING BAG BUTTON (FAB) — HIGH CONTRAST ─────────────────────────── */
 .bag-fab {
   position: fixed;
-  bottom: 28px;
-  right: 24px;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  right: 20px;
   z-index: 200;
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-  background: var(--green);
-  color: var(--white);
+  /* Gold background + dark green icon = maximum contrast against any background */
+  background: var(--gold);
+  color: var(--green-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 24px rgba(0,98,65,.45), 0 2px 8px rgba(0,0,0,.2);
+  box-shadow: 0 6px 20px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.25);
   cursor: pointer;
-  border: none;
-  transition: transform .15s, background .15s, box-shadow .15s;
+  border: 3px solid var(--white);
+  transition: transform .15s, box-shadow .15s;
 }
 .bag-fab:hover {
-  background: var(--green-dark);
-  box-shadow: 0 8px 28px rgba(0,98,65,.55), 0 4px 12px rgba(0,0,0,.25);
-  transform: scale(1.05);
+  box-shadow: 0 8px 28px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.3);
+  transform: scale(1.07);
 }
 .bag-fab:active {
-  transform: scale(0.93);
-  background: var(--green-dark);
+  transform: scale(0.92);
 }
 .bag-badge {
-  position: absolute; top: 2px; right: 2px;
-  min-width: 22px; height: 22px; padding: 0 5px;
-  border-radius: 11px;
-  background: var(--gold); color: var(--green-dark);
+  position: absolute; top: -5px; right: -5px;
+  min-width: 24px; height: 24px; padding: 0 5px;
+  border-radius: 12px;
+  background: var(--green-dark); color: var(--white);
   font-size: 12px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   display: none;
+  border: 2.5px solid var(--white);
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
 }
 .bag-badge.visible { display: flex; }
 
-.cat-bar {
-  position: fixed; top: var(--header-h); left: 0; right: 0; z-index: 99;
-  height: var(--cat-h);
-  background: var(--green-dark);
-  display: flex; align-items: center;
-  overflow-x: auto; overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  gap: 4px; padding: 0 12px;
-}
-.cat-bar::-webkit-scrollbar { display: none; }
-.cat-tab {
-  flex-shrink: 0;
-  padding: 6px 14px; border-radius: 20px;
-  font-size: 13px; font-weight: 500;
-  color: rgba(255,255,255,.7);
-  transition: all .15s; white-space: nowrap;
-}
-.cat-tab.active {
-  background: var(--gold);
-  color: var(--green-dark);
-  font-weight: 700;
-}
-
+/* ── MAIN CONTENT ──────────────────────────────────────────────────────── */
 .main-content {
-  padding-top: calc(var(--cat-h) + 16px);
-  padding-bottom: 100px;
+  padding-top: calc(var(--cat-h) + var(--search-h) + 16px);
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   padding-left: 12px; padding-right: 12px;
   max-width: 1200px; margin: 0 auto;
 }
 /* Shift content down when personalisation greeting banner is visible */
 .main-content.has-greeting {
-  padding-top: calc(var(--cat-h) + 37px + 16px);
+  padding-top: calc(var(--cat-h) + var(--search-h) + 37px + 16px);
 }
+
+/* Search results label */
+.search-results-label {
+  font-size: 13px; color: var(--text-muted);
+  margin-bottom: 12px; font-weight: 500;
+}
+.search-results-label strong { color: var(--text); }
 
 /* ── ITEMS GRID ────────────────────────────────────────────────────────── */
 .items-grid {
@@ -152,6 +214,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .main-content { padding-left: 32px; padding-right: 32px; }
   .app-header { padding: 0 32px; }
   .cat-bar { padding: 0 32px; }
+  .search-bar { padding: 0 32px; }
 }
 
 .item-card {
@@ -478,13 +541,18 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .bag-footer {
   padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0));
   border-top: 1px solid var(--border); flex-shrink: 0;
+  background: var(--white);
 }
 .bag-subtotal {
   display: flex; justify-content: space-between; align-items: center;
   font-size: 16px; font-weight: 600; margin-bottom: 12px;
 }
 .bag-subtotal .subtotal-val {
-  font-family: 'Oswald', sans-serif; font-size: 22px; color: var(--green-dark);
+  font-family: 'Oswald', sans-serif; font-size: 26px; color: var(--green-dark);
+}
+.bag-item-count {
+  font-size: 12px; color: var(--text-muted); font-weight: 400;
+  margin-left: 6px;
 }
 .place-order-btn {
   width: 100%; padding: 0 24px; height: 52px;
@@ -591,12 +659,25 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 <!-- ── CATEGORY BAR ───────────────────────────────────────────────────── -->
 <nav class="cat-bar" id="catBar"></nav>
 
+<!-- ── SEARCH BAR ────────────────────────────────────────────────────── -->
+<div class="search-bar" id="searchBar">
+  <div class="search-input-wrap">
+    <span class="search-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    </span>
+    <input class="search-input" id="searchInput" type="search" placeholder="Search the menu…" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="search-clear" id="searchClear" aria-label="Clear search">×</button>
+  </div>
+</div>
+
 <!-- ── PERSONALISATION GREETING BANNER ──────────────────────────────────── -->
 <div class="greeting-banner" id="greetingBanner" style="display:none;"></div>
 
 <!-- ── FLOATING BAG BUTTON ───────────────────────────────────────────────── -->
 <button class="bag-fab" id="bagBtn" aria-label="Open takeout bag">
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
     <line x1="3" y1="6" x2="21" y2="6"/>
     <path d="M16 10a4 4 0 01-8 0"/>
@@ -611,6 +692,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
       <div class="state-icon">⏳</div>
       <h2>Loading Menu…</h2>
     </div>
+    <div id="searchResultsLabel" class="search-results-label" style="display:none;"></div>
     <div class="items-grid" id="itemsGrid" style="display:none;"></div>
   </div>
 </main>
@@ -653,7 +735,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     <div class="bag-items" id="bagItems"></div>
     <div class="bag-footer" id="bagFooter" style="display:none;">
       <div class="bag-subtotal">
-        <span>Subtotal</span>
+        <span>Total<span class="bag-item-count" id="bagItemCount"></span></span>
         <span class="subtotal-val" id="bagSubtotal"></span>
       </div>
       <button class="place-order-btn" id="placeOrderBtn">Place Order</button>
@@ -692,7 +774,6 @@ const db  = getFirestore(app);
 const urlParams   = new URLSearchParams(window.location.search);
 const STORE_CODE  = (urlParams.get('store')  || '').trim().toUpperCase();
 const DEVICE_UDID = (urlParams.get('device') || '').trim();
-const CURRENCY    = '$'; // overridden by settings
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 let _items       = [];
@@ -700,20 +781,21 @@ let _settings    = { restaurantName: 'Menu', currency: '$', logo: '' };
 let _brands      = [];
 let _stock       = {};
 let _activeCat   = 'All';
+let _searchQuery = '';
 let _campaignFirstName = null;
 
 // Current modal state
 let _modalItem   = null;
 let _modalQty    = 1;
-let _modalRemovedIngredients = new Set();  // ingredient ids removed
-let _modalAddedIngredients   = new Set();  // addition ids checked
+let _modalRemovedIngredients = new Set();
+let _modalAddedIngredients   = new Set();
 let _modalSize   = null;
 let _modalMilk   = null;
 
 // Cart
 let _bag = [];
 
-// ── PERSONALISATION HUB (mirrors menu-board.html) ─────────────────────────
+// ── PERSONALISATION HUB ───────────────────────────────────────────────────
 let _tokenCache = null;
 
 async function _deriveKey() {
@@ -800,13 +882,7 @@ function applyBranding() {
   if (colors.accent) {
     if (catBarEl) catBarEl.style.background = colors.accent;
   }
-  if (colors.catBar && catBarEl)  catBarEl.style.background = colors.catBar;
-  // Also tint the bag FAB to match brand accent/header colour
-  const bagFab = document.getElementById('bagBtn');
-  if (bagFab) {
-    if (colors.header)  bagFab.style.background = colors.header;
-    else if (colors.accent) bagFab.style.background = colors.accent;
-  }
+  if (colors.catBar && catBarEl) catBarEl.style.background = colors.catBar;
   // Also tint the greeting banner
   const greetBanner = document.getElementById('greetingBanner');
   if (greetBanner) {
@@ -819,9 +895,15 @@ function applyBranding() {
 }
 
 function getFilteredItems() {
+  const q = _searchQuery.trim().toLowerCase();
   return _items.filter(i => {
     if (!i.active) return false;
-    if (_activeCat !== 'All' && i.category !== _activeCat) return false;
+    // When a search query is active, search across ALL categories
+    if (!q && _activeCat !== 'All' && i.category !== _activeCat) return false;
+    if (q) {
+      const haystack = `${i.name} ${i.description || ''} ${i.category}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
     return true;
   });
 }
@@ -835,6 +917,14 @@ function renderCatBar() {
   bar.querySelectorAll('.cat-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       _activeCat = btn.dataset.cat;
+      // Clear search when switching categories
+      if (_searchQuery) {
+        _searchQuery = '';
+        const inp = document.getElementById('searchInput');
+        const clr = document.getElementById('searchClear');
+        if (inp) inp.value = '';
+        if (clr) clr.classList.remove('visible');
+      }
       renderCatBar();
       renderItemsGrid();
     });
@@ -844,15 +934,29 @@ function renderCatBar() {
 function renderItemsGrid() {
   const grid    = document.getElementById('itemsGrid');
   const loading = document.getElementById('loadingState');
+  const label   = document.getElementById('searchResultsLabel');
   const items   = getFilteredItems();
+  const q       = _searchQuery.trim();
 
   loading.style.display = 'none';
   grid.style.display    = '';
 
+  // Show search results label when searching
+  if (q && label) {
+    label.style.display = '';
+    label.innerHTML = items.length
+      ? `Showing <strong>${items.length}</strong> result${items.length !== 1 ? 's' : ''} for "<strong>${esc(q)}</strong>"`
+      : '';
+  } else if (label) {
+    label.style.display = 'none';
+  }
+
   if (!items.length) {
     grid.innerHTML = `<div class="state-screen" style="grid-column:1/-1;min-height:40dvh;">
-      <div class="state-icon">🍽</div><h2>Nothing here</h2>
-      <p>No items in this category right now.</p></div>`;
+      <div class="state-icon">${q ? '🔍' : '🍽'}</div>
+      <h2>${q ? 'No Results' : 'Nothing here'}</h2>
+      <p>${q ? `No items matching "<strong>${esc(q)}</strong>"` : 'No items in this category right now.'}</p>
+    </div>`;
     return;
   }
 
@@ -924,13 +1028,10 @@ function openModal(item) {
 
   const c = item.customization || {};
 
-  // Default size
   _modalSize = c.defaultSize || (c.sizes?.[0]?.id ?? null);
-  // Default milk
   const defaultMilk = c.milkOptions?.find(m => m.default);
   _modalMilk = defaultMilk?.id ?? (c.milkOptions?.[0]?.id ?? null);
 
-  // Image
   const img = item.images?.[0] || '';
   document.getElementById('modalImg').innerHTML = img
     ? `<img src="${esc(img)}" alt="${esc(item.name)}">`
@@ -1078,8 +1179,12 @@ function bagTotal() {
   return _bag.reduce((s, row) => s + row.lineTotal, 0);
 }
 
+function bagItemCount() {
+  return _bag.reduce((s, r) => s + r.qty, 0);
+}
+
 function updateBagBadge() {
-  const n   = _bag.reduce((s, r) => s + r.qty, 0);
+  const n   = bagItemCount();
   const bdg = document.getElementById('bagBadge');
   bdg.textContent = n;
   bdg.classList.toggle('visible', n > 0);
@@ -1125,6 +1230,7 @@ function renderBagPanel() {
   const itemsEl  = document.getElementById('bagItems');
   const footerEl = document.getElementById('bagFooter');
   const subtotal = document.getElementById('bagSubtotal');
+  const countEl  = document.getElementById('bagItemCount');
 
   if (!_bag.length) {
     itemsEl.innerHTML = `
@@ -1167,7 +1273,10 @@ function renderBagPanel() {
     rowEl.querySelector('.bag-remove-btn').addEventListener('click', () => removeBagItem(uid));
   });
 
-  subtotal.textContent = cur(bagTotal());
+  const total     = bagTotal();
+  const itemCount = bagItemCount();
+  subtotal.textContent = cur(total);
+  if (countEl) countEl.textContent = ` (${itemCount} item${itemCount !== 1 ? 's' : ''})`;
   footerEl.style.display = '';
 }
 
@@ -1253,42 +1362,61 @@ if (STORE_CODE) {
 }
 
 // ── EVENT WIRING ──────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  // Modal
-  document.getElementById('modalClose').addEventListener('click', closeModal);
-  document.getElementById('modalOverlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('modalOverlay')) closeModal();
-  });
-  document.getElementById('qtyMinus').addEventListener('click', () => {
-    _modalQty = Math.max(1, _modalQty - 1);
-    document.getElementById('qtyVal').textContent = _modalQty;
-    updateModalTotal();
-  });
-  document.getElementById('qtyPlus').addEventListener('click', () => {
-    _modalQty++;
-    document.getElementById('qtyVal').textContent = _modalQty;
-    updateModalTotal();
-  });
-  document.getElementById('addToBagBtn').addEventListener('click', addToBag);
+// NOTE: type="module" scripts run deferred (after DOM is parsed), so
+// DOMContentLoaded has already fired — wire events directly here.
 
-  // Bag
-  document.getElementById('bagBtn').addEventListener('click', openBag);
-  document.getElementById('bagClose').addEventListener('click', closeBag);
-  document.getElementById('bagOverlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('bagOverlay')) closeBag();
-  });
-  document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
-
-  // Confirmation
-  document.getElementById('newOrderBtn').addEventListener('click', startNewOrder);
-
-  // Campaign polling (if device UDID present)
-  if (DEVICE_UDID) {
-    _deriveKey();
-    pollCampaign();
-    setInterval(pollCampaign, 5000);
-  }
+// Modal
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
 });
+document.getElementById('qtyMinus').addEventListener('click', () => {
+  _modalQty = Math.max(1, _modalQty - 1);
+  document.getElementById('qtyVal').textContent = _modalQty;
+  updateModalTotal();
+});
+document.getElementById('qtyPlus').addEventListener('click', () => {
+  _modalQty++;
+  document.getElementById('qtyVal').textContent = _modalQty;
+  updateModalTotal();
+});
+document.getElementById('addToBagBtn').addEventListener('click', addToBag);
+
+// Bag
+document.getElementById('bagBtn').addEventListener('click', openBag);
+document.getElementById('bagClose').addEventListener('click', closeBag);
+document.getElementById('bagOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('bagOverlay')) closeBag();
+});
+document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
+
+// Confirmation
+document.getElementById('newOrderBtn').addEventListener('click', startNewOrder);
+
+// Search
+const searchInput = document.getElementById('searchInput');
+const searchClear = document.getElementById('searchClear');
+
+searchInput.addEventListener('input', () => {
+  _searchQuery = searchInput.value;
+  searchClear.classList.toggle('visible', _searchQuery.length > 0);
+  renderItemsGrid();
+});
+
+searchClear.addEventListener('click', () => {
+  _searchQuery = '';
+  searchInput.value = '';
+  searchInput.focus();
+  searchClear.classList.remove('visible');
+  renderItemsGrid();
+});
+
+// Campaign polling (if device UDID present)
+if (DEVICE_UDID) {
+  _deriveKey();
+  pollCampaign();
+  setInterval(pollCampaign, 5000);
+}
 </script>
 </body>
 </html>
