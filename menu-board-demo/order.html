@@ -40,58 +40,63 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   --radius-sm:    8px;
   --radius-md:    12px;
   --radius-lg:    20px;
-  --header-h:     64px;
+  --header-h:     0px;
   --cat-h:        48px;
 }
 
 /* ── LAYOUT SCAFFOLDING ────────────────────────────────────────────────── */
 .app-header {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: var(--header-h);
+  display: none; /* Header removed — hidden but kept for JS compatibility */
+}
+.header-title { }
+.header-greeting { }
+
+/* ── GREETING BANNER (personalisation) ─────────────────────────────────── */
+.greeting-banner {
+  position: fixed; top: var(--cat-h); left: 0; right: 0; z-index: 98;
   background: var(--green);
-  display: flex; align-items: center; gap: 12px;
-  padding: 0 16px;
-  box-shadow: var(--shadow-md);
-}
-.app-header .logo {
-  height: 38px; width: 38px; flex-shrink: 0;
-  object-fit: contain; border-radius: 50%;
-  background: var(--white);
-}
-.app-header .logo-placeholder {
-  height: 38px; width: 38px; flex-shrink: 0;
-  border-radius: 50%; background: rgba(255,255,255,.15);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-}
-.header-title {
-  font-family: 'Oswald', sans-serif;
-  font-size: 20px; font-weight: 600;
   color: var(--white);
-  letter-spacing: .5px;
-  flex: 1; min-width: 0;
+  font-size: 13px; font-weight: 500;
+  padding: 8px 16px;
+  text-align: center;
+  letter-spacing: .3px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
 }
-.header-greeting {
-  font-size: 13px; font-weight: 400;
-  color: rgba(255,255,255,.85);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 220px;
+
+/* ── FLOATING BAG BUTTON (FAB) ──────────────────────────────────────────── */
+.bag-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 200;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--green);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 24px rgba(0,98,65,.45), 0 2px 8px rgba(0,0,0,.2);
+  cursor: pointer;
+  border: none;
+  transition: transform .15s, background .15s, box-shadow .15s;
 }
-.bag-btn {
-  position: relative; flex-shrink: 0;
-  width: 44px; height: 44px;
-  border-radius: 50%; background: rgba(255,255,255,.15);
-  display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
+.bag-fab:hover {
+  background: var(--green-dark);
+  box-shadow: 0 8px 28px rgba(0,98,65,.55), 0 4px 12px rgba(0,0,0,.25);
+  transform: scale(1.05);
 }
-.bag-btn:active { background: rgba(255,255,255,.3); }
-.bag-btn svg { color: var(--white); }
+.bag-fab:active {
+  transform: scale(0.93);
+  background: var(--green-dark);
+}
 .bag-badge {
-  position: absolute; top: 4px; right: 4px;
-  min-width: 18px; height: 18px; padding: 0 4px;
-  border-radius: 9px;
+  position: absolute; top: 2px; right: 2px;
+  min-width: 22px; height: 22px; padding: 0 5px;
+  border-radius: 11px;
   background: var(--gold); color: var(--green-dark);
-  font-size: 11px; font-weight: 700;
+  font-size: 12px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   display: none;
 }
@@ -122,10 +127,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 .main-content {
-  padding-top: calc(var(--header-h) + var(--cat-h) + 16px);
+  padding-top: calc(var(--cat-h) + 16px);
   padding-bottom: 100px;
   padding-left: 12px; padding-right: 12px;
   max-width: 1200px; margin: 0 auto;
+}
+/* Shift content down when personalisation greeting banner is visible */
+.main-content.has-greeting {
+  padding-top: calc(var(--cat-h) + 37px + 16px);
 }
 
 /* ── ITEMS GRID ────────────────────────────────────────────────────────── */
@@ -570,25 +579,30 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 </head>
 <body>
 
-<!-- ── HEADER ─────────────────────────────────────────────────────────── -->
-<header class="app-header" id="appHeader">
+<!-- Hidden header — kept for JS compatibility (applyBranding targets these IDs) -->
+<header class="app-header" id="appHeader" aria-hidden="true">
   <div class="logo-placeholder" id="headerLogo">☕</div>
   <div style="flex:1;min-width:0;">
     <div class="header-title" id="headerTitle">Loading…</div>
-    <div class="header-greeting" id="headerGreeting" style="display:none;"></div>
+    <div class="header-greeting" id="headerGreeting"></div>
   </div>
-  <button class="bag-btn" id="bagBtn" aria-label="Open takeout bag">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-      <line x1="3" y1="6" x2="21" y2="6"/>
-      <path d="M16 10a4 4 0 01-8 0"/>
-    </svg>
-    <span class="bag-badge" id="bagBadge">0</span>
-  </button>
 </header>
 
 <!-- ── CATEGORY BAR ───────────────────────────────────────────────────── -->
 <nav class="cat-bar" id="catBar"></nav>
+
+<!-- ── PERSONALISATION GREETING BANNER ──────────────────────────────────── -->
+<div class="greeting-banner" id="greetingBanner" style="display:none;"></div>
+
+<!-- ── FLOATING BAG BUTTON ───────────────────────────────────────────────── -->
+<button class="bag-fab" id="bagBtn" aria-label="Open takeout bag">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <path d="M16 10a4 4 0 01-8 0"/>
+  </svg>
+  <span class="bag-badge" id="bagBadge">0</span>
+</button>
 
 <!-- ── MAIN CONTENT ──────────────────────────────────────────────────── -->
 <main class="main-content">
@@ -755,12 +769,15 @@ function isOos(sku) { return !!(STORE_CODE && _stock[sku] && _stock[sku].outOfSt
 // ── RENDERING ─────────────────────────────────────────────────────────────
 
 function renderGreeting() {
-  const el = document.getElementById('headerGreeting');
+  const banner  = document.getElementById('greetingBanner');
+  const content = document.querySelector('.main-content');
   if (_campaignFirstName) {
-    el.textContent = `Hi ${_campaignFirstName}, what can we get for you today?`;
-    el.style.display = '';
+    banner.textContent = `Hi ${_campaignFirstName}, what can we get for you today? 👋`;
+    banner.style.display = '';
+    if (content) content.classList.add('has-greeting');
   } else {
-    el.style.display = 'none';
+    banner.style.display = 'none';
+    if (content) content.classList.remove('has-greeting');
   }
 }
 
@@ -779,13 +796,23 @@ function applyBranding() {
   }
 
   const colors = brand?.colors || s.colors || {};
-  // Apply brand accent to header and category bar but not globally (would break confirm screen)
+  const catBarEl = document.querySelector('.cat-bar');
   if (colors.accent) {
-    document.querySelector('.app-header').style.background = colors.accent;
-    document.querySelector('.cat-bar').style.background    = colors.accent;
+    if (catBarEl) catBarEl.style.background = colors.accent;
   }
-  if (colors.header)  document.querySelector('.app-header').style.background = colors.header;
-  if (colors.catBar)  document.querySelector('.cat-bar').style.background    = colors.catBar;
+  if (colors.catBar && catBarEl)  catBarEl.style.background = colors.catBar;
+  // Also tint the bag FAB to match brand accent/header colour
+  const bagFab = document.getElementById('bagBtn');
+  if (bagFab) {
+    if (colors.header)  bagFab.style.background = colors.header;
+    else if (colors.accent) bagFab.style.background = colors.accent;
+  }
+  // Also tint the greeting banner
+  const greetBanner = document.getElementById('greetingBanner');
+  if (greetBanner) {
+    if (colors.header)  greetBanner.style.background = colors.header;
+    else if (colors.accent) greetBanner.style.background = colors.accent;
+  }
   if (colors.body)    document.documentElement.style.setProperty('--body', colors.body);
   if (colors.text)    document.documentElement.style.setProperty('--text', colors.text);
   if (colors.price)   document.documentElement.style.setProperty('--green-dark', colors.price);

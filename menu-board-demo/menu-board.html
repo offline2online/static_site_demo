@@ -760,11 +760,32 @@ async function pollCampaign() {
     const url   = `${phApi.baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`;
     const resp  = await fetch(url, { headers: { accept: 'application/json', 'x-api-key': token } });
     if (!resp.ok) { console.warn(`[Campaign] API returned HTTP ${resp.status}`); return; }
-    const json        = await resp.json();
-    const events      = json?.data?.visitor_customer?.events;
-    const firstName   = (json?.data?.visitor_customer?.first_name || '').trim() || null;
+    const json = await resp.json();
 
-    const newSkus     = (Array.isArray(events) && events.length > 0) ? events : null;
+    // ── Parse visitor_customer — handle both store-level and display-level responses ──
+    // Store-level pushes populate json.data.visitor_customer directly.
+    // Display-level pushes (display_ids) may return the same structure, but as a
+    // safeguard we also check json.data directly as a fallback path.
+    const d  = json?.data;
+    const vc = d?.visitor_customer;
+
+    // Resolve first_name: try visitor_customer first, then data root
+    const firstName = (vc?.first_name || d?.first_name || '').trim() || null;
+
+    // Resolve events: try visitor_customer first, then data root
+    // Filter out empty/blank strings that can appear in sparse API payloads
+    const rawEvents =
+      (Array.isArray(vc?.events)    ? vc.events    : null) ||
+      (Array.isArray(d?.events)     ? d.events     : null);
+    const validEvents = rawEvents
+      ? rawEvents.filter(e => typeof e === 'string' && e.trim() !== '')
+      : null;
+    const newSkus = (validEvents && validEvents.length > 0) ? validEvents : null;
+
+    // Debug logging — visible in browser console; helps diagnose display-level issues
+    console.log('[Campaign] visitor_customer:', JSON.stringify(vc));
+    console.log('[Campaign] resolved → firstName:', firstName, '| SKUs:', newSkus);
+
     const skusChanged = JSON.stringify(newSkus) !== JSON.stringify(_campaignSkus);
     const nameChanged = firstName !== _campaignFirstName;
 
