@@ -296,6 +296,7 @@
     <span class="quick-link" onclick="document.getElementById('storeCard').scrollIntoView({behavior:'smooth'})">🏪 Store Portal</span>
     <span class="quick-link" onclick="document.getElementById('boardCard').scrollIntoView({behavior:'smooth'})">📺 Menu Board Preview</span>
     <a href="order.html" class="quick-link">🛍 Customer Order</a>
+    <span class="quick-link" onclick="document.getElementById('summaryCard').scrollIntoView({behavior:'smooth'})">🛒 Order Summary</span>
   </div>
 
   <div class="cards-grid">
@@ -325,7 +326,7 @@
       <p>Access your store's menu management interface to view items and manage out-of-stock status.</p>
       <div class="form-group">
         <label>Store Code <span class="req">*</span></label>
-        <input type="text" id="storeCode" placeholder="e.g. STORE001" />
+        <input type="text" id="storeCode" placeholder="e.g. STORE001" value="O2O-001" />
       </div>
       <div class="form-group">
         <label>Staff Identifier <span style="color:var(--muted)">(optional)</span></label>
@@ -346,7 +347,7 @@
       <p>Preview portrait digital signage displays. Provide store code and menu type to generate the URL.</p>
       <div class="form-group">
         <label>Store Code <span class="req">*</span></label>
-        <input type="text" id="boardStore" placeholder="e.g. STORE001" />
+        <input type="text" id="boardStore" placeholder="e.g. STORE001" value="O2O-001" />
       </div>
       <div class="form-group">
         <label>Menu Type</label>
@@ -359,6 +360,27 @@
         </select>
       </div>
       <button onclick="goToBoard()" class="btn btn-amber btn-full">Open Menu Board →</button>
+    </div>
+
+    <!-- Order Summary Board Card -->
+    <div class="card" id="summaryCard">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#006241,#CBA258);">🛒</div>
+        <div>
+          <h2>Order Summary Board</h2>
+          <span class="badge" style="background:rgba(0,98,65,.15);color:#006241;">New · Digital Signage</span>
+        </div>
+      </div>
+      <p>Display a customer's live order summary on a screen. Links to a customer's mobile session via their Device UDID.</p>
+      <div class="form-group">
+        <label>Store Code <span class="req">*</span></label>
+        <input type="text" id="summaryStore" placeholder="e.g. STORE001" value="O2O-001" />
+      </div>
+      <div class="form-group">
+        <label>Device UDID <span class="req">*</span></label>
+        <input type="text" id="summaryDevice" placeholder="e.g. ABCD-1234" />
+      </div>
+      <button onclick="goToOrderSummary()" class="btn btn-full" style="background:linear-gradient(135deg,#006241,#004d33);color:#fff;">Open Order Summary Board →</button>
     </div>
 
   </div>
@@ -374,7 +396,7 @@
       </div>
       <p>Responsive ordering site for customers to browse the menu, customise items, and place takeout orders with a unique order number.</p>
       <div style="display:flex;gap:8px;margin-top:12px;">
-        <input id="orderStoreCode" placeholder="Store Code (optional)" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;">
+        <input id="orderStoreCode" placeholder="Store Code (optional)" value="O2O-001" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;">
       </div>
       <button onclick="goToOrder()" class="btn btn-full" style="background:linear-gradient(135deg,#006241,#004d33);color:#fff;margin-top:10px;">Open Ordering Menu →</button>
     </div>
@@ -418,6 +440,10 @@
         <td>Customer Ordering <span class="tag" style="background:rgba(0,98,65,.15);color:#006241;">New</span></td>
         <td><code>order.html?store=<em>STORE001</em></code></td>
       </tr>
+      <tr>
+        <td>Order Summary Board <span class="tag" style="background:rgba(0,98,65,.15);color:#006241;">New</span></td>
+        <td><code>order-summary.html?store=<em>STORE001</em>&amp;device=<em>UDID</em></code></td>
+      </tr>
     </table>
     <p style="margin-top:16px;font-size:12px;color:var(--muted);">
       ℹ️ Replace <em>STORE001</em> and <em>STAFF001</em> with your actual codes. Staff identifier is optional for store access.
@@ -451,6 +477,15 @@
     let url = 'order.html';
     if (store) url += '?store=' + encodeURIComponent(store);
     window.open(url, '_blank');
+  }
+
+  function goToOrderSummary() {
+    const store  = document.getElementById('summaryStore').value.trim();
+    const device = document.getElementById('summaryDevice').value.trim();
+    if (!store)  { alert('Store Code is required.');  document.getElementById('summaryStore').focus();  return; }
+    if (!device) { alert('Device UDID is required.'); document.getElementById('summaryDevice').focus(); return; }
+    window.open('order-summary.html?store=' + encodeURIComponent(store)
+              + '&device=' + encodeURIComponent(device), '_blank');
   }
 </script>
 </body>

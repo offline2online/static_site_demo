@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Summary Board</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:            #006241;
+      --green-dark:       #004d33;
+      --green-light:      #d4edda;
+      --cream:            #f9f4ec;
+      --cream2:           #f0e9dc;
+      --white:            #ffffff;
+      --text:             #1a1a1a;
+      --text2:            #444444;
+      --border:           #d4c8b8;
+      --border-lt:        #e8dfd3;
+      --danger:           #c0392b;
+      --board-header-bg:  #ffffff;
+      --cat-bar-bg:       #006241;
+      --price-color:      #004d33;
+      --item-color:       #004d33;
+      --header-text:      #006241;
+      --clock-text:       #1e293b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--cream);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── BOARD WRAPPER ─────────────────────── */
+    .board {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--cream);
+    }
+
+    /* ── HEADER ────────────────────────────── */
+    .board-header {
+      background: var(--board-header-bg, #ffffff);
+      border-bottom: 3px solid var(--green);
+      padding: clamp(14px, 2.5vw, 36px) clamp(20px, 4vw, 60px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .board.portrait .board-header {
+      padding: clamp(18px, 3vw, 48px) clamp(24px, 4.5vw, 70px);
+    }
+
+    .header-logo-wrap {
+      width: clamp(64px, 9vw, 130px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-logo-wrap img {
+      max-width: 100%;
+      max-height: clamp(60px, 8vw, 120px);
+      object-fit: contain;
+    }
+    .header-logo-wrap.no-logo {
+      width: clamp(64px, 9vw, 130px);
+    }
+
+    .header-center {
+      flex: 1;
+      text-align: center;
+      color: var(--header-text);
+    }
+    .header-brand {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(20px, 4vw, 56px);
+      font-weight: 700;
+      letter-spacing: clamp(2px, 0.5vw, 8px);
+      text-transform: uppercase;
+      line-height: 1.1;
+      color: var(--header-text);
+    }
+    .board.portrait .header-brand {
+      font-size: clamp(28px, 5vw, 72px);
+    }
+    .header-menu-type {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(14px, 2.5vw, 36px);
+      font-weight: 500;
+      letter-spacing: clamp(3px, 0.8vw, 12px);
+      text-transform: uppercase;
+      color: var(--header-text);
+      margin-top: clamp(2px, 0.4vw, 6px);
+    }
+    .board.portrait .header-menu-type {
+      font-size: clamp(18px, 3vw, 44px);
+    }
+
+    /* ── CLOCK BAR ─────────────────────────── */
+    .clock-bar {
+      background: #f0f4f8;
+      border-top: 1px solid #dde5ee;
+      border-bottom: 1px solid #dde5ee;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: clamp(6px, 1vw, 12px) clamp(20px, 4vw, 60px);
+      flex-shrink: 0;
+    }
+    .board.portrait .clock-bar {
+      padding: clamp(10px, 1.5vw, 20px) clamp(24px, 4.5vw, 70px);
+    }
+    .board.landscape .clock-bar {
+      padding: clamp(8px, 1vw, 14px) clamp(20px, 4vw, 60px);
+    }
+    .clock-bar .store-label {
+      font-size: clamp(10px, 1.1vw, 14px);
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-right: auto;
+    }
+    .clock-bar .time-display {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(15px, 1.8vw, 26px);
+      color: var(--clock-text, #1e293b);
+      letter-spacing: 1px;
+    }
+    .board.landscape .clock-bar .time-display {
+      font-size: clamp(20px, 2.4vw, 38px);
+      letter-spacing: 1.5px;
+    }
+
+    /* ── FOOTER ────────────────────────────── */
+    .board-footer {
+      background: #f0f4f8;
+      border-top: 1px solid #dde5ee;
+      padding: clamp(8px, 1.2vw, 16px) clamp(20px, 4vw, 60px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .board:hover .board-footer { opacity: 1; }
+    .board.landscape .board-footer {
+      padding: clamp(5px, 0.8vw, 10px) clamp(20px, 4vw, 60px);
+    }
+    .footer-text {
+      font-size: clamp(9px, 1vw, 13px);
+      color: #64748b;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .footer-refresh {
+      font-size: clamp(9px, 0.9vw, 12px);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .refresh-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── ERROR STATE ───────────────────────── */
+    .error-board {
+      min-height: 100vh;
+      background: var(--green);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      text-align: center;
+      color: white;
+    }
+    .error-board .icon { font-size: 60px; margin-bottom: 20px; }
+    .error-board h2 { font-family: 'Oswald',sans-serif; font-size: 32px; margin-bottom: 12px; letter-spacing: 2px; }
+    .error-board p  { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.7; max-width: 440px; }
+    .error-board code {
+      background: rgba(255,255,255,0.15); border-radius: 6px;
+      padding: 3px 10px; font-size: 13px; font-family: monospace;
+      color: #fff; display: inline-block; margin-top: 6px; word-break: break-all;
+    }
+    .error-board a {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 24px; background: white; color: var(--green);
+      font-weight: 700; padding: 10px 24px; border-radius: 8px;
+      text-decoration: none; font-size: 14px;
+    }
+
+    /* ── ORDER SUMMARY BODY ────────────────── */
+    .order-body {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Empty state */
+    .order-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(12px, 2vw, 24px);
+      color: var(--text2);
+      padding: 40px;
+      text-align: center;
+    }
+    .order-empty .empty-icon {
+      font-size: clamp(56px, 10vw, 120px);
+      opacity: 0.35;
+    }
+    .order-empty h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(22px, 3.5vw, 52px);
+      color: var(--item-color);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    .order-empty p {
+      font-size: clamp(13px, 1.8vw, 24px);
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    /* Order list area — scrollable */
+    .order-list-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: clamp(12px, 1.5vw, 28px) clamp(20px, 3vw, 56px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(8px, 1vw, 18px);
+    }
+
+    /* Single item row */
+    .order-row {
+      background: var(--white);
+      border-radius: clamp(8px, 1vw, 16px);
+      border: 1px solid var(--border-lt);
+      padding: clamp(12px, 1.5vw, 24px) clamp(16px, 2vw, 32px);
+      display: flex;
+      align-items: flex-start;
+      gap: clamp(12px, 1.5vw, 24px);
+    }
+    .order-row-qty {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(20px, 3vw, 44px);
+      font-weight: 700;
+      color: var(--item-color);
+      flex-shrink: 0;
+      min-width: clamp(32px, 4vw, 60px);
+      text-align: center;
+      line-height: 1.2;
+    }
+    .order-row-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .order-row-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(18px, 2.5vw, 36px);
+      font-weight: 600;
+      color: var(--item-color);
+      line-height: 1.2;
+    }
+    .order-row-mods {
+      font-size: clamp(11px, 1.3vw, 18px);
+      color: var(--text2);
+      margin-top: clamp(3px, 0.4vw, 6px);
+      line-height: 1.5;
+    }
+    .order-row-price {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(20px, 3vw, 44px);
+      font-weight: 700;
+      color: var(--price-color);
+      flex-shrink: 0;
+      line-height: 1.2;
+    }
+
+    /* Total bar — pinned to bottom */
+    .order-total-bar {
+      background: var(--item-color);
+      color: var(--white);
+      padding: clamp(16px, 2vw, 32px) clamp(20px, 3vw, 56px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .order-total-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(18px, 2.5vw, 40px);
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    .order-total-amount {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(26px, 4vw, 64px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    /* Completed order state */
+    .order-completed-banner {
+      background: #16a34a;
+      color: white;
+      padding: clamp(10px, 1.5vw, 20px) clamp(20px, 3vw, 56px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(8px, 1vw, 16px);
+      flex-shrink: 0;
+    }
+    .order-completed-banner .check-icon {
+      font-size: clamp(20px, 2.5vw, 36px);
+    }
+    .order-completed-banner .completed-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(16px, 2vw, 30px);
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="board portrait" id="boardRoot">
+  <!-- Content injected by JS -->
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+// ── FIREBASE ─────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyDrUKPNep2uxbZjYJ4i0vImdG7Xn_UuSXo",
+  authDomain:        "rob-ph-demos.firebaseapp.com",
+  projectId:         "rob-ph-demos",
+  storageBucket:     "rob-ph-demos.firebasestorage.app",
+  messagingSenderId: "199417645406",
+  appId:             "1:199417645406:web:0e7a54d00083b41ea9e7cf"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── URL PARAMS ────────────────────────────────────────────────────────────────
+const urlParams   = new URLSearchParams(window.location.search);
+const STORE_CODE  = (urlParams.get('store')       || '').trim().toUpperCase();
+const DEVICE_UDID = (urlParams.get('device')      || '').trim();
+const ORIENTATION = urlParams.get('orientation')  || 'portrait';
+const BRAND_ID    = (urlParams.get('brand')       || '').trim();
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let _cart     = null;   // Firestore cart document, or null if never written
+let _cartExists = false; // true once the document has been seen at least once
+let _settings = { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
+let _brands   = [];
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function esc(str)   { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtTime(d) { return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+function fmtDate(d) { return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }); }
+
+function getActiveBrand() {
+  if (!_brands.length) {
+    const s = _settings;
+    return {
+      id: 'default',
+      name:      s.restaurantName || 'Our Restaurant',
+      currency:  s.currency       || '$',
+      logo:      s.logo           || '',
+      logoRight: s.logoRight      || s.logo || '',
+      colors:    s.colors         || {},
+      showClock: true,
+      timeFormat: 'british'
+    };
+  }
+  if (BRAND_ID) {
+    const found = _brands.find(b => b.name.toLowerCase() === BRAND_ID.toLowerCase());
+    if (found) return found;
+  }
+  return _brands[0];
+}
+
+function applyColorScheme(brand) {
+  const colors = (brand && brand.colors) || {};
+  const root = document.documentElement.style;
+  if (colors.header)     root.setProperty('--board-header-bg', colors.header);
+  if (colors.header)     root.setProperty('--item-color',      colors.header);
+  if (colors.headerText) root.setProperty('--header-text',     colors.headerText);
+  if (colors.accent)     root.setProperty('--green',           colors.accent);
+  if (colors.body)       root.setProperty('--cream',           colors.body);
+  if (colors.text)       root.setProperty('--text',            colors.text);
+  if (colors.price)      root.setProperty('--price-color',     colors.price);
+  if (colors.clockText)  root.setProperty('--clock-text',      colors.clockText);
+}
+
+function updateClock() {
+  const el = document.getElementById('clockDisplay');
+  if (!el) return;
+  const brand = getActiveBrand();
+  const fmt   = brand && brand.timeFormat;
+  const n     = new Date();
+  let timeStr, dateStr;
+  if (fmt === 'us') {
+    timeStr = n.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    dateStr = n.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  } else if (fmt === 'british') {
+    timeStr = n.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+    dateStr = n.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  } else {
+    timeStr = fmtTime(n);
+    dateStr = fmtDate(n);
+  }
+  el.textContent = timeStr + '  ·  ' + dateStr;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  const brand     = getActiveBrand();
+  applyColorScheme(brand);
+
+  const boardRoot = document.getElementById('boardRoot');
+  boardRoot.className = 'board ' + ORIENTATION;
+
+  const logoLeft  = brand.logo      || '';
+  const logoRight = brand.logoRight || brand.logo || '';
+  const brandName = brand.name  || 'Our Restaurant';
+  const currency  = brand.currency  || '$';
+
+  const showClock = brand.showClock !== false;
+
+  const logoSlot = (src, side) => src
+    ? `<div class="header-logo-wrap"><img src="${src}" alt="${esc(side)} logo"></div>`
+    : `<div class="header-logo-wrap no-logo"></div>`;
+
+  const headerHtml = `
+    <div class="board-header">
+      ${logoSlot(logoLeft, 'Left')}
+      <div class="header-center">
+        <div class="header-brand">${esc(brandName)}</div>
+        <div class="header-menu-type">Order Summary</div>
+      </div>
+      ${logoSlot(logoRight, 'Right')}
+    </div>
+    ${showClock ? `
+    <div class="clock-bar">
+      <div class="store-label">${esc(STORE_CODE)}</div>
+      <div class="time-display" id="clockDisplay"></div>
+    </div>` : ''}
+  `;
+
+  const cart  = _cart;
+  const items = cart && cart.items && cart.items.length ? cart.items : null;
+  const status = cart && cart.status;
+
+  let bodyHtml = '';
+
+  if (!items) {
+    // Empty / no cart
+    bodyHtml = `
+      <div class="order-body">
+        <div class="order-empty">
+          <div class="empty-icon">🛍️</div>
+          <h2>No Items in your Takeaway Bag</h2>
+          <p>Add items from your mobile to get started</p>
+        </div>
+      </div>`;
+  } else {
+    // Has items
+    const rows = items.map(row => {
+      const mods = [];
+      if (row.size)                           mods.push(row.size);
+      if (row.milk)                           mods.push(row.milk);
+      if (row.removedIngredients?.length)     mods.push('No ' + row.removedIngredients.join(', No '));
+      if (row.addedIngredients?.length)       mods.push('+ ' + row.addedIngredients.join(', + '));
+      return `
+        <div class="order-row">
+          <div class="order-row-qty">${row.qty}&times;</div>
+          <div class="order-row-info">
+            <div class="order-row-name">${esc(row.name)}</div>
+            ${mods.length ? `<div class="order-row-mods">${esc(mods.join(' · '))}</div>` : ''}
+          </div>
+          <div class="order-row-price">${currency}${Number(row.lineTotal).toFixed(2)}</div>
+        </div>`;
+    }).join('');
+
+    const total = Number(cart.total || 0).toFixed(2);
+
+    const completedBanner = (status === 'completed')
+      ? `<div class="order-completed-banner">
+           <span class="check-icon">✅</span>
+           <span class="completed-text">Order Placed — Thank You!</span>
+         </div>`
+      : '';
+
+    bodyHtml = `
+      <div class="order-body">
+        ${completedBanner}
+        <div class="order-list-wrap">${rows}</div>
+        <div class="order-total-bar">
+          <div class="order-total-label">Total</div>
+          <div class="order-total-amount">${currency}${total}</div>
+        </div>
+      </div>`;
+  }
+
+  const footerHtml = `
+    <div class="board-footer">
+      <div class="footer-text">${esc(brandName)} — Order Summary Board</div>
+      <div class="footer-refresh">
+        <span class="refresh-dot"></span> Live sync enabled
+      </div>
+    </div>
+  `;
+
+  boardRoot.innerHTML = headerHtml + bodyHtml + footerHtml;
+  updateClock();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+if (!DEVICE_UDID) {
+  document.getElementById('boardRoot').innerHTML = `
+    <div class="error-board">
+      <div class="icon">🛒</div>
+      <h2>Missing Device ID</h2>
+      <p>This Order Summary Board requires a Device UDID to link to a customer's order.</p>
+      <code>order-summary.html?store=O2O-001&amp;device=ABCD-1234</code>
+      <a href="index.html">← Back to Portal</a>
+    </div>`;
+} else {
+  // Start clock
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Listen to cart document for this UDID
+  onSnapshot(doc(db, 'carts', DEVICE_UDID), snap => {
+    _cart = snap.exists() ? snap.data() : null;
+    render();
+  });
+
+  // Listen to brand and settings
+  onSnapshot(doc(db, 'menuboard', 'brands'), snap => {
+    _brands = snap.exists() ? (snap.data().data || []) : [];
+    render();
+  });
+
+  onSnapshot(doc(db, 'menuboard', 'settings'), snap => {
+    _settings = snap.exists() ? snap.data()
+      : { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
+    render();
+  });
+}
+</script>
+</body>
+</html>
