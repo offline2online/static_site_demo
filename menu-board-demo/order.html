@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Order — Menu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -481,6 +481,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .bag-overlay.open { opacity: 1; pointer-events: all; }
 .bag-panel {
   position: fixed; top: var(--host-header-height, 0px); right: 0; bottom: 0; z-index: 301;
+  height: calc(100dvh - var(--host-header-height, 0px));
   width: min(400px, 100vw);
   background: var(--white);
   transform: translateX(100%);
@@ -553,7 +554,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   text-decoration: underline;
 }
 .bag-footer {
-  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0));
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 20px));
   border-top: 1px solid var(--border); flex-shrink: 0;
   background: var(--white);
 }
