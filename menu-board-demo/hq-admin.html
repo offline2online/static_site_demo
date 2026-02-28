@@ -1017,6 +1017,25 @@
         </select>
         <p style="font-size:12px;color:var(--text2);margin-top:4px;">Controls how campaign SKUs interact with the board&rsquo;s selected menu type (breakfast / lunch / etc.)</p>
       </div>
+
+      <div class="section-divider">&#x1F6CD;&#xFE0F; Takeout Bag</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bag Label <span style="font-size:11px;font-weight:400;text-transform:none;color:var(--text2);">(shown in bag panel &amp; order summary)</span></label>
+          <input type="text" id="bBagLabel" placeholder="Takeout Bag" maxlength="40">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Bag Icon <span style="font-size:11px;font-weight:400;text-transform:none;color:var(--text2);">(transparent PNG &mdash; leave blank to use emoji &#x1F6CD;)</span></label>
+        <div class="img-upload-zone" onclick="document.getElementById('bBagIconUpload').click()" style="padding:12px;">
+          <input type="file" id="bBagIconUpload" accept="image/png,image/webp,image/svg+xml" onchange="uploadBagIcon(event)">
+          <div id="bBagIconPreview" style="display:none;margin-bottom:8px;align-items:center;gap:12px;">
+            <img id="bBagIconImg" style="height:40px;width:40px;object-fit:contain;">
+            <button type="button" onclick="clearBagIcon()" style="font-size:12px;color:var(--danger);text-decoration:underline;background:none;border:none;cursor:pointer;">Remove icon</button>
+          </div>
+          <p>Click to upload bag icon (PNG recommended, max 200KB)</p>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeBrandModal()">Cancel</button>
@@ -1868,6 +1887,7 @@ function renderBrands() {
 }
 
 let brandEditingLogoLeft = '';
+let brandEditingBagIcon = '';
 
 function openAddBrandModal() {
   document.getElementById('brandModalTitle').textContent = 'Add Brand';
@@ -1896,6 +1916,9 @@ function openAddBrandModal() {
   document.getElementById('bTimeFormat').value   = 'british';
   document.getElementById('bShowHeader').value   = 'true';
   document.getElementById('bCampaignMode').value = 'override';
+  brandEditingBagIcon = '';
+  document.getElementById('bBagLabel').value = '';
+  document.getElementById('bBagIconPreview').style.display = 'none';
   document.getElementById('brandModal').classList.add('open');
 }
 
@@ -1942,6 +1965,15 @@ function openEditBrandModal(id) {
   document.getElementById('bShowHeader').value   = brand.showHeader === false ? 'false' : 'true';
   document.getElementById('bCampaignMode').value = brand.campaignMode || 'override';
 
+  brandEditingBagIcon = brand.bagIcon || '';
+  document.getElementById('bBagLabel').value = brand.bagLabel || '';
+  if (brandEditingBagIcon) {
+    document.getElementById('bBagIconPreview').style.display = 'flex';
+    document.getElementById('bBagIconImg').src = brandEditingBagIcon;
+  } else {
+    document.getElementById('bBagIconPreview').style.display = 'none';
+  }
+
   document.getElementById('brandModal').classList.add('open');
 }
 
@@ -1960,6 +1992,26 @@ function uploadBrandLogo(event) {
   };
   reader.readAsDataURL(file);
   event.target.value = '';
+}
+
+function uploadBagIcon(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 200 * 1024) { toast('⚠️ Icon must be under 200KB', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    brandEditingBagIcon = e.target.result;
+    document.getElementById('bBagIconPreview').style.display = 'flex';
+    document.getElementById('bBagIconImg').src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function clearBagIcon() {
+  brandEditingBagIcon = '';
+  document.getElementById('bBagIconPreview').style.display = 'none';
+  document.getElementById('bBagIconImg').src = '';
 }
 
 function saveBrand() {
@@ -1997,6 +2049,7 @@ function saveBrand() {
   const timeFormat   = document.getElementById('bTimeFormat').value || 'british';
   const showHeader   = document.getElementById('bShowHeader').value !== 'false';
   const campaignMode = document.getElementById('bCampaignMode').value || 'override';
+  const bagLabel     = (document.getElementById('bBagLabel').value || '').trim();
 
   const brands = getBrands();
   const now    = new Date().toISOString();
@@ -2004,10 +2057,10 @@ function saveBrand() {
   if (id) {
     const idx = brands.findIndex(b => b.id === id);
     if (idx === -1) return;
-    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, updatedAt: now };
+    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, bagLabel, bagIcon: brandEditingBagIcon, updatedAt: now };
     toast('\u2705 Brand updated', 'success');
   } else {
-    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, createdAt: now, updatedAt: now });
+    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, bagLabel, bagIcon: brandEditingBagIcon, createdAt: now, updatedAt: now });
     toast('\u2705 Brand added', 'success');
   }
 
@@ -2179,6 +2232,8 @@ window.exportData         = exportData;
 window.importData         = importData;
 window.clearAllData       = clearAllData;
 window.uploadBrandLogo    = uploadBrandLogo;
+window.uploadBagIcon      = uploadBagIcon;
+window.clearBagIcon       = clearBagIcon;
 window.renderItems        = renderItems;
 window.openEditModal      = openEditModal;
 

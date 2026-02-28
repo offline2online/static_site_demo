@@ -24,6 +24,7 @@
       --item-color:       #004d33;
       --header-text:      #006241;
       --clock-text:       #1e293b;
+      --qr-safe-bottom:   0px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -308,6 +309,7 @@
       background: var(--item-color);
       color: var(--white);
       padding: clamp(16px, 2vw, 32px) clamp(20px, 3vw, 56px);
+      padding-bottom: calc(clamp(16px, 2vw, 32px) + var(--qr-safe-bottom, 0px));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -378,6 +380,10 @@ const STORE_CODE  = (urlParams.get('store')       || '').trim().toUpperCase();
 const DEVICE_UDID = (urlParams.get('device')      || '').trim();
 const ORIENTATION = urlParams.get('orientation')  || 'portrait';
 const BRAND_ID    = (urlParams.get('brand')       || '').trim();
+const QR_SAFE_BOTTOM = Math.min(parseInt(urlParams.get('qrSafe') || '0', 10) || 0, 300);
+if (QR_SAFE_BOTTOM > 0) {
+  document.documentElement.style.setProperty('--qr-safe-bottom', QR_SAFE_BOTTOM + 'px');
+}
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let _cart     = null;   // Firestore cart document, or null if never written
@@ -458,6 +464,11 @@ function render() {
   const currency  = brand.currency  || '$';
 
   const showClock = brand.showClock !== false;
+  const bagLabel  = brand.bagLabel || 'Takeout Bag';
+  const bagIcon   = brand.bagIcon  || '';
+  const bagIconHtml = bagIcon
+    ? `<img src="${esc(bagIcon)}" alt="" style="width:clamp(56px,10vw,100px);height:clamp(56px,10vw,100px);object-fit:contain;opacity:0.6;">`
+    : `<div class="empty-icon">🛍️</div>`;
 
   const logoSlot = (src, side) => src
     ? `<div class="header-logo-wrap"><img src="${src}" alt="${esc(side)} logo"></div>`
@@ -490,8 +501,8 @@ function render() {
     bodyHtml = `
       <div class="order-body">
         <div class="order-empty">
-          <div class="empty-icon">🛍️</div>
-          <h2>No Items in your Takeaway Bag</h2>
+          ${bagIconHtml}
+          <h2>No Items in your ${esc(bagLabel)}</h2>
           <p>Add items from your mobile to get started</p>
         </div>
       </div>`;
