@@ -866,7 +866,7 @@ function render() {
   // When a Device UDID is in the URL and the API returns SKUs, override the display.
   let campaignFiltered = displayFiltered;
   if (_campaignSkus && _campaignSkus.length > 0) {
-    const mode = (_settings.phApi && _settings.phApi.campaignMode) || 'override';
+    const mode = brand.campaignMode || (_settings.phApi && _settings.phApi.campaignMode) || 'override';
     if (mode === 'override') {
       // Ignore menu type — show any active item matching campaign SKUs
       campaignFiltered = items.filter(i =>
@@ -996,8 +996,10 @@ function render() {
     ? `<div class="header-logo-wrap"><img src="${src}" alt="${esc(side)} logo"></div>`
     : `<div class="header-logo-wrap no-logo"></div>`;
 
-  const showClock = brand.showClock !== false;
+  const showHeader = brand.showHeader !== false;
+  const showClock  = brand.showClock  !== false;
   const headerHtml = `
+    ${showHeader ? `
     <div class="board-header">
       ${logoSlot(logoLeft, 'Left')}
       <div class="header-center">
@@ -1006,6 +1008,7 @@ function render() {
       </div>
       ${logoSlot(logoRight, 'Right')}
     </div>
+    ` : ''}
     ${showClock ? `
       <div class="clock-bar">
         ${_campaignFirstName ? `<div class="greeting-text">${_campaignFirstName.toUpperCase()}, THIS IS WHAT WE RECOMMEND FOR YOU</div>` : ''}

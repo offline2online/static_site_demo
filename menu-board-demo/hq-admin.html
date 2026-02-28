@@ -715,14 +715,6 @@
               </div>
               <p id="phTokenStatus" style="font-size:12px;color:var(--success);margin-top:6px;display:none;">&#x1F512; Token saved securely (encrypted). Leave the field blank to keep the existing token.</p>
             </div>
-            <div class="form-group">
-              <label>Campaign Filter Mode</label>
-              <select id="phCampaignMode" style="max-width:480px;">
-                <option value="override">Override Completely &mdash; show campaign SKUs regardless of menu type</option>
-                <option value="filter">Apply on Top &mdash; only show campaign SKUs that match the current menu type</option>
-              </select>
-              <p style="font-size:12px;color:var(--text2);margin-top:4px;">Controls how campaign SKUs interact with the board&rsquo;s selected menu type (breakfast / lunch / etc.)</p>
-            </div>
             <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
               <button class="btn btn-primary" onclick="savePhApi()">Save API Settings</button>
               <button class="btn btn-ghost" onclick="testPhApi()">Test Connection</button>
@@ -897,23 +889,22 @@
           <input type="text" id="bCurrency" placeholder="$" maxlength="3">
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Header Logo &mdash; Left Side</label>
-          <div class="img-upload-zone" onclick="document.getElementById('bLogoUpload').click()" style="padding:12px;">
-            <input type="file" id="bLogoUpload" accept="image/*" onchange="uploadBrandLogo(event,'left')">
-            <div id="bLogoPreview" style="display:none;margin-bottom:8px;"><img id="bLogoImg" style="height:48px;border-radius:8px;object-fit:contain;"></div>
-            <p>Click to upload left logo</p>
-          </div>
+      <div class="form-group">
+        <label>Brand Logo</label>
+        <div class="img-upload-zone" onclick="document.getElementById('bLogoUpload').click()" style="padding:12px;">
+          <input type="file" id="bLogoUpload" accept="image/*" onchange="uploadBrandLogo(event)">
+          <div id="bLogoPreview" style="display:none;margin-bottom:8px;"><img id="bLogoImg" style="height:48px;border-radius:8px;object-fit:contain;"></div>
+          <p>Click to upload brand logo</p>
         </div>
-        <div class="form-group">
-          <label>Header Logo &mdash; Right Side <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text2);">(leave empty to mirror left)</span></label>
-          <div class="img-upload-zone" onclick="document.getElementById('bLogoRightUpload').click()" style="padding:12px;">
-            <input type="file" id="bLogoRightUpload" accept="image/*" onchange="uploadBrandLogo(event,'right')">
-            <div id="bLogoRightPreview" style="display:none;margin-bottom:8px;"><img id="bLogoRightImg" style="height:48px;border-radius:8px;object-fit:contain;"></div>
-            <p>Click to upload right logo</p>
-          </div>
-        </div>
+      </div>
+
+      <div class="section-divider">&#x1F3F7;&#xFE0F; Menu Header</div>
+      <div class="form-group">
+        <label>Show Menu Header Bar</label>
+        <select id="bShowHeader">
+          <option value="true">On &mdash; Show brand name, logo and menu type on board</option>
+          <option value="false">Off &mdash; Hide menu header (more space for items)</option>
+        </select>
       </div>
 
       <div class="section-divider">&#x1F3A8; Colour Scheme</div>
@@ -1015,6 +1006,16 @@
             <option value="us">US &mdash; MM/DD/YYYY, 12-hour AM/PM</option>
           </select>
         </div>
+      </div>
+
+      <div class="section-divider">&#x1F4E1; Campaign Hub</div>
+      <div class="form-group">
+        <label>Campaign Filter Mode</label>
+        <select id="bCampaignMode">
+          <option value="override">Override Completely &mdash; show campaign SKUs regardless of menu type</option>
+          <option value="filter">Apply on Top &mdash; only show campaign SKUs that match the current menu type</option>
+        </select>
+        <p style="font-size:12px;color:var(--text2);margin-top:4px;">Controls how campaign SKUs interact with the board&rsquo;s selected menu type (breakfast / lunch / etc.)</p>
       </div>
     </div>
     <div class="modal-footer">
@@ -1866,18 +1867,15 @@ function renderBrands() {
   }).join('')}</div>`;
 }
 
-let brandEditingLogoLeft  = '';
-let brandEditingLogoRight = '';
+let brandEditingLogoLeft = '';
 
 function openAddBrandModal() {
   document.getElementById('brandModalTitle').textContent = 'Add Brand';
   document.getElementById('bEditId').value    = '';
   document.getElementById('bName').value      = '';
   document.getElementById('bCurrency').value  = '$';
-  brandEditingLogoLeft  = '';
-  brandEditingLogoRight = '';
-  document.getElementById('bLogoPreview').style.display      = 'none';
-  document.getElementById('bLogoRightPreview').style.display = 'none';
+  brandEditingLogoLeft = '';
+  document.getElementById('bLogoPreview').style.display = 'none';
   // Colors — defaults
   document.getElementById('bColorHeader').value      = DEFAULT_COLORS.header;
   document.getElementById('bColorHeaderText').value  = DEFAULT_COLORS.headerText;
@@ -1894,8 +1892,10 @@ function openAddBrandModal() {
   document.getElementById('bLandscapeCols').value = DEFAULT_DISPLAY.landscape.cols;
   document.getElementById('bLandscapeRows').value = DEFAULT_DISPLAY.landscape.rows;
   document.getElementById('bLandscapeMax').value  = DEFAULT_DISPLAY.landscape.maxItems;
-  document.getElementById('bShowClock').value   = 'true';
-  document.getElementById('bTimeFormat').value  = 'british';
+  document.getElementById('bShowClock').value    = 'true';
+  document.getElementById('bTimeFormat').value   = 'british';
+  document.getElementById('bShowHeader').value   = 'true';
+  document.getElementById('bCampaignMode').value = 'override';
   document.getElementById('brandModal').classList.add('open');
 }
 
@@ -1911,20 +1911,13 @@ function openEditBrandModal(id) {
   document.getElementById('bName').value      = brand.name     || '';
   document.getElementById('bCurrency').value  = brand.currency || '$';
 
-  brandEditingLogoLeft  = brand.logo      || '';
-  brandEditingLogoRight = brand.logoRight || '';
+  brandEditingLogoLeft = brand.logo || '';
 
   if (brandEditingLogoLeft) {
     document.getElementById('bLogoPreview').style.display = 'block';
     document.getElementById('bLogoImg').src = brandEditingLogoLeft;
   } else {
     document.getElementById('bLogoPreview').style.display = 'none';
-  }
-  if (brandEditingLogoRight) {
-    document.getElementById('bLogoRightPreview').style.display = 'block';
-    document.getElementById('bLogoRightImg').src = brandEditingLogoRight;
-  } else {
-    document.getElementById('bLogoRightPreview').style.display = 'none';
   }
 
   document.getElementById('bColorHeader').value      = c.header     || DEFAULT_COLORS.header;
@@ -1943,9 +1936,11 @@ function openEditBrandModal(id) {
   document.getElementById('bLandscapeRows').value = lD.rows     || 3;
   document.getElementById('bLandscapeMax').value  = lD.maxItems || 15;
 
-  document.getElementById('bShowClock').value  = brand.showClock === false ? 'false' : 'true';
-  document.getElementById('bTimeFormat').value = brand.timeFormat || 'british';
-  document.getElementById('bHideOos').value    = String(!!(brand.display && brand.display.hideOutOfStock));
+  document.getElementById('bShowClock').value    = brand.showClock === false ? 'false' : 'true';
+  document.getElementById('bTimeFormat').value   = brand.timeFormat || 'british';
+  document.getElementById('bHideOos').value      = String(!!(brand.display && brand.display.hideOutOfStock));
+  document.getElementById('bShowHeader').value   = brand.showHeader === false ? 'false' : 'true';
+  document.getElementById('bCampaignMode').value = brand.campaignMode || 'override';
 
   document.getElementById('brandModal').classList.add('open');
 }
@@ -1954,20 +1949,14 @@ function closeBrandModal() {
   document.getElementById('brandModal').classList.remove('open');
 }
 
-function uploadBrandLogo(event, side) {
+function uploadBrandLogo(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (e) => {
-    if (side === 'left') {
-      brandEditingLogoLeft = e.target.result;
-      document.getElementById('bLogoPreview').style.display = 'block';
-      document.getElementById('bLogoImg').src = e.target.result;
-    } else {
-      brandEditingLogoRight = e.target.result;
-      document.getElementById('bLogoRightPreview').style.display = 'block';
-      document.getElementById('bLogoRightImg').src = e.target.result;
-    }
+    brandEditingLogoLeft = e.target.result;
+    document.getElementById('bLogoPreview').style.display = 'block';
+    document.getElementById('bLogoImg').src = e.target.result;
   };
   reader.readAsDataURL(file);
   event.target.value = '';
@@ -2004,8 +1993,10 @@ function saveBrand() {
     hideOutOfStock: document.getElementById('bHideOos').value === 'true',
   };
 
-  const showClock = document.getElementById('bShowClock').value !== 'false';
-  const timeFormat = document.getElementById('bTimeFormat').value || 'british';
+  const showClock    = document.getElementById('bShowClock').value !== 'false';
+  const timeFormat   = document.getElementById('bTimeFormat').value || 'british';
+  const showHeader   = document.getElementById('bShowHeader').value !== 'false';
+  const campaignMode = document.getElementById('bCampaignMode').value || 'override';
 
   const brands = getBrands();
   const now    = new Date().toISOString();
@@ -2013,10 +2004,10 @@ function saveBrand() {
   if (id) {
     const idx = brands.findIndex(b => b.id === id);
     if (idx === -1) return;
-    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: brandEditingLogoRight, colors, display, showClock, timeFormat, updatedAt: now };
+    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, updatedAt: now };
     toast('\u2705 Brand updated', 'success');
   } else {
-    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: brandEditingLogoRight, colors, display, showClock, timeFormat, createdAt: now, updatedAt: now });
+    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, createdAt: now, updatedAt: now });
     toast('\u2705 Brand added', 'success');
   }
 
