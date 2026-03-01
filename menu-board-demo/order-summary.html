@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Summary Board</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
     :root {
       --green:            #006241;
@@ -361,6 +362,37 @@
       letter-spacing: 2px;
     }
 
+    /* QR code box in empty state */
+    .qr-scan-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(8px, 1vw, 14px);
+      margin-top: clamp(12px, 2vw, 28px);
+    }
+    .qr-scan-wrap .qr-box {
+      background: #fff;
+      border-radius: clamp(8px, 1vw, 16px);
+      padding: clamp(10px, 1.5vw, 20px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-scan-wrap .qr-box canvas,
+    .qr-scan-wrap .qr-box img {
+      display: block;
+      width: clamp(100px, 14vw, 180px) !important;
+      height: clamp(100px, 14vw, 180px) !important;
+    }
+    .qr-scan-label {
+      font-size: clamp(11px, 1.3vw, 18px);
+      color: var(--text2);
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 0.3px;
+    }
+
     /* Personalised greeting in clock bar */
     .clock-bar .customer-greeting {
       font-family: 'Oswald', sans-serif;
@@ -543,13 +575,19 @@ function render() {
   let bodyHtml = '';
 
   if (!items) {
-    // Empty / no cart
+    // Empty / no cart — show QR code so customer can scan to open mobile ordering
+    const qrSection = (STORE_CODE && DEVICE_UDID) ? `
+      <div class="qr-scan-wrap">
+        <div class="qr-box" id="qrCodeBox"></div>
+        <div class="qr-scan-label">Scan to order on your mobile</div>
+      </div>` : '';
     bodyHtml = `
       <div class="order-body">
         <div class="order-empty">
           ${bagIconHtml}
           <h2>No Items in your ${esc(bagLabel)}</h2>
           <p>Add items from your mobile to get started</p>
+          ${qrSection}
         </div>
       </div>`;
   } else {
@@ -604,6 +642,16 @@ function render() {
 
   boardRoot.innerHTML = headerHtml + bodyHtml + footerHtml;
   updateClock();
+
+  // Generate QR code in the empty state so customers can scan to link their mobile
+  if (!items && STORE_CODE && DEVICE_UDID) {
+    const qrEl = document.getElementById('qrCodeBox');
+    if (qrEl) {
+      const base = location.pathname.replace(/order-summary\.html.*$/, '');
+      const mobileUrl = `${location.origin}${base}order.html?store=${encodeURIComponent(STORE_CODE)}&device=${encodeURIComponent(DEVICE_UDID)}`;
+      new QRCode(qrEl, { text: mobileUrl, width: 180, height: 180, colorDark: '#000000', colorLight: '#ffffff' });
+    }
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────

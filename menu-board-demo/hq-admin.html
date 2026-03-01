@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HQ Admin — PersonalisationHub</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-theme-alpine.css">
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/dist/ag-grid-community.min.noStyle.js"></script>
   <style>
     /* ============================================================
        CSS VARIABLES
@@ -467,6 +470,26 @@
     .brand-card-actions { display: flex; gap: 6px; }
     .brand-url-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 11px; font-family: monospace; color: var(--text2); margin-top: 10px; word-break: break-all; }
 
+    /* ── AG-GRID THEME OVERRIDES ─────────────── */
+    .ag-theme-alpine {
+      --ag-background-color:          var(--surface);
+      --ag-header-background-color:   var(--surface2);
+      --ag-odd-row-background-color:  var(--surface);
+      --ag-row-hover-color:           var(--surface2);
+      --ag-border-color:              var(--border);
+      --ag-header-foreground-color:   var(--text2);
+      --ag-foreground-color:          var(--text);
+      --ag-font-family:               'Inter', sans-serif;
+      --ag-font-size:                 13px;
+      --ag-cell-horizontal-padding:   14px;
+      --ag-floating-filter-height:    36px;
+    }
+    .ag-theme-alpine .ag-header-cell-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ag-theme-alpine .ag-floating-filter-input { font-family: 'Inter', sans-serif; font-size: 12px; }
+    .ag-theme-alpine .ag-cell { display: flex; align-items: center; }
+    /* cell renderers that need full height */
+    .ag-theme-alpine .ag-cell-wrapper { width: 100%; }
+
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
@@ -642,35 +665,11 @@
           <div class="toolbar">
             <div class="search-box">
               <span>&#x1F50D;</span>
-              <input type="text" id="searchInput" placeholder="Search by name, SKU, category&hellip;" oninput="renderItems()">
+              <input type="text" id="searchInput" placeholder="Quick search across all columns&hellip;" oninput="onItemsQuickFilter()">
             </div>
-            <select class="filter-select" id="filterBrand" onchange="renderItems()">
-              <option value="">All Brands</option>
-            </select>
-            <select class="filter-select" id="filterType" onchange="renderItems()">
-              <option value="">All Menu Types</option>
-              <option value="breakfast">Breakfast</option>
-              <option value="lunch">Lunch</option>
-              <option value="dinner">Dinner</option>
-              <option value="drinks">Drinks</option>
-              <option value="specials">Today's Specials</option>
-            </select>
-            <select class="filter-select" id="filterStatus" onchange="renderItems()">
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-            <select class="filter-select" id="filterCategory" onchange="renderItems()">
-              <option value="">All Categories</option>
-            </select>
+            <span style="font-size:12px;color:var(--text2);">Use column filter icons &#x25BC; for detailed filtering</span>
           </div>
-          <div class="table-wrap" id="itemsTableWrap">
-            <div class="empty-state">
-              <div class="icon">&#x1F37D;&#xFE0F;</div>
-              <h3>No menu items yet</h3>
-              <p>Click "Add Item" to create your first menu item.</p>
-            </div>
-          </div>
+          <div id="itemsGrid" class="ag-theme-alpine" style="width:100%;height:600px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);"></div>
         </div>
 
         <!-- CATEGORIES -->
@@ -692,7 +691,7 @@
             <div style="flex:1;font-size:13px;color:var(--text2);">Manage brands. Each brand has its own restaurant settings, colour scheme, and display configuration.</div>
             <button class="btn btn-primary" onclick="openAddBrandModal()">+ Add Brand</button>
           </div>
-          <div id="brandsGrid"></div>
+          <div id="brandsGrid" class="ag-theme-alpine" style="width:100%;height:500px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);"></div>
         </div>
 
         <!-- SETTINGS -->
@@ -1120,6 +1119,8 @@ let _settings = { restaurantName: 'My Restaurant', currency: '$', logo: '' };
 let _cats     = [];
 let _brands   = [];
 let _allStock = {};
+let itemsGridApi  = null;
+let brandsGridApi = null;
 
 function getBrands() { return _brands; }
 function saveBrands(brands) {
@@ -1314,8 +1315,14 @@ function showView(view) {
   document.getElementById('topbarTitle').textContent = titles[view] || '';
 
   if (view === 'dashboard')  renderDashboard();
-  if (view === 'items')      renderItems();
-  if (view === 'brands')     renderBrands();
+  if (view === 'items') {
+    renderItems();
+    requestAnimationFrame(() => itemsGridApi && itemsGridApi.sizeColumnsToFit());
+  }
+  if (view === 'brands') {
+    renderBrands();
+    requestAnimationFrame(() => brandsGridApi && brandsGridApi.sizeColumnsToFit());
+  }
   if (view === 'categories') renderCategories();
 }
 
@@ -1466,106 +1473,227 @@ function renderDashboard() {
   }
 }
 
-// ===== ITEMS =====
-function renderItems() {
-  const items      = getItems();
-  const brands     = getBrands();
-  const search     = document.getElementById('searchInput').value.toLowerCase();
-  const brandFilter  = document.getElementById('filterBrand').value;
-  const typeFilter = document.getElementById('filterType').value;
-  const statusFilter = document.getElementById('filterStatus').value;
-  const catFilter  = document.getElementById('filterCategory').value;
-
-  // Rebuild brand filter dropdown
-  const brandEl  = document.getElementById('filterBrand');
-  const curBrand = brandEl.value;
-  brandEl.innerHTML = '<option value="">All Brands</option>' +
-    brands.map(b => `<option value="${escHtml(b.id)}" ${b.id===curBrand?'selected':''}>${escHtml(b.name)}</option>`).join('');
-
-  // Rebuild category filter dropdown
-  const cats = [...new Set(items.map(i => i.category).filter(Boolean))];
-  const catEl = document.getElementById('filterCategory');
-  const curCat = catEl.value;
-  catEl.innerHTML = '<option value="">All Categories</option>' +
-    cats.map(c => `<option value="${escHtml(c)}" ${c===curCat?'selected':''}>${escHtml(c)}</option>`).join('');
-
-  document.getElementById('navBadgeItems').textContent = items.length;
-
-  let filtered = items.filter(item => {
-    const cat = String(item.category || '');
-    if (search &&
-        !item.name.toLowerCase().includes(search) &&
-        !item.sku.toLowerCase().includes(search) &&
-        !cat.toLowerCase().includes(search)) return false;
-    if (brandFilter && item.brand !== brandFilter) return false;
-    if (typeFilter && !(item.menuTypes||[]).includes(typeFilter)) return false;
-    if (statusFilter === 'active'   && !item.active)  return false;
-    if (statusFilter === 'inactive' &&  item.active)  return false;
-    if (catFilter && cat !== catFilter) return false;
-    return true;
-  });
-
-  const wrap = document.getElementById('itemsTableWrap');
-  if (!filtered.length) {
-    wrap.innerHTML = `<div class="empty-state"><div class="icon">&#x1F50D;</div><h3>No items found</h3><p>Try adjusting your search or filters.</p></div>`;
-    return;
+// ===== AG-GRID INIT =====
+function initGrids() {
+  // ── Menu Items Grid ──────────────────────────────────────────────────
+  const itemsEl = document.getElementById('itemsGrid');
+  if (itemsEl && !itemsGridApi) {
+    itemsGridApi = agGrid.createGrid(itemsEl, {
+      rowHeight: 64,
+      suppressCellFocus: true,
+      defaultColDef: {
+        resizable: true,
+        sortable: true,
+        filter: 'agTextColumnFilter',
+        floatingFilter: true,
+      },
+      columnDefs: [
+        {
+          headerName: 'Item', field: 'name', flex: 3, minWidth: 220,
+          cellRenderer: (params) => {
+            const item = params.data;
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;align-items:center;gap:12px;height:100%;';
+            const imgWrap = document.createElement('div');
+            imgWrap.className = 'item-img';
+            if (item.images && item.images[0]) {
+              const img = document.createElement('img');
+              img.src = item.images[0]; img.alt = item.name;
+              imgWrap.appendChild(img);
+            } else {
+              imgWrap.innerHTML = '<span>\u{1F37D}\uFE0F</span>';
+            }
+            const nameDiv = document.createElement('div');
+            const nameEl = document.createElement('div');
+            nameEl.className = 'item-name'; nameEl.textContent = item.name;
+            const descEl = document.createElement('div');
+            descEl.style.cssText = 'font-size:12px;color:var(--text2);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+            descEl.textContent = item.description || '';
+            nameDiv.appendChild(nameEl); nameDiv.appendChild(descEl);
+            div.appendChild(imgWrap); div.appendChild(nameDiv);
+            return div;
+          }
+        },
+        {
+          headerName: 'Brand', field: 'brand', flex: 1.5, minWidth: 110,
+          valueGetter: (params) => {
+            const b = getBrands().find(b => b.id === params.data.brand);
+            return b ? b.name : (params.data.brand || '—');
+          }
+        },
+        {
+          headerName: 'SKU', field: 'sku', flex: 1.2, minWidth: 100,
+          cellStyle: { fontFamily: 'monospace', fontSize: '11px', color: 'var(--text2)' }
+        },
+        {
+          headerName: 'Category', field: 'category', flex: 1.2, minWidth: 110,
+          valueFormatter: (params) => String(params.value || '')
+        },
+        {
+          headerName: 'Menu Types', field: 'menuTypes', flex: 1.5, minWidth: 140,
+          filter: false, sortable: false,
+          cellRenderer: (params) => {
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-items:center;height:100%;';
+            (params.value || []).forEach(t => {
+              const span = document.createElement('span');
+              span.className = 'tag tag-' + t;
+              const mt = MENU_TYPES.find(m => m.id === t);
+              span.textContent = mt ? mt.label : t;
+              wrap.appendChild(span);
+            });
+            return wrap;
+          }
+        },
+        {
+          headerName: 'Price', field: 'price', flex: 1, minWidth: 80,
+          filter: 'agNumberColumnFilter',
+          valueFormatter: (params) => {
+            const brands = getBrands();
+            const currency = (brands[0] && brands[0].currency) ? brands[0].currency : '$';
+            return currency + parseFloat(params.value || 0).toFixed(2);
+          },
+          cellStyle: { fontWeight: '700', color: 'var(--primary)' }
+        },
+        {
+          headerName: 'Status', field: 'active', flex: 0.8, minWidth: 80,
+          filter: false,
+          valueFormatter: (params) => params.value ? 'Active' : 'Inactive',
+          cellRenderer: (params) => {
+            const item = params.data;
+            const label = document.createElement('label');
+            label.className = 'toggle';
+            label.title = item.active ? 'Deactivate item' : 'Activate item';
+            const input = document.createElement('input');
+            input.type = 'checkbox'; input.checked = !!item.active;
+            input.addEventListener('change', () => toggleActive(item.id, input.checked));
+            const slider = document.createElement('span');
+            slider.className = 'toggle-slider';
+            label.appendChild(input); label.appendChild(slider);
+            return label;
+          }
+        },
+        {
+          headerName: 'Actions', field: 'id', flex: 0.8, minWidth: 90,
+          filter: false, sortable: false,
+          cellRenderer: (params) => {
+            const item = params.data;
+            const div = document.createElement('div');
+            div.className = 'actions';
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn btn-ghost btn-sm btn-icon'; editBtn.title = 'Edit'; editBtn.textContent = '\u270F\uFE0F';
+            editBtn.addEventListener('click', () => openEditModal(item.id));
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn btn-ghost btn-sm btn-icon'; delBtn.title = 'Delete'; delBtn.textContent = '\u{1F5D1}\uFE0F';
+            delBtn.addEventListener('click', () => confirmDelete(item.id, item.name));
+            div.appendChild(editBtn); div.appendChild(delBtn);
+            return div;
+          }
+        }
+      ]
+    });
   }
 
-  const currency = (brands[0] && brands[0].currency) ? brands[0].currency : (getSettings().currency || '$');
-  const brandMap = Object.fromEntries(brands.map(b => [b.id, b.name]));
+  // ── Brands Grid ──────────────────────────────────────────────────────
+  const brandsEl = document.getElementById('brandsGrid');
+  if (brandsEl && !brandsGridApi) {
+    brandsGridApi = agGrid.createGrid(brandsEl, {
+      rowHeight: 56,
+      suppressCellFocus: true,
+      defaultColDef: {
+        resizable: true,
+        sortable: true,
+        filter: 'agTextColumnFilter',
+        floatingFilter: true,
+      },
+      columnDefs: [
+        { headerName: 'Brand Name', field: 'name', flex: 2, minWidth: 130 },
+        {
+          headerName: 'ID', field: 'id', flex: 1.5, minWidth: 110,
+          cellStyle: { fontFamily: 'monospace', fontSize: '12px', color: 'var(--text2)' }
+        },
+        { headerName: 'Currency', field: 'currency', flex: 0.8, minWidth: 80 },
+        {
+          headerName: 'Colors', flex: 1.8, minWidth: 200,
+          filter: false, sortable: false,
+          cellRenderer: (params) => {
+            const b = params.data;
+            const c = b.colors || DEFAULT_COLORS;
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;align-items:center;gap:6px;height:100%;';
+            const s1 = document.createElement('div');
+            s1.className = 'brand-color-swatch';
+            s1.style.background = c.accent || '#006241';
+            s1.title = 'Accent: ' + (c.accent || '#006241');
+            const s2 = document.createElement('div');
+            s2.className = 'brand-color-swatch';
+            s2.style.background = c.body || '#f9f4ec';
+            s2.title = 'Body: ' + (c.body || '#f9f4ec');
+            const txt = document.createElement('span');
+            txt.style.cssText = 'font-size:11px;color:var(--text2);';
+            txt.textContent = (c.accent || '#006241') + ' / ' + (c.body || '#f9f4ec');
+            div.appendChild(s1); div.appendChild(s2); div.appendChild(txt);
+            return div;
+          }
+        },
+        {
+          headerName: 'Portrait', flex: 1.5, minWidth: 160,
+          valueGetter: (params) => {
+            const d = params.data.display?.portrait || DEFAULT_DISPLAY.portrait;
+            const max = Math.min(d.maxItems, d.cols * d.rows);
+            return `${d.cols}×${d.rows} cols/rows (max ${max})`;
+          }
+        },
+        {
+          headerName: 'Landscape', flex: 1.5, minWidth: 170,
+          valueGetter: (params) => {
+            const d = params.data.display?.landscape || DEFAULT_DISPLAY.landscape;
+            const max = Math.min(d.maxItems, d.cols * d.rows);
+            return `${d.cols}×${d.rows} cols/rows (max ${max})`;
+          }
+        },
+        {
+          headerName: 'Clock', flex: 1.2, minWidth: 140,
+          valueGetter: (params) => {
+            const b = params.data;
+            const vis = b.showClock === false ? 'Hidden' : 'Visible';
+            const fmt = b.timeFormat === 'us' ? '12h US' : '24h British';
+            return `${vis} · ${fmt}`;
+          }
+        },
+        {
+          headerName: 'Actions', flex: 0.8, minWidth: 90,
+          filter: false, sortable: false,
+          cellRenderer: (params) => {
+            const b = params.data;
+            const div = document.createElement('div');
+            div.className = 'actions';
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn btn-ghost btn-sm btn-icon'; editBtn.title = 'Edit'; editBtn.textContent = '\u270F\uFE0F';
+            editBtn.addEventListener('click', () => openEditBrandModal(b.id));
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn btn-ghost btn-sm btn-icon'; delBtn.title = 'Delete'; delBtn.textContent = '\u{1F5D1}\uFE0F';
+            delBtn.addEventListener('click', () => confirmDeleteBrand(b.id, b.name));
+            div.appendChild(editBtn); div.appendChild(delBtn);
+            return div;
+          }
+        }
+      ]
+    });
+  }
+}
 
-  wrap.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Brand</th>
-          <th>SKU</th>
-          <th>Category</th>
-          <th>Menu Types</th>
-          <th>Price</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${filtered.map(item => `
-          <tr>
-            <td>
-              <div style="display:flex;align-items:center;gap:12px;">
-                <div class="item-img">
-                  ${item.images && item.images[0]
-                    ? `<img src="${item.images[0]}" alt="${escHtml(item.name)}">`
-                    : '<span>&#x1F37D;&#xFE0F;</span>'}
-                </div>
-                <div>
-                  <div class="item-name">${escHtml(item.name)}</div>
-                  <div style="font-size:12px;color:var(--text2);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(item.description||'')}</div>
-                </div>
-              </div>
-            </td>
-            <td><span style="font-size:13px;color:var(--text);">${escHtml(item.brand ? (brandMap[item.brand] || '—') : '—')}</span></td>
-            <td><span class="item-sku">${escHtml(item.sku)}</span></td>
-            <td><span style="font-size:13px;color:var(--text);">${escHtml(String(item.category||''))}</span></td>
-            <td>${(item.menuTypes||[]).map(t => `<span class="tag tag-${t}">${MENU_TYPES.find(m=>m.id===t)?.label||t}</span>`).join('')}</td>
-            <td style="font-weight:700;color:var(--primary);">${escHtml(currency)}${parseFloat(item.price||0).toFixed(2)}</td>
-            <td>
-              <label class="toggle" title="${item.active?'Deactivate':'Activate'} item">
-                <input type="checkbox" ${item.active?'checked':''} onchange="toggleActive('${item.id}', this.checked)">
-                <span class="toggle-slider"></span>
-              </label>
-            </td>
-            <td>
-              <div class="actions">
-                <button class="btn btn-ghost btn-sm btn-icon" onclick="openEditModal('${item.id}')" title="Edit">&#x270F;&#xFE0F;</button>
-                <button class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('${item.id}','${escHtml(item.name)}')" title="Delete">&#x1F5D1;&#xFE0F;</button>
-              </div>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
+function onItemsQuickFilter() {
+  if (!itemsGridApi) return;
+  itemsGridApi.setGridOption('quickFilterText', document.getElementById('searchInput').value);
+}
+
+// ===== ITEMS =====
+function renderItems() {
+  const items = getItems();
+  document.getElementById('navBadgeItems').textContent = items.length;
+  if (!itemsGridApi) return;
+  itemsGridApi.setGridOption('rowData', items);
 }
 
 function toggleActive(id, active) {
@@ -1854,46 +1982,8 @@ function deleteCategory(idx) {
 
 // ===== BRANDS =====
 function renderBrands() {
-  const brands = getBrands();
-  const el = document.getElementById('brandsGrid');
-  if (!brands.length) {
-    el.innerHTML = `<div class="empty-state"><div class="icon">&#x1F3F7;&#xFE0F;</div><h3>No brands yet</h3><p>Click "+ Add Brand" to create your first brand.</p></div>`;
-    return;
-  }
-
-  el.innerHTML = `<div class="brands-grid">${brands.map(b => {
-    const pDisp = b.display?.portrait  || DEFAULT_DISPLAY.portrait;
-    const lDisp = b.display?.landscape || DEFAULT_DISPLAY.landscape;
-    const pMax  = Math.min(pDisp.maxItems, pDisp.cols * pDisp.rows);
-    const lMax  = Math.min(lDisp.maxItems, lDisp.cols * lDisp.rows);
-    const c     = b.colors || DEFAULT_COLORS;
-    return `
-      <div class="brand-card">
-        <div class="brand-card-header">
-          <div>
-            <div class="brand-card-name">${escHtml(b.name)}</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:2px;">${escHtml(b.currency)} &middot; ID: <code style="font-size:10px;">${escHtml(b.id)}</code></div>
-          </div>
-          <div class="brand-card-actions">
-            <button class="btn btn-ghost btn-sm btn-icon" onclick="openEditBrandModal('${b.id}')" title="Edit">&#x270F;&#xFE0F;</button>
-            <button class="btn btn-ghost btn-sm btn-icon" onclick="confirmDeleteBrand('${b.id}','${escHtml(b.name)}')" title="Delete">&#x1F5D1;&#xFE0F;</button>
-          </div>
-        </div>
-        <div class="brand-card-body">
-          <div class="brand-card-row">
-            <div class="brand-color-swatch" style="background:${escHtml(c.accent||'#006241')};"></div>
-            <span>Accent: ${escHtml(c.accent||'#006241')}</span>
-            <div class="brand-color-swatch" style="background:${escHtml(c.body||'#f9f4ec')};margin-left:8px;"></div>
-            <span>Body: ${escHtml(c.body||'#f9f4ec')}</span>
-          </div>
-          <div class="brand-card-row">&#x1F4FA; Portrait: ${pDisp.cols} cols &times; ${pDisp.rows} rows (max ${pMax} items)</div>
-          <div class="brand-card-row">&#x1F4FA; Landscape: ${lDisp.cols} cols &times; ${lDisp.rows} rows (max ${lMax} items)</div>
-          <div class="brand-card-row">&#x1F551; Clock: ${b.showClock === false ? 'Hidden' : 'Visible'} &middot; ${b.timeFormat === 'us' ? 'US (MM/DD/YYYY, 12h)' : 'British (DD/MM/YYYY, 24h)'}</div>
-          <div class="brand-url-box">menu-board.html?menu=breakfast&amp;brand=${encodeURIComponent(b.name)}</div>
-        </div>
-      </div>
-    `;
-  }).join('')}</div>`;
+  if (!brandsGridApi) return;
+  brandsGridApi.setGridOption('rowData', getBrands());
 }
 
 let brandEditingLogoLeft = '';
@@ -2246,6 +2336,10 @@ window.uploadBagIcon      = uploadBagIcon;
 window.clearBagIcon       = clearBagIcon;
 window.renderItems        = renderItems;
 window.openEditModal      = openEditModal;
+window.onItemsQuickFilter = onItemsQuickFilter;
+
+// ===== GRID INIT =====
+initGrids();
 
 // ===== FIRESTORE LISTENERS + INIT =====
 onSnapshot(collection(db, ITEMS_COLL), snap => {

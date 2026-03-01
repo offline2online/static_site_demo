@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Store Admin — Menu Management</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-theme-alpine.css">
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/dist/ag-grid-community.min.noStyle.js"></script>
   <style>
     :root {
       --bg: #F0F4FA;
@@ -449,12 +452,27 @@
     ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
     @media (max-width: 700px) {
-      .items-grid { grid-template-columns: 1fr 1fr; }
       .filters-bar { flex-direction: column; align-items: stretch; }
     }
-    @media (max-width: 420px) {
-      .items-grid { grid-template-columns: 1fr; }
+
+    /* ── AG-GRID THEME OVERRIDES ─────────────── */
+    .ag-theme-alpine {
+      --ag-background-color:          var(--surface);
+      --ag-header-background-color:   var(--surface2);
+      --ag-odd-row-background-color:  var(--surface);
+      --ag-row-hover-color:           var(--surface2);
+      --ag-border-color:              var(--border);
+      --ag-header-foreground-color:   var(--text2);
+      --ag-foreground-color:          var(--text);
+      --ag-font-family:               'Inter', sans-serif;
+      --ag-font-size:                 13px;
+      --ag-cell-horizontal-padding:   12px;
+      --ag-floating-filter-height:    36px;
     }
+    .ag-theme-alpine .ag-header-cell-label { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px; }
+    .ag-theme-alpine .ag-floating-filter-input { font-family:'Inter',sans-serif;font-size:12px; }
+    .ag-theme-alpine .ag-cell { display:flex;align-items:center; }
+    .ag-theme-alpine .ag-cell-wrapper { width:100%; }
   </style>
 </head>
 <body>
@@ -517,8 +535,8 @@
       <!-- SUMMARY -->
       <div class="summary-bar" id="summaryBar"></div>
 
-      <!-- ITEMS GRID -->
-      <div class="items-grid" id="itemsGrid"></div>
+      <!-- ITEMS GRID (AG-Grid) -->
+      <div id="itemsGrid" class="ag-theme-alpine" style="width:100%;height:calc(100vh - 290px);min-height:400px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);"></div>
 
     </div><!-- /page -->
 
@@ -595,6 +613,7 @@ if (STORE_CODE) {
   });
 }
 
+let storeItemsGridApi = null;
 let menuFilter = '';
 let stockFilter = 'all';
 
@@ -611,7 +630,9 @@ function init() {
   const badge = document.getElementById('storeCodeBadge');
   if (badge && STORE_CODE) { badge.textContent = '🏪 ' + STORE_CODE; badge.style.display = ''; }
 
+  initGrid();
   renderItems();
+  requestAnimationFrame(() => storeItemsGridApi && storeItemsGridApi.sizeColumnsToFit());
 }
 
 function refresh() {
@@ -648,11 +669,117 @@ function setStockFilter(val, el) {
   renderItems();
 }
 
+// GRID INIT
+function initGrid() {
+  const el = document.getElementById('itemsGrid');
+  if (!el || storeItemsGridApi) return;
+  storeItemsGridApi = agGrid.createGrid(el, {
+    rowHeight: 90,
+    suppressCellFocus: true,
+    defaultColDef: {
+      resizable: true,
+      sortable: true,
+      filter: 'agTextColumnFilter',
+      floatingFilter: true,
+    },
+    columnDefs: [
+      {
+        headerName: 'Image', field: 'images', width: 100, maxWidth: 100,
+        filter: false, sortable: false, resizable: false,
+        cellRenderer: (params) => {
+          const item = params.data;
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'height:100%;display:flex;align-items:center;justify-content:center;';
+          if (item.images && item.images[0]) {
+            const img = document.createElement('img');
+            img.src = item.images[0]; img.alt = item.name;
+            img.style.cssText = 'width:70px;height:70px;object-fit:cover;border-radius:8px;';
+            wrap.appendChild(img);
+          } else {
+            const em = document.createElement('span');
+            em.style.cssText = 'font-size:32px;';
+            em.textContent = '\u{1F37D}\uFE0F';
+            wrap.appendChild(em);
+          }
+          return wrap;
+        }
+      },
+      {
+        headerName: 'Product Name', field: 'name', flex: 2.5, minWidth: 160,
+        cellRenderer: (params) => {
+          const item = params.data;
+          const div = document.createElement('div');
+          div.style.cssText = 'display:flex;flex-direction:column;justify-content:center;height:100%;gap:2px;';
+          const nameEl = document.createElement('div');
+          nameEl.style.cssText = 'font-weight:600;color:var(--text);font-size:13px;';
+          nameEl.textContent = item.name;
+          div.appendChild(nameEl);
+          if (item.description) {
+            const descEl = document.createElement('div');
+            descEl.style.cssText = 'font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;';
+            descEl.textContent = item.description;
+            div.appendChild(descEl);
+          }
+          const skuEl = document.createElement('div');
+          skuEl.style.cssText = 'font-size:10px;color:var(--text2);font-family:monospace;margin-top:1px;';
+          skuEl.textContent = item.sku;
+          div.appendChild(skuEl);
+          return div;
+        }
+      },
+      {
+        headerName: 'Category', field: 'category', flex: 1.2, minWidth: 110,
+        valueFormatter: (p) => String(p.value || '')
+      },
+      {
+        headerName: 'Menu Types', field: 'menuTypes', flex: 1.5, minWidth: 140,
+        filter: false, sortable: false,
+        cellRenderer: (params) => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-items:center;height:100%;';
+          (params.value || []).forEach(t => {
+            const mt = MENU_TYPES.find(m => m.id === t);
+            if (!mt) return;
+            const span = document.createElement('span');
+            span.style.cssText = `display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:${mt.color}22;color:${mt.color};border:1px solid ${mt.color}44;`;
+            span.textContent = mt.emoji + ' ' + mt.label;
+            wrap.appendChild(span);
+          });
+          return wrap;
+        }
+      },
+      {
+        headerName: 'Ingredients', flex: 1.5, minWidth: 130,
+        valueGetter: (p) => (p.data.ingredients || []).join(', ') || '\u2014',
+        cellStyle: { fontSize: '12px', color: 'var(--text2)' }
+      },
+      {
+        headerName: 'Price', field: 'price', flex: 0.9, minWidth: 80,
+        filter: 'agNumberColumnFilter',
+        valueFormatter: (p) => (getSettings().currency || '$') + parseFloat(p.value || 0).toFixed(2),
+        cellStyle: { fontWeight: '700', color: 'var(--primary)' }
+      },
+      {
+        headerName: 'In Stock', flex: 1.2, minWidth: 130,
+        filter: false, sortable: true,
+        valueGetter: (p) => isOos(p.data.sku) ? 'Out of Stock' : 'In Stock',
+        cellRenderer: (params) => {
+          const item = params.data;
+          const oos = isOos(item.sku);
+          const btn = document.createElement('div');
+          btn.style.cssText = `display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid ${oos ? 'var(--danger)' : 'var(--success)'};color:${oos ? 'var(--danger)' : 'var(--success)'};background:${oos ? 'rgba(220,38,38,0.06)' : 'rgba(5,150,105,0.06)'};`;
+          btn.textContent = oos ? '\u26D4 Out of Stock' : '\u2705 In Stock';
+          btn.addEventListener('click', () => toggleOos(item.sku, item.name, oos));
+          return btn;
+        }
+      }
+    ]
+  });
+}
+
 // RENDER
 function renderItems() {
   const allItems = getItems();
-  const settings = getSettings();
-  const stock = getStock();
   const search = document.getElementById('searchInput').value.toLowerCase();
 
   // Summary
@@ -672,6 +799,8 @@ function renderItems() {
     </div>
   `;
 
+  if (!storeItemsGridApi) return;
+
   let filtered = allItems.filter(item => {
     if (search && !item.name.toLowerCase().includes(search) && !item.sku.toLowerCase().includes(search)) return false;
     if (menuFilter && !(item.menuTypes||[]).includes(menuFilter)) return false;
@@ -686,73 +815,7 @@ function renderItems() {
     return a.name.localeCompare(b.name);
   });
 
-  const grid = document.getElementById('itemsGrid');
-
-  if (!filtered.length) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">🔍</div>
-        <h3>No items found</h3>
-        <p>Try adjusting your search or filter. Items are added and managed by HQ Administration.</p>
-      </div>
-    `;
-    return;
-  }
-
-  grid.innerHTML = filtered.map(item => {
-    const oos = isOos(item.sku);
-    const stockData = stock[item.sku];
-    const updatedTime = stockData && stockData.updatedAt
-      ? formatTime(stockData.updatedAt) + (stockData.updatedBy ? ' · ' + stockData.updatedBy : '')
-      : '';
-
-    const typeDots = (item.menuTypes||[]).map(t => {
-      const mt = MENU_TYPES.find(m => m.id === t);
-      return mt ? `<span class="type-dot" style="background:${mt.color}" title="${mt.label}"></span>` : '';
-    }).join('');
-
-    return `
-      <div class="item-card ${oos ? 'oos' : ''} ${!item.active ? 'inactive-item' : ''}">
-        <div class="item-card-img">
-          ${item.images && item.images[0]
-            ? `<img src="${item.images[0]}" alt="${escHtml(item.name)}" loading="lazy">`
-            : `<div class="no-img">🍽️</div>`}
-          <div class="oos-overlay">
-            <div class="oos-badge-card">Out of Stock</div>
-          </div>
-          <div class="inactive-overlay">Inactive (HQ)</div>
-        </div>
-        <div class="item-card-body">
-          <div class="item-card-meta">
-            <span class="item-sku-tag">${escHtml(item.sku)}</span>
-            <span class="item-cat-tag">${escHtml(item.category)}</span>
-          </div>
-          <div class="item-card-name">${escHtml(item.name)}</div>
-          ${item.description ? `<div class="item-card-desc">${escHtml(item.description)}</div>` : ''}
-          ${(item.calories != null || item.fat != null || item.carbs != null || item.protein != null) ? `
-          <div class="nutrition-strip">
-            ${item.calories != null ? `<span class="nutr-chip"><span class="nv">${item.calories}</span><span class="nl">cal</span></span>` : ''}
-            ${item.fat     != null ? `<span class="nutr-chip"><span class="nv">${item.fat}g</span><span class="nl">fat</span></span>` : ''}
-            ${item.carbs   != null ? `<span class="nutr-chip"><span class="nv">${item.carbs}g</span><span class="nl">carbs</span></span>` : ''}
-            ${item.protein != null ? `<span class="nutr-chip"><span class="nv">${item.protein}g</span><span class="nl">protein</span></span>` : ''}
-          </div>` : ''}
-          <div class="item-card-footer">
-            <div>
-              <div class="item-price">${getSettings().currency}${parseFloat(item.price||0).toFixed(2)}</div>
-              <div class="item-types">${typeDots}</div>
-            </div>
-            <div class="oos-toggle-wrap">
-              <div class="oos-toggle ${oos ? 'out-of-stock' : ''}" onclick="toggleOos('${escHtml(item.sku)}', '${escHtml(item.name)}', ${oos})">
-                <span class="toggle-icon">${oos ? '⛔' : '✅'}</span>
-                <span>${oos ? 'Out of Stock' : 'In Stock'}</span>
-              </div>
-              ${updatedTime ? `<div class="oos-update-time">${escHtml(updatedTime)}</div>` : ''}
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  storeItemsGridApi.setGridOption('rowData', filtered);
 }
 
 // OOS TOGGLE

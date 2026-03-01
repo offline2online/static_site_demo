@@ -398,6 +398,10 @@
       <div style="display:flex;gap:8px;margin-top:12px;">
         <input id="orderStoreCode" placeholder="Store Code (optional)" value="O2O-001" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;">
       </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <input id="orderDeviceUdid" placeholder="Device UDID — links to Order Summary Board" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;">
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:6px;">💡 Enter the same Device UDID used on the Order Summary Board to link this mobile session to that display. Leave blank to browse without linking.</p>
       <button onclick="goToOrder()" class="btn btn-full" style="background:linear-gradient(135deg,#006241,#004d33);color:#fff;margin-top:10px;">Open Ordering Menu →</button>
     </div>
 
@@ -473,10 +477,13 @@
   }
 
   function goToOrder() {
-    const store = document.getElementById('orderStoreCode').value.trim();
-    let url = 'order.html';
-    if (store) url += '?store=' + encodeURIComponent(store);
-    window.open(url, '_blank');
+    const store  = document.getElementById('orderStoreCode').value.trim();
+    const device = document.getElementById('orderDeviceUdid').value.trim();
+    const params = new URLSearchParams();
+    if (store)  params.set('store',  store);
+    if (device) params.set('device', device);
+    const qs = params.toString();
+    window.open('order.html' + (qs ? '?' + qs : ''), '_blank');
   }
 
   function goToOrderSummary() {
