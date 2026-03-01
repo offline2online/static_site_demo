@@ -346,12 +346,6 @@
     .item-img img { width: 100%; height: 100%; object-fit: cover; }
     .item-name { font-weight: 600; color: var(--text); margin-bottom: 2px; }
     .item-sku { font-size: 11px; color: var(--text2); font-family: monospace; }
-    .tag { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 11px; font-weight: 600; margin: 1px; }
-    .tag-breakfast { background: #FEF9C3; color: #713F12; }
-    .tag-lunch { background: #DCFCE7; color: #14532D; }
-    .tag-dinner { background: #EDE9FE; color: #4C1D95; }
-    .tag-drinks { background: #DBEAFE; color: #1E3A8A; }
-    .tag-specials { background: #FEE2E2; color: #7F1D1D; }
     .badge-active { background: var(--success-light); color: var(--success); font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
     .badge-inactive { background: var(--danger-light); color: var(--danger); font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
     .actions { display: flex; gap: 6px; }
@@ -489,6 +483,11 @@
     .ag-theme-alpine .ag-cell { display: flex; align-items: center; }
     /* cell renderers that need full height */
     .ag-theme-alpine .ag-cell-wrapper { width: 100%; }
+    /* Always show the filter icon button (default: only on hover) */
+    .ag-theme-alpine .ag-header-cell-filter-button { opacity: 1 !important; }
+    /* Highlight filter icon when a filter is active */
+    .ag-theme-alpine .ag-header-cell-filtered .ag-icon-filter { color: var(--primary) !important; }
+    .ag-theme-alpine .ag-header-cell-filtered { background: var(--primary-light) !important; }
 
     /* ── STICKY AG-GRID HEADER for Menu Items (domLayout: autoHeight) ─── */
     #itemsGrid .ag-root-wrapper,
@@ -512,9 +511,6 @@
     .csf-btn-all, .csf-btn-none { flex: 1; padding: 4px 6px; font-size: 11px; font-family: inherit; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; background: var(--surface); color: var(--text2); font-weight: 600; }
     .csf-btn-all:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
     .csf-btn-none:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
-    .csf-ff { display: flex; align-items: center; height: 100%; width: 100%; }
-    .csf-ff-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; cursor: pointer; font-family: 'Inter', sans-serif; }
-    .csf-ff-tag.active { background: var(--primary-light); border-color: rgba(0,98,65,0.35); color: var(--primary); font-weight: 600; }
 
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -1107,11 +1103,11 @@ const ITEMS_COLL = 'items';
 const STOCK_COLL = 'stock';
 
 const MENU_TYPES = [
-  { id: 'breakfast', label: 'Breakfast',        emoji: '\u{1F305}' },
-  { id: 'lunch',     label: 'Lunch',             emoji: '\u2600\uFE0F' },
-  { id: 'dinner',    label: 'Dinner',            emoji: '\u{1F319}' },
-  { id: 'drinks',    label: 'Drinks',            emoji: '\u{1F964}' },
-  { id: 'specials',  label: "Today's Specials",  emoji: '\u2B50' }
+  { id: 'breakfast', label: 'Breakfast',        emoji: '\u{1F305}', color: '#f59e0b' },
+  { id: 'lunch',     label: 'Lunch',             emoji: '\u2600\uFE0F', color: '#16a34a' },
+  { id: 'dinner',    label: 'Dinner',            emoji: '\u{1F319}', color: '#7c3aed' },
+  { id: 'drinks',    label: 'Drinks',            emoji: '\u{1F964}', color: '#2563eb' },
+  { id: 'specials',  label: "Today's Specials",  emoji: '\u2B50', color: '#e11d48' }
 ];
 
 const DEFAULT_CATS = ['Mains','Starters','Sides','Desserts','Hot Drinks','Cold Drinks','Cocktails','Wines','Beers','Sandwiches','Salads','Pasta','Burgers'];
@@ -1539,6 +1535,7 @@ class CheckboxSetFilter {
   }
   _renderList() {
     const q = this._searchEl.value.toLowerCase();
+    const itemRenderer = this.params.filterParams?.itemRenderer || this.params.colDef?.filterParams?.itemRenderer;
     this._listEl.innerHTML = '';
     this.allValues.filter(v => v.toLowerCase().includes(q)).forEach(v => {
       const lbl = document.createElement('label');
@@ -1550,7 +1547,8 @@ class CheckboxSetFilter {
         this.params.filterChangedCallback();
       });
       lbl.appendChild(cb);
-      lbl.appendChild(document.createTextNode('\u00a0' + v));
+      const content = itemRenderer ? itemRenderer(v) : document.createTextNode('\u00a0' + v);
+      lbl.appendChild(content);
       this._listEl.appendChild(lbl);
     });
   }
@@ -1572,31 +1570,6 @@ class CheckboxSetFilter {
   destroy() {}
 }
 
-class CheckboxSetFloatingFilter {
-  init(params) {
-    this.params = params;
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'csf-ff';
-    this._tag = document.createElement('span');
-    this._tag.className = 'csf-ff-tag';
-    this._tag.textContent = 'All';
-    this._tag.addEventListener('click', () => params.showParentFilter());
-    this.eGui.appendChild(this._tag);
-  }
-  getGui() { return this.eGui; }
-  onParentModelChanged(model) {
-    if (!model) {
-      this._tag.textContent = 'All';
-      this._tag.classList.remove('active');
-    } else {
-      const n = model.values.length;
-      this._tag.textContent = n === 1 ? model.values[0] : n + ' selected';
-      this._tag.classList.add('active');
-    }
-  }
-  destroy() {}
-}
-
 function initGrids() {
   // ── Menu Items Grid ──────────────────────────────────────────────────
   const itemsEl = document.getElementById('itemsGrid');
@@ -1609,7 +1582,6 @@ function initGrids() {
         resizable: true,
         sortable: true,
         filter: 'agTextColumnFilter',
-        floatingFilter: true,
       },
       columnDefs: [
         {
@@ -1652,28 +1624,36 @@ function initGrids() {
         {
           headerName: 'Category', field: 'category', flex: 1.2, minWidth: 110,
           filter: CheckboxSetFilter,
-          floatingFilterComponent: CheckboxSetFloatingFilter,
-          floatingFilterComponentParams: { suppressFilterButton: true },
           valueFormatter: (params) => String(params.value || '')
         },
         {
           headerName: 'Menu Types', field: 'menuTypes', flex: 1.5, minWidth: 140,
-          sortable: false,
+          sortable: false, autoHeight: true,
           filter: CheckboxSetFilter,
-          floatingFilterComponent: CheckboxSetFloatingFilter,
-          floatingFilterComponentParams: { suppressFilterButton: true },
+          filterParams: {
+            itemRenderer: (value) => {
+              const mt = MENU_TYPES.find(m => (m.emoji + ' ' + m.label) === value);
+              const span = document.createElement('span');
+              if (mt) {
+                span.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 5px;border-radius:20px;border:1.5px solid ${mt.color};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;color:${mt.color};background:transparent;`;
+                span.textContent = mt.emoji + ' ' + mt.label;
+              } else { span.textContent = value; }
+              return span;
+            }
+          },
           getFilterValue: (data) => (data.menuTypes || []).map(t => {
             const mt = MENU_TYPES.find(m => m.id === t);
             return mt ? mt.emoji + ' ' + mt.label : t;
           }),
           cellRenderer: (params) => {
             const wrap = document.createElement('div');
-            wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-items:center;height:100%;';
+            wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding:4px 0;';
             (params.value || []).forEach(t => {
-              const span = document.createElement('span');
-              span.className = 'tag tag-' + t;
               const mt = MENU_TYPES.find(m => m.id === t);
-              span.textContent = mt ? mt.emoji + ' ' + mt.label : t;
+              if (!mt) return;
+              const span = document.createElement('span');
+              span.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:3px 9px 3px 6px;border-radius:20px;border:1.5px solid ${mt.color};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;color:${mt.color};background:transparent;`;
+              span.textContent = mt.emoji + ' ' + mt.label;
               wrap.appendChild(span);
             });
             return wrap;
@@ -1692,8 +1672,6 @@ function initGrids() {
         {
           headerName: 'Status', field: 'active', flex: 0.8, minWidth: 80,
           filter: CheckboxSetFilter,
-          floatingFilterComponent: CheckboxSetFloatingFilter,
-          floatingFilterComponentParams: { suppressFilterButton: true },
           getFilterValue: (data) => data.active ? 'Active' : 'Inactive',
           cellRenderer: (params) => {
             const item = params.data;
@@ -1740,7 +1718,6 @@ function initGrids() {
         resizable: true,
         sortable: true,
         filter: 'agTextColumnFilter',
-        floatingFilter: true,
       },
       columnDefs: [
         { headerName: 'Brand Name', field: 'name', flex: 2, minWidth: 130 },

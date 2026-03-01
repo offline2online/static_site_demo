@@ -473,6 +473,11 @@
     .ag-theme-alpine .ag-floating-filter-input { font-family:'Inter',sans-serif;font-size:12px; }
     .ag-theme-alpine .ag-cell { display:flex;align-items:center; }
     .ag-theme-alpine .ag-cell-wrapper { width:100%; }
+    /* Always show the filter icon button (default: only on hover) */
+    .ag-theme-alpine .ag-header-cell-filter-button { opacity: 1 !important; }
+    /* Highlight filter icon when a filter is active */
+    .ag-theme-alpine .ag-header-cell-filtered .ag-icon-filter { color: var(--primary) !important; }
+    .ag-theme-alpine .ag-header-cell-filtered { background: var(--primary-light) !important; }
 
     /* ── STICKY AG-GRID HEADER (domLayout: autoHeight) ─── */
     /* Must unset overflow on ancestor wrappers or sticky won't fire */
@@ -547,33 +552,6 @@
     }
     .csf-btn-all:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
     .csf-btn-none:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
-    /* Floating filter indicator for checkbox columns */
-    .csf-ff {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      width: 100%;
-    }
-    .csf-ff-tag {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--text2);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-    }
-    .csf-ff-tag.active {
-      background: var(--primary-light);
-      border-color: rgba(0,98,65,0.35);
-      color: var(--primary);
-      font-weight: 600;
-    }
   </style>
 </head>
 <body>
@@ -732,6 +710,7 @@ class CheckboxSetFilter {
   }
   _renderList() {
     const q = this._searchEl.value.toLowerCase();
+    const itemRenderer = this.params.filterParams?.itemRenderer || this.params.colDef?.filterParams?.itemRenderer;
     this._listEl.innerHTML = '';
     this.allValues.filter(v => v.toLowerCase().includes(q)).forEach(v => {
       const lbl = document.createElement('label');
@@ -743,7 +722,8 @@ class CheckboxSetFilter {
         this.params.filterChangedCallback();
       });
       lbl.appendChild(cb);
-      lbl.appendChild(document.createTextNode('\u00a0' + v));
+      const content = itemRenderer ? itemRenderer(v) : document.createTextNode('\u00a0' + v);
+      lbl.appendChild(content);
       this._listEl.appendChild(lbl);
     });
   }
@@ -762,32 +742,6 @@ class CheckboxSetFilter {
     this._renderList();
   }
   onNewRowsLoaded() { this._refresh(); }
-  destroy() {}
-}
-
-// Floating-filter indicator for CheckboxSetFilter columns
-class CheckboxSetFloatingFilter {
-  init(params) {
-    this.params = params;
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'csf-ff';
-    this._tag = document.createElement('span');
-    this._tag.className = 'csf-ff-tag';
-    this._tag.textContent = 'All';
-    this._tag.addEventListener('click', () => params.showParentFilter());
-    this.eGui.appendChild(this._tag);
-  }
-  getGui() { return this.eGui; }
-  onParentModelChanged(model) {
-    if (!model) {
-      this._tag.textContent = 'All';
-      this._tag.classList.remove('active');
-    } else {
-      const n = model.values.length;
-      this._tag.textContent = n === 1 ? model.values[0] : n + ' selected';
-      this._tag.classList.add('active');
-    }
-  }
   destroy() {}
 }
 
@@ -836,12 +790,11 @@ function initGrid() {
       resizable: true,
       sortable: true,
       filter: 'agTextColumnFilter',
-      floatingFilter: true,
     },
     columnDefs: [
       {
         headerName: 'Image', field: 'images', width: 100, maxWidth: 100,
-        filter: false, sortable: false, resizable: false, floatingFilter: false,
+        filter: false, sortable: false, resizable: false,
         cellRenderer: (params) => {
           const item = params.data;
           const wrap = document.createElement('div');
@@ -885,28 +838,35 @@ function initGrid() {
       },
       {
         headerName: 'Category', field: 'category', flex: 1.2, minWidth: 120,
-        filter: CheckboxSetFilter,
-        floatingFilterComponent: CheckboxSetFloatingFilter,
-        floatingFilterComponentParams: { suppressFilterButton: true }
+        filter: CheckboxSetFilter
       },
       {
         headerName: 'Menu Types', field: 'menuTypes', flex: 1.5, minWidth: 150,
-        sortable: false,
+        sortable: false, autoHeight: true,
         filter: CheckboxSetFilter,
-        floatingFilterComponent: CheckboxSetFloatingFilter,
-        floatingFilterComponentParams: { suppressFilterButton: true },
+        filterParams: {
+          itemRenderer: (value) => {
+            const mt = MENU_TYPES.find(m => (m.emoji + ' ' + m.label) === value);
+            const span = document.createElement('span');
+            if (mt) {
+              span.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 5px;border-radius:20px;border:1.5px solid ${mt.color};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;color:${mt.color};background:transparent;`;
+              span.textContent = mt.emoji + ' ' + mt.label;
+            } else { span.textContent = value; }
+            return span;
+          }
+        },
         getFilterValue: (data) => (data.menuTypes || []).map(t => {
           const mt = MENU_TYPES.find(m => m.id === t);
           return mt ? mt.emoji + ' ' + mt.label : t;
         }),
         cellRenderer: (params) => {
           const wrap = document.createElement('div');
-          wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-items:center;height:100%;';
+          wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding:4px 0;';
           (params.value || []).forEach(t => {
             const mt = MENU_TYPES.find(m => m.id === t);
             if (!mt) return;
             const span = document.createElement('span');
-            span.style.cssText = `display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:${mt.color}22;color:${mt.color};border:1px solid ${mt.color}44;`;
+            span.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:3px 9px 3px 6px;border-radius:20px;border:1.5px solid ${mt.color};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;color:${mt.color};background:transparent;`;
             span.textContent = mt.emoji + ' ' + mt.label;
             wrap.appendChild(span);
           });
@@ -928,8 +888,6 @@ function initGrid() {
         headerName: 'In Stock', flex: 1.2, minWidth: 140,
         sortable: true,
         filter: CheckboxSetFilter,
-        floatingFilterComponent: CheckboxSetFloatingFilter,
-        floatingFilterComponentParams: { suppressFilterButton: true },
         valueGetter: (p) => isOos(p.data.sku) ? 'Out of Stock' : 'In Stock',
         cellRenderer: (params) => {
           const item = params.data;
