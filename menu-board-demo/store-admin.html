@@ -33,8 +33,7 @@
       font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
       display: flex;
     }
 
@@ -47,13 +46,11 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      min-width: 0;
     }
 
-    /* SCROLLABLE CONTENT */
+    /* CONTENT AREA (page scrolls, not this div) */
     .ra-content {
-      flex: 1;
-      overflow-y: auto;
       background: var(--bg);
     }
 
@@ -357,6 +354,9 @@
       padding: 0 20px;
       gap: 12px;
       flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .ra-topbar-title {
       font-family: 'Oswald', sans-serif;
@@ -473,6 +473,107 @@
     .ag-theme-alpine .ag-floating-filter-input { font-family:'Inter',sans-serif;font-size:12px; }
     .ag-theme-alpine .ag-cell { display:flex;align-items:center; }
     .ag-theme-alpine .ag-cell-wrapper { width:100%; }
+
+    /* ── STICKY AG-GRID HEADER (domLayout: autoHeight) ─── */
+    /* Must unset overflow on ancestor wrappers or sticky won't fire */
+    .ag-theme-alpine .ag-root-wrapper,
+    .ag-theme-alpine .ag-root {
+      overflow: visible !important;
+    }
+    .ag-theme-alpine .ag-header {
+      position: sticky;
+      top: 54px; /* height of .ra-topbar */
+      z-index: 10;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+    }
+
+    /* ── CHECKBOX SET FILTER ─────────────────────────── */
+    .csf-wrap {
+      width: 230px;
+      background: var(--surface);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+    }
+    .csf-search-row {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .csf-search {
+      width: 100%;
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .csf-list {
+      max-height: 230px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .csf-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .csf-item:hover { background: var(--surface2); }
+    .csf-item input[type=checkbox] { cursor: pointer; accent-color: var(--primary); flex-shrink: 0; }
+    .csf-footer {
+      display: flex;
+      gap: 6px;
+      padding: 7px 8px;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .csf-btn-all, .csf-btn-none {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 11px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text2);
+      font-weight: 600;
+    }
+    .csf-btn-all:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .csf-btn-none:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+    /* Floating filter indicator for checkbox columns */
+    .csf-ff {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+    }
+    .csf-ff-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+    .csf-ff-tag.active {
+      background: var(--primary-light);
+      border-color: rgba(0,98,65,0.35);
+      color: var(--primary);
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -510,33 +611,11 @@
     <!-- MAIN PAGE -->
     <div class="page" id="mainPage" style="display:none;">
 
-      <!-- FILTERS -->
-      <div class="filters-bar">
-        <div class="search-wrap">
-          <span>🔍</span>
-          <input type="text" id="searchInput" placeholder="Search items…" oninput="renderItems()">
-        </div>
-        <div class="filter-pills">
-          <div class="pill pill-all active" onclick="setMenuFilter('',this)">All</div>
-          <div class="pill pill-breakfast" onclick="setMenuFilter('breakfast',this)">🌅 Breakfast</div>
-          <div class="pill pill-lunch" onclick="setMenuFilter('lunch',this)">☀️ Lunch</div>
-          <div class="pill pill-dinner" onclick="setMenuFilter('dinner',this)">🌙 Dinner</div>
-          <div class="pill pill-drinks" onclick="setMenuFilter('drinks',this)">🥤 Drinks</div>
-          <div class="pill pill-specials" onclick="setMenuFilter('specials',this)">⭐ Specials</div>
-        </div>
-        <div class="stock-filter">
-          <div class="stock-pill stock-pill-all active" onclick="setStockFilter('all',this)">All</div>
-          <div class="stock-pill stock-pill-in" onclick="setStockFilter('in',this)">✅ In Stock</div>
-          <div class="stock-pill stock-pill-out" onclick="setStockFilter('out',this)">⛔ Out of Stock</div>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="refresh()" style="flex-shrink:0;">↻ Refresh</button>
-      </div>
-
       <!-- SUMMARY -->
       <div class="summary-bar" id="summaryBar"></div>
 
       <!-- ITEMS GRID (AG-Grid) -->
-      <div id="itemsGrid" class="ag-theme-alpine" style="width:100%;height:calc(100vh - 290px);min-height:400px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);"></div>
+      <div id="itemsGrid" class="ag-theme-alpine" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);"></div>
 
     </div><!-- /page -->
 
@@ -614,8 +693,111 @@ if (STORE_CODE) {
 }
 
 let storeItemsGridApi = null;
-let menuFilter = '';
-let stockFilter = 'all';
+
+// ── CHECKBOX SET FILTER (Community AG-Grid) ──────────────────────────────────
+class CheckboxSetFilter {
+  init(params) {
+    this.params = params;
+    this.allValues = [];
+    this.checkedValues = new Set();
+    this.eGui = document.createElement('div');
+    this.eGui.className = 'csf-wrap';
+    this.eGui.innerHTML =
+      '<div class="csf-search-row"><input class="csf-search" type="text" placeholder="Search…"></div>' +
+      '<div class="csf-list"></div>' +
+      '<div class="csf-footer"><button class="csf-btn-all">Select All</button><button class="csf-btn-none">Clear All</button></div>';
+    this._searchEl = this.eGui.querySelector('.csf-search');
+    this._listEl   = this.eGui.querySelector('.csf-list');
+    this._searchEl.addEventListener('input', () => this._renderList());
+    this.eGui.querySelector('.csf-btn-all').addEventListener('click', () => {
+      this.allValues.forEach(v => this.checkedValues.add(v));
+      this._renderList(); params.filterChangedCallback();
+    });
+    this.eGui.querySelector('.csf-btn-none').addEventListener('click', () => {
+      this.checkedValues.clear();
+      this._renderList(); params.filterChangedCallback();
+    });
+    this._refresh();
+  }
+  _rawValue(data) {
+    const customVg = this.params.colDef.getFilterValue ||
+                     (this.params.filterParams && this.params.filterParams.valueGetter);
+    if (customVg) return customVg(data);
+    const vg = this.params.colDef.valueGetter;
+    if (typeof vg === 'function') return vg({ data, node: { data } });
+    return data[this.params.colDef.field];
+  }
+  _refresh() {
+    const seen = new Set();
+    this.params.api.forEachNode(node => {
+      const raw = this._rawValue(node.data);
+      if (Array.isArray(raw)) raw.forEach(v => v != null && seen.add(String(v)));
+      else if (raw != null && String(raw).trim()) seen.add(String(raw).trim());
+    });
+    this.allValues = [...seen].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    if (this.checkedValues.size === 0) this.allValues.forEach(v => this.checkedValues.add(v));
+    this._renderList();
+  }
+  _renderList() {
+    const q = this._searchEl.value.toLowerCase();
+    this._listEl.innerHTML = '';
+    this.allValues.filter(v => v.toLowerCase().includes(q)).forEach(v => {
+      const lbl = document.createElement('label');
+      lbl.className = 'csf-item';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = this.checkedValues.has(v);
+      cb.addEventListener('change', () => {
+        cb.checked ? this.checkedValues.add(v) : this.checkedValues.delete(v);
+        this.params.filterChangedCallback();
+      });
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode('\u00a0' + v));
+      this._listEl.appendChild(lbl);
+    });
+  }
+  getGui()          { return this.eGui; }
+  isFilterActive()  { return this.checkedValues.size < this.allValues.length; }
+  doesFilterPass(p) {
+    const raw = this._rawValue(p.data);
+    if (Array.isArray(raw)) return raw.some(v => this.checkedValues.has(String(v)));
+    return this.checkedValues.has(String(raw ?? '').trim());
+  }
+  getModel()   { return this.isFilterActive() ? { values: [...this.checkedValues] } : null; }
+  setModel(m)  {
+    this.checkedValues.clear();
+    if (m && m.values) m.values.forEach(v => this.checkedValues.add(v));
+    else this.allValues.forEach(v => this.checkedValues.add(v));
+    this._renderList();
+  }
+  onNewRowsLoaded() { this._refresh(); }
+  destroy() {}
+}
+
+// Floating-filter indicator for CheckboxSetFilter columns
+class CheckboxSetFloatingFilter {
+  init(params) {
+    this.params = params;
+    this.eGui = document.createElement('div');
+    this.eGui.className = 'csf-ff';
+    this._tag = document.createElement('span');
+    this._tag.className = 'csf-ff-tag';
+    this._tag.textContent = 'All';
+    this._tag.addEventListener('click', () => params.showParentFilter());
+    this.eGui.appendChild(this._tag);
+  }
+  getGui() { return this.eGui; }
+  onParentModelChanged(model) {
+    if (!model) {
+      this._tag.textContent = 'All';
+      this._tag.classList.remove('active');
+    } else {
+      const n = model.values.length;
+      this._tag.textContent = n === 1 ? model.values[0] : n + ' selected';
+      this._tag.classList.add('active');
+    }
+  }
+  destroy() {}
+}
 
 // INIT
 function init() {
@@ -635,10 +817,6 @@ function init() {
   requestAnimationFrame(() => storeItemsGridApi && storeItemsGridApi.sizeColumnsToFit());
 }
 
-function refresh() {
-  renderItems();
-}
-
 // DATA
 function getItems()    { return _items; }
 function getSettings() { return _settings; }
@@ -654,26 +832,12 @@ function isOos(sku) {
   return !!(stock[sku] && stock[sku].outOfStock);
 }
 
-// FILTERS
-function setMenuFilter(val, el) {
-  menuFilter = val;
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  renderItems();
-}
-
-function setStockFilter(val, el) {
-  stockFilter = val;
-  document.querySelectorAll('.stock-pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  renderItems();
-}
-
 // GRID INIT
 function initGrid() {
   const el = document.getElementById('itemsGrid');
   if (!el || storeItemsGridApi) return;
   storeItemsGridApi = agGrid.createGrid(el, {
+    domLayout: 'autoHeight',
     rowHeight: 90,
     suppressCellFocus: true,
     defaultColDef: {
@@ -685,7 +849,7 @@ function initGrid() {
     columnDefs: [
       {
         headerName: 'Image', field: 'images', width: 100, maxWidth: 100,
-        filter: false, sortable: false, resizable: false,
+        filter: false, sortable: false, resizable: false, floatingFilter: false,
         cellRenderer: (params) => {
           const item = params.data;
           const wrap = document.createElement('div');
@@ -728,12 +892,21 @@ function initGrid() {
         }
       },
       {
-        headerName: 'Category', field: 'category', flex: 1.2, minWidth: 110,
-        valueFormatter: (p) => String(p.value || '')
+        headerName: 'Category', field: 'category', flex: 1.2, minWidth: 120,
+        filter: CheckboxSetFilter,
+        floatingFilterComponent: CheckboxSetFloatingFilter,
+        floatingFilterComponentParams: { suppressFilterButton: true }
       },
       {
-        headerName: 'Menu Types', field: 'menuTypes', flex: 1.5, minWidth: 140,
-        filter: false, sortable: false,
+        headerName: 'Menu Types', field: 'menuTypes', flex: 1.5, minWidth: 150,
+        sortable: false,
+        filter: CheckboxSetFilter,
+        floatingFilterComponent: CheckboxSetFloatingFilter,
+        floatingFilterComponentParams: { suppressFilterButton: true },
+        getFilterValue: (data) => (data.menuTypes || []).map(t => {
+          const mt = MENU_TYPES.find(m => m.id === t);
+          return mt ? mt.emoji + ' ' + mt.label : t;
+        }),
         cellRenderer: (params) => {
           const wrap = document.createElement('div');
           wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-items:center;height:100%;';
@@ -754,14 +927,17 @@ function initGrid() {
         cellStyle: { fontSize: '12px', color: 'var(--text2)' }
       },
       {
-        headerName: 'Price', field: 'price', flex: 0.9, minWidth: 80,
+        headerName: 'Price', field: 'price', flex: 0.9, minWidth: 90,
         filter: 'agNumberColumnFilter',
         valueFormatter: (p) => (getSettings().currency || '$') + parseFloat(p.value || 0).toFixed(2),
         cellStyle: { fontWeight: '700', color: 'var(--primary)' }
       },
       {
-        headerName: 'In Stock', flex: 1.2, minWidth: 130,
-        filter: false, sortable: true,
+        headerName: 'In Stock', flex: 1.2, minWidth: 140,
+        sortable: true,
+        filter: CheckboxSetFilter,
+        floatingFilterComponent: CheckboxSetFloatingFilter,
+        floatingFilterComponentParams: { suppressFilterButton: true },
         valueGetter: (p) => isOos(p.data.sku) ? 'Out of Stock' : 'In Stock',
         cellRenderer: (params) => {
           const item = params.data;
@@ -780,9 +956,8 @@ function initGrid() {
 // RENDER
 function renderItems() {
   const allItems = getItems();
-  const search = document.getElementById('searchInput').value.toLowerCase();
 
-  // Summary
+  // Summary counts (always based on all items)
   const totalActive = allItems.filter(i => i.active).length;
   const totalOos = allItems.filter(i => i.active && isOos(i.sku)).length;
   const totalIn = totalActive - totalOos;
@@ -801,21 +976,13 @@ function renderItems() {
 
   if (!storeItemsGridApi) return;
 
-  let filtered = allItems.filter(item => {
-    if (search && !item.name.toLowerCase().includes(search) && !item.sku.toLowerCase().includes(search)) return false;
-    if (menuFilter && !(item.menuTypes||[]).includes(menuFilter)) return false;
-    if (stockFilter === 'in' && (!item.active || isOos(item.sku))) return false;
-    if (stockFilter === 'out' && !isOos(item.sku)) return false;
-    return true;
-  });
-
-  // Sort: active first, then by name
-  filtered.sort((a, b) => {
+  // Sort: active first, then alphabetically — AG-Grid handles column-level filtering
+  const sorted = [...allItems].sort((a, b) => {
     if (a.active !== b.active) return a.active ? -1 : 1;
     return a.name.localeCompare(b.name);
   });
 
-  storeItemsGridApi.setGridOption('rowData', filtered);
+  storeItemsGridApi.setGridOption('rowData', sorted);
 }
 
 // OOS TOGGLE
@@ -891,9 +1058,6 @@ function toast(msg, type = 'info') {
 }
 
 // ===== WINDOW EXPORTS (for inline event handlers) =====
-window.setMenuFilter = setMenuFilter;
-window.setStockFilter = setStockFilter;
-window.refresh = refresh;
 window.renderItems = renderItems;
 window.toggleOos = toggleOos;
 window.doToggleOos = doToggleOos;
