@@ -690,27 +690,23 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .loyalty-overlay {
   position: fixed; inset: 0; z-index: 500;
   background: rgba(0,0,0,.5);
-  display: flex; align-items: flex-end; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none;
   transition: opacity .2s;
 }
 .loyalty-overlay.open { opacity: 1; pointer-events: all; }
 .loyalty-sheet {
-  width: min(420px, 100vw);
+  width: min(420px, calc(100vw - 32px));
   background: var(--white);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: 24px 24px calc(32px + env(safe-area-inset-bottom, 16px));
-  transform: translateY(100%);
-  transition: transform .28s cubic-bezier(.33,1,.68,1);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transform: scale(0.92);
+  transition: transform .25s cubic-bezier(.33,1,.68,1);
   display: flex; flex-direction: column; gap: 14px;
-  max-height: 80svh; overflow-y: auto;
+  max-height: 90svh; overflow-y: auto;
 }
-.loyalty-overlay.open .loyalty-sheet { transform: translateY(0); }
-.loyalty-sheet-handle {
-  width: 40px; height: 4px;
-  background: var(--border); border-radius: 2px;
-  margin: 0 auto -4px;
-}
+.loyalty-overlay.open .loyalty-sheet { transform: scale(1); }
+.loyalty-sheet-handle { display: none; }
 .loyalty-sheet-title {
   font-family: 'Oswald', sans-serif;
   font-size: 22px; font-weight: 700;
@@ -824,6 +820,24 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: none; border: none; cursor: pointer; padding: 4px;
 }
 .fab-popup-close:hover { color: var(--white); }
+.fab-popup-add-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--green);
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background .1s;
+}
+.fab-popup-add-btn:active { background: rgba(255,255,255,0.85); }
 </style>
 </head>
 <body>
@@ -869,7 +883,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 <!-- ── FAB LOYALTY POPUP ────────────────────────────────────────────────── -->
 <div class="fab-popup" id="fabPopup">
   <button class="fab-popup-close" id="fabPopupClose" aria-label="Dismiss">×</button>
-  <span id="fabPopupText"></span>
+  <div id="fabPopupText"></div>
+  <button class="fab-popup-add-btn" id="fabPopupAddBtn">+ ADD FAVOURITES</button>
 </div>
 
 <!-- ── MAIN CONTENT ──────────────────────────────────────────────────── -->
@@ -1102,7 +1117,7 @@ function updateFabPopup() {
     && _bag.length === 0
     && !_loyaltyPopupDismissed;
   if (show) {
-    textEl.textContent = `Hi ${_loyaltyName}, tap here to place your favourite order again?`;
+    textEl.textContent = `Hi ${_loyaltyName}! Your favourite order is ready — add it again?`;
     popup.classList.add('visible');
   } else {
     popup.classList.remove('visible');
@@ -1553,9 +1568,9 @@ function bagItemCount() {
   return _bag.reduce((s, r) => s + r.qty, 0);
 }
 
-function syncCartToFirestore(statusOverride) {
+function syncCartToFirestore(statusOverride, orderNumber) {
   if (!DEVICE_UDID || !STORE_CODE) return;
-  setDoc(doc(db, 'carts', DEVICE_UDID), {
+  const payload = {
     storeCode:    STORE_CODE,
     items:        _bag,
     total:        bagTotal(),
@@ -1563,7 +1578,10 @@ function syncCartToFirestore(statusOverride) {
     updatedAt:    serverTimestamp(),
     status:       statusOverride || 'active',
     customerName: _loyaltyName || _campaignFirstName || ''
-  }).catch(e => console.warn('[Cart sync] failed:', e));
+  };
+  if (orderNumber !== undefined) payload.orderNumber = orderNumber;
+  setDoc(doc(db, 'carts', DEVICE_UDID), payload)
+    .catch(e => console.warn('[Cart sync] failed:', e));
 }
 
 function hasCustomization(item) {
@@ -1760,10 +1778,10 @@ function placeOrder() {
       favCheck.checked = false;
     }
   }
-  syncCartToFirestore('completed');
+  const orderNumber = String(Math.floor(Math.random() * 9000) + 1000);
+  syncCartToFirestore('completed', orderNumber);
   closeBag();
 
-  const orderNumber = String(Math.floor(Math.random() * 9000) + 1000);
   document.getElementById('confirmNumber').textContent = `#${orderNumber}`;
 
   const itemsEl = document.getElementById('confirmItems');
@@ -1855,9 +1873,7 @@ document.getElementById('fabPopupClose').addEventListener('click', e => {
   _loyaltyPopupDismissed = true;
   document.getElementById('fabPopup').classList.remove('visible');
 });
-document.getElementById('fabPopup').addEventListener('click', e => {
-  if (!e.target.closest('#fabPopupClose')) loadFavouriteOrderIntoBag();
-});
+document.getElementById('fabPopupAddBtn').addEventListener('click', loadFavouriteOrderIntoBag);
 
 // Confirmation
 document.getElementById('newOrderBtn').addEventListener('click', startNewOrder);

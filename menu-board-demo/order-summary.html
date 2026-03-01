@@ -339,6 +339,7 @@
       justify-content: center;
       gap: clamp(8px, 1vw, 16px);
       flex-shrink: 0;
+      flex-wrap: wrap;
     }
     .order-completed-banner .check-icon {
       font-size: clamp(20px, 2.5vw, 36px);
@@ -349,6 +350,26 @@
       font-weight: 600;
       letter-spacing: 2px;
       text-transform: uppercase;
+    }
+    .order-number-display {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(22px, 3vw, 48px);
+      font-weight: 700;
+      background: rgba(255,255,255,0.22);
+      padding: clamp(3px, 0.4vw, 6px) clamp(12px, 1.5vw, 24px);
+      border-radius: 8px;
+      letter-spacing: 2px;
+    }
+
+    /* Personalised greeting in clock bar */
+    .clock-bar .customer-greeting {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(14px, 2.5vw, 36px);
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-right: auto;
     }
   </style>
 </head>
@@ -392,10 +413,12 @@ let _settings = { restaurantName: 'Our Restaurant', currency: '$', logo: '', log
 let _brands   = [];
 
 // ── CUSTOMER IDENTITY & INACTIVITY ────────────────────────────────────────────
-let _customerName    = '';     // from cart.customerName written by order.html
-let _cartTimedOut    = false;  // true after 60s of no cart updates → show idle state
-let _inactivityTimer = null;
-const INACTIVITY_MS  = 60_000; // 1 minute
+let _customerName        = '';     // from cart.customerName written by order.html
+let _cartTimedOut        = false;  // true after 60s of no cart updates → show idle state
+let _inactivityTimer     = null;
+let _orderCompletedTimer = null;   // clears board 10s after order is placed
+const INACTIVITY_MS          = 60_000; // 1 minute
+const ORDER_COMPLETE_CLEAR_MS = 10_000; // 10 seconds
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function esc(str)   { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -507,7 +530,7 @@ function render() {
     </div>
     ${showClock ? `
     <div class="clock-bar">
-      ${_customerName ? `<div class="store-label customer-greeting">Hi ${esc(_customerName)}!</div>` : ''}
+      ${(_customerName && items) ? `<div class="store-label customer-greeting">Hi ${esc(_customerName)}!</div>` : ''}
       <div class="time-display" id="clockDisplay"></div>
     </div>` : ''}
   `;
@@ -550,10 +573,12 @@ function render() {
 
     const total = Number(cart.total || 0).toFixed(2);
 
+    const orderNumber = cart?.orderNumber || null;
     const completedBanner = (status === 'completed')
       ? `<div class="order-completed-banner">
            <span class="check-icon">✅</span>
            <span class="completed-text">Order Placed — Thank You!</span>
+           ${orderNumber ? `<span class="order-number-display">#${esc(String(orderNumber))}</span>` : ''}
          </div>`
       : '';
 
@@ -598,16 +623,35 @@ if (!DEVICE_UDID) {
 
   // Listen to cart document for this UDID
   onSnapshot(doc(db, 'carts', DEVICE_UDID), snap => {
-    const data = snap.exists() ? snap.data() : null;
-    _cart = data;
+    const data   = snap.exists() ? snap.data() : null;
+    const status = data?.status;
+    const hasItems = data?.items?.length > 0;
+
+    // Always cancel any in-flight completed-order clear timer on new data
+    clearTimeout(_orderCompletedTimer);
+    _orderCompletedTimer = null;
+
+    _cart         = data;
     _customerName = (data?.customerName || '').trim();
-    // Drive inactivity timer: only for active carts with items
-    const hasActiveItems = data?.items?.length > 0 && data?.status !== 'completed';
-    if (hasActiveItems) {
+
+    if (status === 'completed' && hasItems) {
+      // Order just placed: cancel inactivity timer and schedule a 10-second board clear
+      resetInactivityTimer();
+      _orderCompletedTimer = setTimeout(() => {
+        _cart              = null;
+        _customerName      = '';
+        _orderCompletedTimer = null;
+        render();
+      }, ORDER_COMPLETE_CLEAR_MS);
+    } else if (hasItems && status !== 'completed') {
+      // Active cart with items: run the 1-minute inactivity timer
       scheduleInactivityTimeout();
     } else {
+      // No items, cleared, or unknown state: reset everything
       resetInactivityTimer();
+      _cartTimedOut = false;
     }
+
     render();
   });
 

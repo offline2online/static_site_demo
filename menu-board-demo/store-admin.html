@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Store Admin — Menu Management</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #F0F4FA;
@@ -15,8 +15,8 @@
       --text: #0f172a;
       --text2: #64748b;
       --text3: #94a3b8;
-      --primary: #2563eb;
-      --primary-light: #eff6ff;
+      --primary: #006241;
+      --primary-light: rgba(0,98,65,0.10);
       --success: #059669;
       --success-light: #ecfdf5;
       --danger: #dc2626;
@@ -74,7 +74,7 @@
       text-decoration: none;
     }
     .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:hover { background: #004d33; }
     .btn-ghost {
       background: var(--surface2);
       color: var(--text2);
@@ -128,6 +128,7 @@
     }
     .pill-all { background: var(--surface2); border-color: var(--border); color: var(--text2); }
     .pill-all.active, .pill-all:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+
     .pill-breakfast { background: #fffbeb; border-color: #fde68a; color: #92400e; }
     .pill-breakfast.active, .pill-breakfast:hover { background: #f59e0b; border-color: #f59e0b; color: #fff; }
     .pill-lunch { background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
@@ -176,7 +177,7 @@
       font-size: 13px;
       font-weight: 600;
     }
-    .summary-chip .num { font-size: 20px; font-weight: 800; line-height: 1; }
+    .summary-chip .num { font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1; }
     .summary-chip .lbl { font-size: 11px; font-weight: 600; color: var(--text2); }
 
     /* ITEM GRID */
@@ -271,7 +272,7 @@
       border-top: 1px solid var(--border);
       padding-top: 12px;
     }
-    .item-price { font-size: 18px; font-weight: 800; color: var(--primary); }
+    .item-price { font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: 0.3px; }
     .item-types { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
     .type-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
@@ -342,6 +343,50 @@
       font-family: monospace;
       word-break: break-all;
     }
+
+    /* TOPBAR */
+    .ra-topbar {
+      background: #fff;
+      border-bottom: 3px solid var(--primary);
+      height: 54px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .ra-topbar-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .ra-store-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid rgba(0,98,65,0.25);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .ra-topbar-spacer { flex: 1; }
+    .ra-topbar-back {
+      font-size: 12px;
+      color: var(--text2);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .ra-topbar-back:hover { background: var(--border); color: var(--text); }
 
     /* MAIN PAGE */
     .page { padding: 20px 24px; }
@@ -418,6 +463,14 @@
      RETAIL ADMIN MAIN COLUMN
      ============================================= -->
 <div class="ra-main">
+
+  <!-- BRANDED TOPBAR -->
+  <header class="ra-topbar">
+    <span class="ra-topbar-title">&#x1F4CB; Store Menu Admin</span>
+    <span class="ra-store-badge" id="storeCodeBadge" style="display:none;"></span>
+    <div class="ra-topbar-spacer"></div>
+    <a href="index.html" class="ra-topbar-back">&#x2190; Portal</a>
+  </header>
 
   <!-- SCROLLABLE CONTENT -->
   <div class="ra-content">
@@ -555,6 +608,8 @@ function init() {
 
   document.getElementById('mainPage').style.display = 'block';
   document.title = 'Store ' + STORE_CODE + ' — Menu Admin';
+  const badge = document.getElementById('storeCodeBadge');
+  if (badge && STORE_CODE) { badge.textContent = '🏪 ' + STORE_CODE; badge.style.display = ''; }
 
   renderItems();
 }

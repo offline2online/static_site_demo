@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HQ Admin — PersonalisationHub</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
        CSS VARIABLES
@@ -19,8 +19,8 @@
       --border2:   #CBD5E1;
       --text:      #1E293B;
       --text2:     #64748B;
-      --primary:   #3B82F6;
-      --primary-light: rgba(59,130,246,0.10);
+      --primary:   #006241;
+      --primary-light: rgba(0,98,65,0.10);
       --success:   #059669;
       --success-light: rgba(5,150,105,0.10);
       --warning:   #D97706;
@@ -86,7 +86,7 @@
       height: 32px;
       width: 32px;
       border-radius: 7px;
-      background: linear-gradient(135deg, #6366F1 0%, #3B82F6 50%, #06B6D4 100%);
+      background: linear-gradient(135deg, #006241 0%, #00a86b 100%);
       flex-shrink: 0;
       display: none;
     }
@@ -114,7 +114,7 @@
     .ph-user-circle {
       width: 34px; height: 34px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #6366F1, #818CF8);
+      background: linear-gradient(135deg, #006241, #00a86b);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -166,7 +166,7 @@
     }
     .brand-icon {
       width: 28px; height: 28px;
-      background: linear-gradient(135deg, #3b82f6, #818cf8);
+      background: linear-gradient(135deg, #006241, #00a86b);
       border-radius: 7px;
       display: flex; align-items: center; justify-content: center;
       font-size: 13px;
@@ -216,6 +216,7 @@
       color: var(--text2);
     }
     .sidebar-foot a { color: var(--primary); text-decoration: none; }
+    .sidebar-foot a:hover { text-decoration: underline; }
 
     /* ============================================================
        MAIN CONTENT
@@ -236,7 +237,7 @@
       justify-content: space-between;
       flex-shrink: 0;
     }
-    .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .topbar-title { font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 600; color: var(--text); letter-spacing: 0.3px; }
     .topbar-right { display: flex; align-items: center; gap: 10px; }
     .hq-badge {
       background: var(--primary-light);
@@ -245,6 +246,7 @@
       font-weight: 700;
       padding: 3px 10px;
       border-radius: 20px;
+      border: 1px solid rgba(0,98,65,0.2);
     }
     .content { flex: 1; overflow-y: auto; padding: 22px; }
 
@@ -266,7 +268,7 @@
       padding: 18px;
     }
     .stat-label { font-size: 10px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .stat-value { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-value { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 700; color: var(--primary); line-height: 1; }
     .stat-sub { font-size: 11px; color: var(--text2); margin-top: 5px; }
     .stat-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 4px; }
 
@@ -314,7 +316,7 @@
       text-decoration: none;
     }
     .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: #2563EB; }
+    .btn-primary:hover { background: #004d33; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-success:hover { background: #047857; }
     .btn-danger { background: var(--danger); color: #fff; }
@@ -418,7 +420,14 @@
 
     /* SETTINGS */
     .settings-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 18px; }
-    .settings-section h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .settings-section h3 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 16px; font-weight: 600; color: var(--primary);
+      margin-bottom: 4px; padding-bottom: 12px; border-bottom: 2px solid var(--primary-light);
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .settings-section .settings-desc { font-size: 12px; color: var(--text2); margin-bottom: 18px; line-height: 1.5; }
+    .form-group .form-help { font-size: 11px; color: var(--text2); margin-top: 4px; line-height: 1.4; }
 
     /* CATEGORIES */
     .cat-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
@@ -690,7 +699,7 @@
         <div id="view-settings" class="view">
           <div class="settings-section">
             <h3>&#x1F5C4;&#xFE0F; Data Management</h3>
-            <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">Export all menu data to a JSON file, or import from a previously exported file to restore data.</p>
+            <p class="settings-desc">Export all menu data to a JSON file, or import from a previously exported file to restore data.</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn btn-ghost" onclick="exportData()">&#x1F4E4; Export All Data</button>
               <button class="btn btn-ghost" onclick="document.getElementById('importFile2').click()">&#x1F4E5; Import Data</button>
@@ -702,22 +711,23 @@
 
           <div class="settings-section">
             <h3>&#x1F517; Personalisation Hub API</h3>
-            <p style="font-size:13px;color:var(--text2);margin-bottom:18px;">Configure the external campaign API used by the PWA Player to retrieve personalised product SKUs. The Device UDID is passed as a URL parameter: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px;">menu-board.html?store=STORE001&amp;menu=breakfast&amp;device=YOUR-DEVICE-UDID</code></p>
+            <p class="settings-desc">Connect the menu board to the PersonalisationHub campaign API so the PWA Player can retrieve personalised product SKUs per device. The Device UDID is automatically passed as a URL parameter to the board.</p>
             <div class="form-group">
               <label>Base URL</label>
               <input type="text" id="phBaseUrl" placeholder="https://dev.personalisationhub.com" style="max-width:480px;">
-              <p style="font-size:12px;color:var(--text2);margin-top:4px;">Do not include a trailing slash.</p>
+              <p class="form-help">&#x2139;&#xFE0F; The root domain of your PersonalisationHub instance. Do not include a trailing slash or path segment.</p>
             </div>
             <div class="form-group">
               <label>API Authentication Token</label>
               <div style="display:flex;gap:8px;align-items:flex-start;max-width:480px;">
-                <input type="password" id="phAuthToken" placeholder="Enter token to set or update&hellip;" style="flex:1;">
+                <input type="password" id="phAuthToken" placeholder="Paste your API key or bearer token here&hellip;" style="flex:1;">
               </div>
-              <p id="phTokenStatus" style="font-size:12px;color:var(--success);margin-top:6px;display:none;">&#x1F512; Token saved securely (encrypted). Leave the field blank to keep the existing token.</p>
+              <p class="form-help">&#x1F512; Stored encrypted in Firestore. Leave blank to keep your existing token unchanged.</p>
+              <p id="phTokenStatus" style="font-size:12px;color:var(--success);margin-top:6px;display:none;">&#x2705; Token saved securely (encrypted).</p>
             </div>
             <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
               <button class="btn btn-primary" onclick="savePhApi()">Save API Settings</button>
-              <button class="btn btn-ghost" onclick="testPhApi()">Test Connection</button>
+              <button class="btn btn-ghost" onclick="testPhApi()">&#x1F50D; Test Connection</button>
             </div>
             <p id="phApiStatus" style="font-size:12px;margin-top:10px;min-height:18px;"></p>
           </div>
