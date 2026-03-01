@@ -24,7 +24,7 @@
       --item-color:       #004d33;
       --header-text:      #006241;
       --clock-text:       #1e293b;
-      --qr-safe-bottom:   80px;
+      --qr-safe-bottom:   200px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -391,6 +391,12 @@ let _cartExists = false; // true once the document has been seen at least once
 let _settings = { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
 let _brands   = [];
 
+// ── CUSTOMER IDENTITY & INACTIVITY ────────────────────────────────────────────
+let _customerName    = '';     // from cart.customerName written by order.html
+let _cartTimedOut    = false;  // true after 60s of no cart updates → show idle state
+let _inactivityTimer = null;
+const INACTIVITY_MS  = 60_000; // 1 minute
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function esc(str)   { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtTime(d) { return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
@@ -450,6 +456,22 @@ function updateClock() {
   el.textContent = timeStr + '  ·  ' + dateStr;
 }
 
+// ── INACTIVITY TIMER ──────────────────────────────────────────────────────────
+function resetInactivityTimer() {
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = null;
+  _cartTimedOut = false;
+}
+
+function scheduleInactivityTimeout() {
+  resetInactivityTimer();
+  _inactivityTimer = setTimeout(() => {
+    _cartTimedOut = true;
+    _inactivityTimer = null;
+    render();
+  }, INACTIVITY_MS);
+}
+
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render() {
   const brand     = getActiveBrand();
@@ -485,14 +507,15 @@ function render() {
     </div>
     ${showClock ? `
     <div class="clock-bar">
-      <div class="store-label">${esc(STORE_CODE)}</div>
+      ${_customerName ? `<div class="store-label customer-greeting">Hi ${esc(_customerName)}!</div>` : ''}
       <div class="time-display" id="clockDisplay"></div>
     </div>` : ''}
   `;
 
   const cart  = _cart;
-  const items = cart && cart.items && cart.items.length ? cart.items : null;
   const status = cart && cart.status;
+  // Show empty/idle state if timed out (board clears after 1 min inactivity)
+  const items = (!_cartTimedOut && cart && cart.items && cart.items.length) ? cart.items : null;
 
   let bodyHtml = '';
 
@@ -575,7 +598,16 @@ if (!DEVICE_UDID) {
 
   // Listen to cart document for this UDID
   onSnapshot(doc(db, 'carts', DEVICE_UDID), snap => {
-    _cart = snap.exists() ? snap.data() : null;
+    const data = snap.exists() ? snap.data() : null;
+    _cart = data;
+    _customerName = (data?.customerName || '').trim();
+    // Drive inactivity timer: only for active carts with items
+    const hasActiveItems = data?.items?.length > 0 && data?.status !== 'completed';
+    if (hasActiveItems) {
+      scheduleInactivityTimeout();
+    } else {
+      resetInactivityTimer();
+    }
     render();
   });
 

@@ -481,7 +481,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .bag-overlay.open { opacity: 1; pointer-events: all; }
 .bag-panel {
   position: fixed; top: var(--host-header-height, 0px); right: 0; bottom: 0; z-index: 301;
-  height: calc(100dvh - var(--host-header-height, 0px));
+  height: calc(100svh - var(--host-header-height, 0px));
   width: min(400px, 100vw);
   background: var(--white);
   transform: translateX(100%);
@@ -554,7 +554,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   text-decoration: underline;
 }
 .bag-footer {
-  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 20px));
+  padding: 16px 20px calc(32px + env(safe-area-inset-bottom, 20px));
   border-top: 1px solid var(--border); flex-shrink: 0;
   background: var(--white);
 }
@@ -670,6 +670,160 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .bag-items::-webkit-scrollbar { width: 4px; }
 .bag-items::-webkit-scrollbar-track { background: transparent; }
 .bag-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── LOYALTY SYSTEM ─────────────────────────────────────────────────────── */
+
+/* Star loyalty icon in bag header */
+.bag-loyalty-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--gold);
+  color: var(--green-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 6px rgba(203,162,88,.4);
+  transition: transform .12s, box-shadow .12s;
+  flex-shrink: 0;
+}
+.bag-loyalty-btn:active { transform: scale(0.9); }
+
+/* Loyalty overlay + bottom-sheet */
+.loyalty-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.5);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.loyalty-overlay.open { opacity: 1; pointer-events: all; }
+.loyalty-sheet {
+  width: min(420px, 100vw);
+  background: var(--white);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 24px 24px calc(32px + env(safe-area-inset-bottom, 16px));
+  transform: translateY(100%);
+  transition: transform .28s cubic-bezier(.33,1,.68,1);
+  display: flex; flex-direction: column; gap: 14px;
+  max-height: 80svh; overflow-y: auto;
+}
+.loyalty-overlay.open .loyalty-sheet { transform: translateY(0); }
+.loyalty-sheet-handle {
+  width: 40px; height: 4px;
+  background: var(--border); border-radius: 2px;
+  margin: 0 auto -4px;
+}
+.loyalty-sheet-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--text); text-align: center;
+}
+.loyalty-greeting-text {
+  font-size: 14px; color: var(--text-muted);
+  text-align: center; line-height: 1.5;
+}
+.loyalty-name-input {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 16px;
+  color: var(--text); background: var(--cream);
+  outline: none; transition: border-color .15s;
+}
+.loyalty-name-input:focus { border-color: var(--green); }
+.loyalty-save-btn {
+  width: 100%; height: 48px;
+  background: var(--green); color: var(--white);
+  border-radius: var(--radius-sm);
+  font-family: 'Oswald', sans-serif; font-size: 17px; font-weight: 600;
+  letter-spacing: .5px; transition: background .12s;
+}
+.loyalty-save-btn:active { background: var(--green-dark); }
+.loyalty-save-btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+.loyalty-hi-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: 28px; font-weight: 700;
+  color: var(--green); text-align: center;
+}
+.loyalty-fav-summary {
+  background: var(--cream); border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px; color: var(--text-muted); line-height: 1.6;
+}
+.loyalty-fav-summary strong {
+  display: block; color: var(--text);
+  font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: 4px;
+}
+.loyalty-update-name {
+  font-size: 13px; color: var(--text-muted);
+  text-align: center; text-decoration: underline;
+  background: none; border: none; cursor: pointer;
+  padding: 4px;
+}
+.loyalty-forget-btn {
+  width: 100%; height: 44px;
+  background: transparent;
+  border: 1.5px solid var(--red);
+  border-radius: var(--radius-sm);
+  font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 600;
+  color: var(--red); letter-spacing: .5px;
+  transition: background .12s;
+}
+.loyalty-forget-btn:active { background: rgba(220,38,38,.08); }
+
+/* Favourite order checkbox row in bag footer */
+.bag-fav-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  background: var(--cream); border-radius: var(--radius-sm);
+  border: 1.5px solid var(--gold);
+  cursor: pointer;
+}
+.bag-fav-row input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--green); flex-shrink: 0;
+}
+.bag-fav-row label {
+  font-size: 13px; font-weight: 500; color: var(--text);
+  cursor: pointer; line-height: 1.3;
+}
+
+/* FAB popup — positioned above the FAB */
+.fab-popup {
+  position: fixed;
+  bottom: calc(max(80px, 28px + env(safe-area-inset-bottom, 0px)) + 80px);
+  right: 14px;
+  z-index: 201;
+  max-width: 260px;
+  background: var(--green);
+  color: var(--white);
+  border-radius: var(--radius-md);
+  padding: 12px 36px 12px 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.2);
+  font-size: 13px; line-height: 1.4; font-weight: 500;
+  display: none;
+  cursor: pointer;
+  animation: fabPopIn .2s cubic-bezier(.33,1,.68,1) both;
+}
+.fab-popup.visible { display: block; }
+@keyframes fabPopIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fab-popup::after {
+  content: '';
+  position: absolute; bottom: -8px; right: 26px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--green);
+}
+.fab-popup-close {
+  position: absolute; top: 6px; right: 8px;
+  font-size: 16px; line-height: 1;
+  color: rgba(255,255,255,.8);
+  background: none; border: none; cursor: pointer; padding: 4px;
+}
+.fab-popup-close:hover { color: var(--white); }
 </style>
 </head>
 <body>
@@ -711,6 +865,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   </svg>
   <span class="bag-badge" id="bagBadge">0</span>
 </button>
+
+<!-- ── FAB LOYALTY POPUP ────────────────────────────────────────────────── -->
+<div class="fab-popup" id="fabPopup">
+  <button class="fab-popup-close" id="fabPopupClose" aria-label="Dismiss">×</button>
+  <span id="fabPopupText"></span>
+</div>
 
 <!-- ── MAIN CONTENT ──────────────────────────────────────────────────── -->
 <main class="main-content">
@@ -754,11 +914,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   </div>
 </div>
 
+<!-- ── LOYALTY BOTTOM-SHEET ──────────────────────────────────────────── -->
+<div class="loyalty-overlay" id="loyaltyOverlay">
+  <div class="loyalty-sheet" id="loyaltySheet">
+    <div class="loyalty-sheet-handle"></div>
+    <div id="loyaltySheetContent"></div>
+  </div>
+</div>
+
 <!-- ── BAG PANEL ─────────────────────────────────────────────────────── -->
 <div class="bag-overlay" id="bagOverlay">
   <div class="bag-panel" id="bagPanel">
     <div class="bag-header">
       <div class="bag-title" id="bagTitle">🛍 Takeout Bag</div>
+      <button class="bag-loyalty-btn" id="bagLoyaltyBtn" aria-label="Loyalty programme">⭐</button>
       <button class="bag-close" id="bagClose" aria-label="Close bag">×</button>
     </div>
     <div class="bag-items" id="bagItems"></div>
@@ -766,6 +935,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
       <div class="bag-subtotal">
         <span>Total<span class="bag-item-count" id="bagItemCount"></span></span>
         <span class="subtotal-val" id="bagSubtotal"></span>
+      </div>
+      <!-- Favourite order checkbox — only shown when loyalty name is set -->
+      <div class="bag-fav-row" id="bagFavRow" style="display:none;">
+        <input type="checkbox" id="bagFavCheck">
+        <label for="bagFavCheck">Save as my Favourite Order ⭐</label>
       </div>
       <div class="bag-actions">
         <button class="place-order-btn" id="placeOrderBtn">Place Order</button>
@@ -820,6 +994,11 @@ let _activeCat   = 'All';
 let _searchQuery = '';
 let _clearBagConfirming = false;
 let _campaignFirstName = null;
+
+// ── LOYALTY ───────────────────────────────────────────────────────────────
+let _loyaltyName           = localStorage.getItem('loyalty_name') || null;
+let _loyaltyEditMode       = false;   // true when updating name in loyalty sheet
+let _loyaltyPopupDismissed = false;   // true when user dismisses FAB popup this session
 
 // Current modal state
 let _modalItem   = null;
@@ -888,16 +1067,149 @@ function isOos(sku) { return !!(STORE_CODE && _stock[sku] && _stock[sku].outOfSt
 // ── RENDERING ─────────────────────────────────────────────────────────────
 
 function renderGreeting() {
-  const banner  = document.getElementById('greetingBanner');
-  const content = document.querySelector('.main-content');
-  if (_campaignFirstName) {
-    banner.textContent = `Hi ${_campaignFirstName}, what can we get for you today? 👋`;
+  const banner    = document.getElementById('greetingBanner');
+  const content   = document.querySelector('.main-content');
+  // Loyalty name takes priority over campaign API name
+  const firstName = _loyaltyName || _campaignFirstName;
+  if (firstName) {
+    banner.textContent = `Hi ${firstName}, what can we get for you today? 👋`;
     banner.style.display = '';
     if (content) content.classList.add('has-greeting');
   } else {
     banner.style.display = 'none';
     if (content) content.classList.remove('has-greeting');
   }
+}
+
+// ── LOYALTY FUNCTIONS ────────────────────────────────────────────────────────
+
+function getSavedFavouriteOrder() {
+  try {
+    const raw = localStorage.getItem('loyalty_order');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function updateFabPopup() {
+  const popup  = document.getElementById('fabPopup');
+  const textEl = document.getElementById('fabPopupText');
+  if (!popup || !textEl) return;
+  const savedOrder = getSavedFavouriteOrder();
+  const show = _loyaltyName
+    && savedOrder && savedOrder.length > 0
+    && _bag.length === 0
+    && !_loyaltyPopupDismissed;
+  if (show) {
+    textEl.textContent = `Hi ${_loyaltyName}, tap here to place your favourite order again?`;
+    popup.classList.add('visible');
+  } else {
+    popup.classList.remove('visible');
+  }
+}
+
+function loadFavouriteOrderIntoBag() {
+  const savedOrder = getSavedFavouriteOrder();
+  if (!savedOrder || !savedOrder.length) return;
+  savedOrder.forEach(item => {
+    _bag.push({ ...item, uid: Date.now() + Math.random() });
+  });
+  renderBagPanel();
+  updateBagBadge();
+  syncCartToFirestore();
+  document.getElementById('fabPopup').classList.remove('visible');
+  openBag();
+}
+
+function renderLoyaltySheet() {
+  const content = document.getElementById('loyaltySheetContent');
+  if (!content) return;
+  if (!_loyaltyName || _loyaltyEditMode) {
+    // State A: No name saved — show input form
+    _loyaltyEditMode = false;
+    content.innerHTML = `
+      <div class="loyalty-sheet-title">Loyalty Programme</div>
+      <div class="loyalty-greeting-text">Save your name so we can greet you personally and quickly re-order your favourites!</div>
+      <input class="loyalty-name-input" id="loyaltyNameInput" type="text"
+             placeholder="Enter your first name" maxlength="40" autocomplete="given-name">
+      <button class="loyalty-save-btn" id="loyaltySaveBtn" disabled>Save My Name</button>
+    `;
+    const input = document.getElementById('loyaltyNameInput');
+    const btn   = document.getElementById('loyaltySaveBtn');
+    input.addEventListener('input', () => { btn.disabled = !input.value.trim(); });
+    btn.addEventListener('click', () => {
+      const name = input.value.trim();
+      if (!name) return;
+      saveLoyaltyName(name);
+      closeLoyaltySheet();
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && input.value.trim()) {
+        saveLoyaltyName(input.value.trim());
+        closeLoyaltySheet();
+      }
+    });
+    setTimeout(() => input.focus(), 300);
+  } else {
+    // State B: Name exists — show profile + saved order
+    const savedOrder = getSavedFavouriteOrder();
+    const favHtml = savedOrder && savedOrder.length
+      ? `<div class="loyalty-fav-summary">
+           <strong>Your Favourite Order:</strong>
+           ${savedOrder.map(r => `${r.qty}&times; ${esc(r.name)}`).join('<br>')}
+         </div>`
+      : `<div class="loyalty-fav-summary" style="font-style:italic;">
+           No favourite order saved yet.<br>Place an order and tick <em>"Save as Favourite"</em>.
+         </div>`;
+    content.innerHTML = `
+      <div class="loyalty-hi-text">Hi ${esc(_loyaltyName)}! 👋</div>
+      ${favHtml}
+      <button class="loyalty-update-name" id="loyaltyUpdateNameBtn">Update my name</button>
+      <button class="loyalty-forget-btn" id="loyaltyForgetBtn">Forget Me</button>
+    `;
+    document.getElementById('loyaltyUpdateNameBtn').addEventListener('click', () => {
+      _loyaltyEditMode = true;
+      renderLoyaltySheet();
+    });
+    document.getElementById('loyaltyForgetBtn').addEventListener('click', () => {
+      forgetLoyalty();
+      closeLoyaltySheet();
+    });
+  }
+}
+
+function openLoyaltySheet() {
+  renderLoyaltySheet();
+  document.getElementById('loyaltyOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLoyaltySheet() {
+  _loyaltyEditMode = false;
+  document.getElementById('loyaltyOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function saveLoyaltyName(name) {
+  _loyaltyName = name;
+  localStorage.setItem('loyalty_name', name);
+  renderGreeting();
+  syncCartToFirestore(); // push customerName to Firestore immediately
+  renderBagPanel();      // show favourite checkbox
+  updateFabPopup();
+}
+
+function forgetLoyalty() {
+  _loyaltyName = null;
+  _loyaltyEditMode = false;
+  _loyaltyPopupDismissed = false;
+  localStorage.removeItem('loyalty_name');
+  localStorage.removeItem('loyalty_order');
+  renderGreeting();
+  syncCartToFirestore();
+  renderBagPanel();
+  updateFabPopup();
 }
 
 function applyBranding() {
@@ -1244,12 +1556,13 @@ function bagItemCount() {
 function syncCartToFirestore(statusOverride) {
   if (!DEVICE_UDID || !STORE_CODE) return;
   setDoc(doc(db, 'carts', DEVICE_UDID), {
-    storeCode: STORE_CODE,
-    items:     _bag,
-    total:     bagTotal(),
-    itemCount: bagItemCount(),
-    updatedAt: serverTimestamp(),
-    status:    statusOverride || 'active'
+    storeCode:    STORE_CODE,
+    items:        _bag,
+    total:        bagTotal(),
+    itemCount:    bagItemCount(),
+    updatedAt:    serverTimestamp(),
+    status:       statusOverride || 'active',
+    customerName: _loyaltyName || _campaignFirstName || ''
   }).catch(e => console.warn('[Cart sync] failed:', e));
 }
 
@@ -1283,6 +1596,7 @@ function updateBagBadge() {
   const bdg = document.getElementById('bagBadge');
   bdg.textContent = n;
   bdg.classList.toggle('visible', n > 0);
+  updateFabPopup();
 }
 
 function addToBag() {
@@ -1374,6 +1688,9 @@ function renderBagPanel() {
   subtotal.textContent = cur(total);
   if (countEl) countEl.textContent = ` (${itemCount} item${itemCount !== 1 ? 's' : ''})`;
   footerEl.style.display = '';
+  // Show Save as Favourite checkbox only when a loyalty name is set
+  const favRow = document.getElementById('bagFavRow');
+  if (favRow) favRow.style.display = _loyaltyName ? '' : 'none';
 }
 
 function adjustBagQty(uid, delta) {
@@ -1435,6 +1752,14 @@ function clearBag() {
 
 function placeOrder() {
   if (!_bag.length) return;
+  // Save as favourite if checkbox is ticked and loyalty name is set
+  if (_loyaltyName) {
+    const favCheck = document.getElementById('bagFavCheck');
+    if (favCheck && favCheck.checked) {
+      localStorage.setItem('loyalty_order', JSON.stringify(_bag));
+      favCheck.checked = false;
+    }
+  }
   syncCartToFirestore('completed');
   closeBag();
 
@@ -1457,7 +1782,7 @@ function placeOrder() {
 function startNewOrder() {
   _bag = [];
   syncCartToFirestore('cleared');
-  updateBagBadge();
+  updateBagBadge(); // also calls updateFabPopup via updateBagBadge
   document.getElementById('confirmScreen').classList.remove('open');
   document.body.style.overflow = '';
 }
@@ -1518,6 +1843,22 @@ document.getElementById('bagOverlay').addEventListener('click', e => {
 document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
 document.getElementById('clearBagBtn').addEventListener('click', clearBag);
 
+// Loyalty sheet
+document.getElementById('bagLoyaltyBtn').addEventListener('click', openLoyaltySheet);
+document.getElementById('loyaltyOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('loyaltyOverlay')) closeLoyaltySheet();
+});
+
+// FAB popup
+document.getElementById('fabPopupClose').addEventListener('click', e => {
+  e.stopPropagation();
+  _loyaltyPopupDismissed = true;
+  document.getElementById('fabPopup').classList.remove('visible');
+});
+document.getElementById('fabPopup').addEventListener('click', e => {
+  if (!e.target.closest('#fabPopupClose')) loadFavouriteOrderIntoBag();
+});
+
 // Confirmation
 document.getElementById('newOrderBtn').addEventListener('click', startNewOrder);
 
@@ -1545,6 +1886,10 @@ if (DEVICE_UDID) {
   pollCampaign();
   setInterval(pollCampaign, 5000);
 }
+
+// Loyalty: show greeting + popup for returning users on page load
+renderGreeting();
+updateFabPopup();
 </script>
 </body>
 </html>
