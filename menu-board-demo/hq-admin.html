@@ -26,6 +26,7 @@
       --primary-light: rgba(0,98,65,0.10);
       --success:   #059669;
       --success-light: rgba(5,150,105,0.10);
+      --toggle-on: #3b82f6;
       --warning:   #D97706;
       --warning-light: rgba(217,119,6,0.10);
       --danger:    #DC2626;
@@ -361,7 +362,7 @@
       border: 2px solid rgba(0,0,0,0.1);
     }
     .toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 1px; top: 1px; background: #fff; border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .toggle input:checked + .toggle-slider { background: var(--success); border-color: rgba(0,0,0,0.08); }
+    .toggle input:checked + .toggle-slider { background: var(--toggle-on); border-color: rgba(0,0,0,0.08); }
     .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
 
     /* EMPTY */
@@ -511,6 +512,15 @@
     .csf-btn-all, .csf-btn-none { flex: 1; padding: 4px 6px; font-size: 11px; font-family: inherit; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; background: var(--surface); color: var(--text2); font-weight: 600; }
     .csf-btn-all:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
     .csf-btn-none:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    /* ── 3-DOT ROW ACTION MENU ────────────────────────── */
+    .row-menu-btn { background: transparent; border: none; cursor: pointer; font-size: 18px; color: var(--text2); padding: 4px 10px; border-radius: 6px; line-height: 1; letter-spacing: 3px; font-weight: 700; }
+    .row-menu-btn:hover { background: var(--surface2); color: var(--text); }
+    .row-menu-popup { position: fixed; z-index: 9999; background: #fff; border-radius: 14px; box-shadow: 0 4px 32px rgba(0,0,0,0.14); min-width: 200px; overflow: hidden; }
+    .row-menu-item { padding: 14px 22px; font-size: 15px; cursor: pointer; color: var(--text); border-bottom: 1px solid var(--border); }
+    .row-menu-item:last-child { border-bottom: none; }
+    .row-menu-item:hover { background: var(--surface2); }
+    .row-menu-item-danger { color: var(--danger); }
 
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -1530,7 +1540,7 @@ class CheckboxSetFilter {
       else if (raw != null && String(raw).trim()) seen.add(String(raw).trim());
     });
     this.allValues = [...seen].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-    if (this.checkedValues.size === 0) this.allValues.forEach(v => this.checkedValues.add(v));
+    // Inclusion mode: empty checkedValues = no filter (show all). Don't auto-populate.
     this._renderList();
   }
   _renderList() {
@@ -1553,7 +1563,7 @@ class CheckboxSetFilter {
     });
   }
   getGui()          { return this.eGui; }
-  isFilterActive()  { return this.checkedValues.size < this.allValues.length; }
+  isFilterActive()  { return this.checkedValues.size > 0 && this.checkedValues.size < this.allValues.length; }
   doesFilterPass(p) {
     const raw = this._rawValue(p.data);
     if (Array.isArray(raw)) return raw.some(v => this.checkedValues.has(String(v)));
@@ -1563,11 +1573,36 @@ class CheckboxSetFilter {
   setModel(m)  {
     this.checkedValues.clear();
     if (m && m.values) m.values.forEach(v => this.checkedValues.add(v));
-    else this.allValues.forEach(v => this.checkedValues.add(v));
+    // Inclusion mode: null model = clear filter (empty = show all), no auto-populate
     this._renderList();
   }
   onNewRowsLoaded() { this._refresh(); }
   destroy() {}
+}
+
+// ── 3-DOT ROW MENU ────────────────────────────────────────────────────
+let _openRowMenu = null;
+function showRowMenu(e, menuItems) {
+  if (_openRowMenu) { _openRowMenu.remove(); _openRowMenu = null; }
+  const rect = e.currentTarget.getBoundingClientRect();
+  const popup = document.createElement('div');
+  popup.className = 'row-menu-popup';
+  popup.style.top  = (rect.bottom + 4) + 'px';
+  popup.style.left = Math.max(0, rect.right - 200) + 'px';
+  menuItems.forEach(({ label, action, danger }) => {
+    const el = document.createElement('div');
+    el.className = 'row-menu-item' + (danger ? ' row-menu-item-danger' : '');
+    el.textContent = label;
+    el.addEventListener('click', ev => { ev.stopPropagation(); popup.remove(); _openRowMenu = null; action(); });
+    popup.appendChild(el);
+  });
+  document.body.appendChild(popup);
+  _openRowMenu = popup;
+  const onOutside = ev => {
+    if (!popup.contains(ev.target)) { popup.remove(); _openRowMenu = null; document.removeEventListener('click', onOutside, true); }
+  };
+  document.addEventListener('click', onOutside, true);
+  e.stopPropagation();
 }
 
 function initGrids() {
@@ -1589,7 +1624,9 @@ function initGrids() {
           cellRenderer: (params) => {
             const item = params.data;
             const div = document.createElement('div');
-            div.style.cssText = 'display:flex;align-items:center;gap:12px;height:100%;';
+            div.style.cssText = 'display:flex;align-items:center;gap:12px;height:100%;cursor:pointer;';
+            div.title = 'Click to edit';
+            div.addEventListener('click', () => openEditModal(item.id));
             const imgWrap = document.createElement('div');
             imgWrap.className = 'item-img';
             if (item.images && item.images[0]) {
@@ -1600,6 +1637,7 @@ function initGrids() {
               imgWrap.innerHTML = '<span>\u{1F37D}\uFE0F</span>';
             }
             const nameDiv = document.createElement('div');
+            nameDiv.style.cssText = 'display:flex;flex-direction:column;gap:1px;text-align:center;';
             const nameEl = document.createElement('div');
             nameEl.className = 'item-name'; nameEl.textContent = item.name;
             const descEl = document.createElement('div');
@@ -1688,20 +1726,17 @@ function initGrids() {
           }
         },
         {
-          headerName: 'Actions', field: 'id', flex: 0.8, minWidth: 90,
+          headerName: 'Actions', field: 'id', flex: 0.6, minWidth: 70,
           filter: false, sortable: false,
           cellRenderer: (params) => {
             const item = params.data;
-            const div = document.createElement('div');
-            div.className = 'actions';
-            const editBtn = document.createElement('button');
-            editBtn.className = 'btn btn-ghost btn-sm btn-icon'; editBtn.title = 'Edit'; editBtn.textContent = '\u270F\uFE0F';
-            editBtn.addEventListener('click', () => openEditModal(item.id));
-            const delBtn = document.createElement('button');
-            delBtn.className = 'btn btn-ghost btn-sm btn-icon'; delBtn.title = 'Delete'; delBtn.textContent = '\u{1F5D1}\uFE0F';
-            delBtn.addEventListener('click', () => confirmDelete(item.id, item.name));
-            div.appendChild(editBtn); div.appendChild(delBtn);
-            return div;
+            const btn = document.createElement('button');
+            btn.className = 'row-menu-btn'; btn.textContent = '···';
+            btn.addEventListener('click', e => showRowMenu(e, [
+              { label: 'Edit',   action: () => openEditModal(item.id) },
+              { label: 'Delete', action: () => confirmDelete(item.id, item.name), danger: true }
+            ]));
+            return btn;
           }
         }
       ]
@@ -1779,16 +1814,13 @@ function initGrids() {
           filter: false, sortable: false,
           cellRenderer: (params) => {
             const b = params.data;
-            const div = document.createElement('div');
-            div.className = 'actions';
-            const editBtn = document.createElement('button');
-            editBtn.className = 'btn btn-ghost btn-sm btn-icon'; editBtn.title = 'Edit'; editBtn.textContent = '\u270F\uFE0F';
-            editBtn.addEventListener('click', () => openEditBrandModal(b.id));
-            const delBtn = document.createElement('button');
-            delBtn.className = 'btn btn-ghost btn-sm btn-icon'; delBtn.title = 'Delete'; delBtn.textContent = '\u{1F5D1}\uFE0F';
-            delBtn.addEventListener('click', () => confirmDeleteBrand(b.id, b.name));
-            div.appendChild(editBtn); div.appendChild(delBtn);
-            return div;
+            const btn = document.createElement('button');
+            btn.className = 'row-menu-btn'; btn.textContent = '···';
+            btn.addEventListener('click', e => showRowMenu(e, [
+              { label: 'Edit',   action: () => openEditBrandModal(b.id) },
+              { label: 'Delete', action: () => confirmDeleteBrand(b.id, b.name), danger: true }
+            ]));
+            return btn;
           }
         }
       ]

@@ -705,7 +705,7 @@ class CheckboxSetFilter {
       else if (raw != null && String(raw).trim()) seen.add(String(raw).trim());
     });
     this.allValues = [...seen].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-    if (this.checkedValues.size === 0) this.allValues.forEach(v => this.checkedValues.add(v));
+    // Inclusion mode: empty checkedValues = no filter (show all). Don't auto-populate.
     this._renderList();
   }
   _renderList() {
@@ -728,7 +728,7 @@ class CheckboxSetFilter {
     });
   }
   getGui()          { return this.eGui; }
-  isFilterActive()  { return this.checkedValues.size < this.allValues.length; }
+  isFilterActive()  { return this.checkedValues.size > 0 && this.checkedValues.size < this.allValues.length; }
   doesFilterPass(p) {
     const raw = this._rawValue(p.data);
     if (Array.isArray(raw)) return raw.some(v => this.checkedValues.has(String(v)));
@@ -738,7 +738,7 @@ class CheckboxSetFilter {
   setModel(m)  {
     this.checkedValues.clear();
     if (m && m.values) m.values.forEach(v => this.checkedValues.add(v));
-    else this.allValues.forEach(v => this.checkedValues.add(v));
+    // Inclusion mode: null model = clear filter (empty = show all), no auto-populate
     this._renderList();
   }
   onNewRowsLoaded() { this._refresh(); }
@@ -818,7 +818,7 @@ function initGrid() {
         cellRenderer: (params) => {
           const item = params.data;
           const div = document.createElement('div');
-          div.style.cssText = 'display:flex;flex-direction:column;justify-content:center;height:100%;gap:2px;';
+          div.style.cssText = 'display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%;gap:2px;text-align:center;';
           const nameEl = document.createElement('div');
           nameEl.style.cssText = 'font-weight:600;color:var(--text);font-size:13px;';
           nameEl.textContent = item.name;
