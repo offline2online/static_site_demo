@@ -656,6 +656,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: opacity .12s;
 }
 .new-order-btn:active { opacity: .85; }
+.confirm-status-bar {
+  width: 100%; max-width: 380px;
+  margin-bottom: 20px;
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  background: rgba(255,255,255,.15);
+  font-size: 16px; font-weight: 600;
+  color: var(--white);
+  text-align: center;
+  letter-spacing: 0.2px;
+  transition: opacity .4s ease;
+  opacity: 0;
+}
+.confirm-status-bar.visible { opacity: 1; }
 
 /* ── LOADING / EMPTY STATE ─────────────────────────────────────────────── */
 .state-screen {
@@ -673,6 +687,52 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ── LOYALTY SYSTEM ─────────────────────────────────────────────────────── */
 
+/* Name-for-order bar — shown at top of bag panel */
+.bag-name-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--cream);
+  flex-shrink: 0;
+}
+.bag-name-row-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.4px; color: var(--text-muted); margin-bottom: 8px;
+}
+.bag-name-input-row {
+  display: flex; gap: 8px; align-items: center;
+}
+.bag-name-input {
+  flex: 1; padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 15px;
+  color: var(--text); background: var(--white);
+  outline: none; transition: border-color .15s;
+}
+.bag-name-input:focus { border-color: var(--green); }
+.bag-name-save-btn {
+  padding: 9px 16px;
+  background: var(--green); color: var(--white);
+  border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  transition: opacity .12s;
+  flex-shrink: 0;
+}
+.bag-name-save-btn:disabled { opacity: .4; cursor: default; }
+.bag-name-save-btn:not(:disabled):active { opacity: .8; }
+.bag-name-greeting {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.bag-name-greeting-text {
+  font-size: 15px; font-weight: 600; color: var(--text);
+}
+.bag-name-forget-btn {
+  font-size: 12px; color: var(--text-muted);
+  text-decoration: underline; padding: 0; background: none; border: none;
+  cursor: pointer; flex-shrink: 0;
+}
+.bag-name-forget-btn:hover { color: var(--danger); }
+
 /* Star loyalty icon in bag header */
 .bag-loyalty-btn {
   width: 36px; height: 36px; border-radius: 50%;
@@ -685,6 +745,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-shrink: 0;
 }
 .bag-loyalty-btn:active { transform: scale(0.9); }
+.bag-loyalty-btn.hidden { display: none; }
 
 /* Loyalty overlay + bottom-sheet */
 .loyalty-overlay {
@@ -942,9 +1003,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   <div class="bag-panel" id="bagPanel">
     <div class="bag-header">
       <div class="bag-title" id="bagTitle">🛍 Takeout Bag</div>
-      <button class="bag-loyalty-btn" id="bagLoyaltyBtn" aria-label="Loyalty programme">⭐</button>
+      <button class="bag-loyalty-btn hidden" id="bagLoyaltyBtn" aria-label="Loyalty programme">⭐</button>
       <button class="bag-close" id="bagClose" aria-label="Close bag">×</button>
     </div>
+    <div id="bagNameRow" class="bag-name-row"></div>
     <div class="bag-items" id="bagItems"></div>
     <div class="bag-footer" id="bagFooter" style="display:none;">
       <div class="bag-subtotal">
@@ -971,6 +1033,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   <div class="confirm-order-number" id="confirmNumber">#1234</div>
   <div class="confirm-tagline" id="confirmTagline">Your order has been received.<br>We'll call your number when it's ready!</div>
   <div class="confirm-items" id="confirmItems"></div>
+  <div class="confirm-status-bar" id="confirmStatusBar"></div>
   <button class="new-order-btn" id="newOrderBtn">Start New Order</button>
 </div>
 
@@ -1025,6 +1088,7 @@ let _modalMilk   = null;
 
 // Cart
 let _bag = [];
+let _queueUnsub = null;  // unsubscribe for queue status listener
 
 // ── PERSONALISATION HUB ───────────────────────────────────────────────────
 let _tokenCache = null;
@@ -1580,6 +1644,10 @@ function syncCartToFirestore(statusOverride, orderNumber) {
     customerName: _loyaltyName || _campaignFirstName || ''
   };
   if (orderNumber !== undefined) payload.orderNumber = orderNumber;
+  if (statusOverride === 'completed') {
+    payload.queueStatus    = 'waiting';
+    payload.queueEnteredAt = new Date().toISOString();
+  }
   setDoc(doc(db, 'carts', DEVICE_UDID), payload)
     .catch(e => console.warn('[Cart sync] failed:', e));
 }
@@ -1591,19 +1659,29 @@ function hasCustomization(item) {
 }
 
 function addItemDirectly(item) {
-  _bag.push({
-    uid:                Date.now() + Math.random(),
-    sku:                item.sku,
-    name:               item.name,
-    basePrice:          item.price,
-    size:               null,
-    milk:               null,
-    removedIngredients: [],
-    addedIngredients:   [],
-    qty:                1,
-    unitPrice:          item.price,
-    lineTotal:          item.price
-  });
+  // Consolidate with existing identical entry (same SKU, no customisation)
+  const existing = _bag.find(r =>
+    r.sku === item.sku && !r.size && !r.milk &&
+    r.addedIngredients.length === 0 && r.removedIngredients.length === 0
+  );
+  if (existing) {
+    existing.qty++;
+    existing.lineTotal = existing.unitPrice * existing.qty;
+  } else {
+    _bag.push({
+      uid:                Date.now() + Math.random(),
+      sku:                item.sku,
+      name:               item.name,
+      basePrice:          item.price,
+      size:               null,
+      milk:               null,
+      removedIngredients: [],
+      addedIngredients:   [],
+      qty:                1,
+      unitPrice:          item.price,
+      lineTotal:          item.price
+    });
+  }
   renderBagPanel();
   updateBagBadge();
   syncCartToFirestore();
@@ -1630,31 +1708,89 @@ function addToBag() {
   const addedList = (c.additions || []).filter(a => _modalAddedIngredients.has(a.id));
   addedList.forEach(a => { price += a.priceAdj; });
 
-  const row = {
-    uid:                Date.now() + Math.random(),
-    sku:                _modalItem.sku,
-    name:               _modalItem.name,
-    basePrice:          _modalItem.price,
-    size:               sizeObj?.label  || null,
-    milk:               milkObj?.label  || null,
-    removedIngredients: [..._modalRemovedIngredients].map(id => {
-      const ing = c.defaultIngredients?.find(i => i.id === id);
-      return ing?.label || id;
-    }),
-    addedIngredients:   addedList.map(a => a.label),
-    qty:                _modalQty,
-    unitPrice:          price,
-    lineTotal:          price * _modalQty
-  };
+  const resolvedSize    = sizeObj?.label  || null;
+  const resolvedMilk    = milkObj?.label  || null;
+  const resolvedRemoved = [..._modalRemovedIngredients].map(id => {
+    const ing = c.defaultIngredients?.find(i => i.id === id);
+    return ing?.label || id;
+  });
+  const resolvedAdded = addedList.map(a => a.label);
 
-  _bag.push(row);
+  // Consolidate with existing identical entry (same SKU + same customisation)
+  const existing = _bag.find(r =>
+    r.sku === _modalItem.sku &&
+    r.size === resolvedSize &&
+    r.milk === resolvedMilk &&
+    r.unitPrice === price &&
+    JSON.stringify([...r.removedIngredients].sort()) === JSON.stringify([...resolvedRemoved].sort()) &&
+    JSON.stringify([...r.addedIngredients].sort())   === JSON.stringify([...resolvedAdded].sort())
+  );
+
+  if (existing) {
+    existing.qty      += _modalQty;
+    existing.lineTotal = existing.unitPrice * existing.qty;
+  } else {
+    const row = {
+      uid:                Date.now() + Math.random(),
+      sku:                _modalItem.sku,
+      name:               _modalItem.name,
+      basePrice:          _modalItem.price,
+      size:               resolvedSize,
+      milk:               resolvedMilk,
+      removedIngredients: resolvedRemoved,
+      addedIngredients:   resolvedAdded,
+      qty:                _modalQty,
+      unitPrice:          price,
+      lineTotal:          price * _modalQty
+    };
+    _bag.push(row);
+  }
   renderBagPanel();
   updateBagBadge();
   syncCartToFirestore();
   closeModal();
 }
 
+function renderBagNameRow() {
+  const nameRowEl = document.getElementById('bagNameRow');
+  const starBtn   = document.getElementById('bagLoyaltyBtn');
+  if (!nameRowEl) return;
+
+  if (!_loyaltyName) {
+    // No name yet — show input form
+    nameRowEl.innerHTML = `
+      <div class="bag-name-row-label">Your Name</div>
+      <div class="bag-name-input-row">
+        <input class="bag-name-input" id="bagNameInput" type="text"
+               placeholder="Enter your first name…" maxlength="40" autocomplete="given-name">
+        <button class="bag-name-save-btn" id="bagNameSaveBtn" disabled>Save</button>
+      </div>`;
+    starBtn && starBtn.classList.add('hidden');
+    const input = nameRowEl.querySelector('#bagNameInput');
+    const btn   = nameRowEl.querySelector('#bagNameSaveBtn');
+    input.addEventListener('input', () => { btn.disabled = !input.value.trim(); });
+    btn.addEventListener('click', () => {
+      const name = input.value.trim();
+      if (!name) return;
+      saveLoyaltyName(name);
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && input.value.trim()) saveLoyaltyName(input.value.trim());
+    });
+  } else {
+    // Name saved — show greeting + Forget Me
+    nameRowEl.innerHTML = `
+      <div class="bag-name-greeting">
+        <span class="bag-name-greeting-text">Hi ${esc(_loyaltyName)}! ⭐</span>
+        <button class="bag-name-forget-btn" id="bagNameForgetBtn">Forget Me</button>
+      </div>`;
+    starBtn && starBtn.classList.remove('hidden');
+    nameRowEl.querySelector('#bagNameForgetBtn').addEventListener('click', forgetLoyalty);
+  }
+}
+
 function renderBagPanel() {
+  renderBagNameRow();
   const itemsEl  = document.getElementById('bagItems');
   const footerEl = document.getElementById('bagFooter');
   const subtotal = document.getElementById('bagSubtotal');
@@ -1795,9 +1931,32 @@ function placeOrder() {
 
   document.getElementById('confirmScreen').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Start queue status listener for mobile status updates
+  if (DEVICE_UDID) {
+    if (_queueUnsub) { _queueUnsub(); _queueUnsub = null; }
+    const statusBar = document.getElementById('confirmStatusBar');
+    const STATUS_LABELS = {
+      'waiting':     '⏳ Your order is in the queue',
+      'in-progress': '👨‍🍳 Your order is being prepared',
+      'ready':       '🎉 Ready for Collection!'
+    };
+    _queueUnsub = onSnapshot(doc(db, 'carts', DEVICE_UDID), snap => {
+      const qs = snap.exists() ? snap.data().queueStatus : null;
+      if (qs && STATUS_LABELS[qs]) {
+        statusBar.textContent = STATUS_LABELS[qs];
+        statusBar.classList.add('visible');
+      } else {
+        statusBar.classList.remove('visible');
+      }
+    });
+    // Auto-unsubscribe after 10 minutes
+    setTimeout(() => { if (_queueUnsub) { _queueUnsub(); _queueUnsub = null; } }, 10 * 60 * 1000);
+  }
 }
 
 function startNewOrder() {
+  if (_queueUnsub) { _queueUnsub(); _queueUnsub = null; }
   _bag = [];
   syncCartToFirestore('cleared');
   updateBagBadge(); // also calls updateFabPopup via updateBagBadge

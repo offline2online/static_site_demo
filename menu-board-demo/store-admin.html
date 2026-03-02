@@ -589,7 +589,7 @@
       <div class="summary-bar" id="summaryBar"></div>
 
       <!-- ITEMS GRID (AG-Grid) -->
-      <div id="itemsGrid" class="ag-theme-alpine" style="width:100%;min-width:880px;border-radius:var(--radius);border:1px solid var(--border);"></div>
+      <div id="itemsGrid" class="ag-theme-alpine" style="width:100%;min-width:880px;border-radius:var(--radius);"></div>
 
     </div><!-- /page -->
 
@@ -872,7 +872,7 @@ function initGrid() {
             const mt = MENU_TYPES.find(m => m.id === t);
             if (!mt) return;
             const span = document.createElement('span');
-            span.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:3px 9px 3px 6px;border-radius:20px;border:1.5px solid ${mt.color};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;color:${mt.color};background:transparent;flex-shrink:0;`;
+            span.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 5px;border-radius:20px;border:1.5px solid ${mt.color};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;color:${mt.color};background:transparent;flex-shrink:0;`;
             span.textContent = mt.emoji + ' ' + mt.label;
             wrap.appendChild(span);
           });

@@ -308,6 +308,7 @@
     .order-total-bar {
       background: var(--item-color);
       color: var(--white);
+      min-height: 150px;
       padding: clamp(16px, 2vw, 32px) clamp(20px, 3vw, 56px);
       padding-bottom: calc(clamp(16px, 2vw, 32px) + var(--qr-safe-bottom, 0px));
       display: flex;
@@ -519,6 +520,11 @@ function render() {
     ? `<div class="header-logo-wrap"><img src="${src}" alt="${esc(side)} logo"></div>`
     : `<div class="header-logo-wrap no-logo"></div>`;
 
+  const cart   = _cart;
+  const status = cart && cart.status;
+  // Show empty/idle state if timed out (board clears after 1 min inactivity)
+  const items  = (!_cartTimedOut && cart && cart.items && cart.items.length) ? cart.items : null;
+
   const headerHtml = `
     <div class="board-header">
       ${logoSlot(logoLeft, 'Left')}
@@ -534,11 +540,6 @@ function render() {
       <div class="time-display" id="clockDisplay"></div>
     </div>` : ''}
   `;
-
-  const cart  = _cart;
-  const status = cart && cart.status;
-  // Show empty/idle state if timed out (board clears after 1 min inactivity)
-  const items = (!_cartTimedOut && cart && cart.items && cart.items.length) ? cart.items : null;
 
   let bodyHtml = '';
 
