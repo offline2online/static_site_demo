@@ -35,13 +35,13 @@
       --radius:    10px;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { height:100%; overflow:hidden; }
+    html, body { height:auto; overflow:auto; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
       display: flex;
-      height: 100vh;
+      min-height: 100vh;
     }
 
     /* ============================================================
@@ -51,14 +51,12 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     /* Inner wrapper */
     .ph-inner {
       flex: 1;
       display: flex;
-      overflow: hidden;
       background: var(--bg);
     }
 
@@ -73,6 +71,10 @@
       flex-direction: column;
       overflow-y: auto;
       border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      align-self: flex-start;
     }
     .sidebar-brand {
       padding: 14px 14px 10px;
@@ -144,7 +146,6 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: clip;
     }
     .topbar {
       background: var(--surface);
@@ -154,7 +155,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .topbar-title { font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 600; color: var(--text); letter-spacing: 0.3px; }
     .topbar-right { display: flex; align-items: center; gap: 10px; }
@@ -167,7 +170,7 @@
       border-radius: 20px;
       border: 1px solid rgba(0,98,65,0.2);
     }
-    .content { flex: 1; overflow-y: auto; padding: 22px; }
+    .content { padding: 22px; }
 
     /* VIEWS */
     .view { display: none; }
@@ -411,7 +414,7 @@
     #itemsGrid .ag-root { overflow: visible !important; }
     #itemsGrid .ag-header {
       position: sticky;
-      top: 0;
+      top: 50px;
       z-index: 10;
       box-shadow: 0 2px 6px rgba(0,0,0,0.07);
     }
@@ -1554,6 +1557,7 @@ function initGrids() {
         {
           headerName: 'Menu Types', field: 'menuTypes', flex: 1.5, minWidth: 140,
           sortable: false,
+          autoHeight: true,
           filter: CheckboxSetFilter,
           filterParams: {
             itemRenderer: (value) => {
@@ -1572,7 +1576,7 @@ function initGrids() {
           }),
           cellRenderer: (params) => {
             const wrap = document.createElement('div');
-            wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-content:center;align-items:center;height:100%;overflow:hidden;';
+            wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-content:center;align-items:center;padding:8px 0;';
             (params.value || []).forEach(t => {
               const mt = MENU_TYPES.find(m => m.id === t);
               if (!mt) return;
@@ -1720,7 +1724,11 @@ function renderItems() {
   const items = getItems();
   document.getElementById('navBadgeItems').textContent = items.length;
   if (!itemsGridApi) return;
+  const fm = itemsGridApi.getFilterModel();
   itemsGridApi.setGridOption('rowData', items);
+  if (fm && Object.keys(fm).length) {
+    setTimeout(() => itemsGridApi?.setFilterModel(fm), 0);
+  }
 }
 
 function toggleActive(id, active) {

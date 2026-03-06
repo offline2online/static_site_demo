@@ -772,15 +772,15 @@ async function pollCampaign() {
     // Resolve first_name: try visitor_customer first, then data root
     const firstName = (vc?.first_name || d?.first_name || '').trim() || null;
 
-    // Resolve events: try visitor_customer first, then data root
+    // Resolve SKUs: try visitor_customer first, then data root
     // Filter out empty/blank strings that can appear in sparse API payloads
-    const rawEvents =
-      (Array.isArray(vc?.events)    ? vc.events    : null) ||
-      (Array.isArray(d?.events)     ? d.events     : null);
-    const validEvents = rawEvents
-      ? rawEvents.filter(e => typeof e === 'string' && e.trim() !== '')
+    const rawSkus =
+      (Array.isArray(vc?.SKUs)    ? vc.SKUs    : null) ||
+      (Array.isArray(d?.SKUs)     ? d.SKUs     : null);
+    const validSkus = rawSkus
+      ? rawSkus.filter(e => typeof e === 'string' && e.trim() !== '')
       : null;
-    const newSkus = (validEvents && validEvents.length > 0) ? validEvents : null;
+    const newSkus = (validSkus && validSkus.length > 0) ? validSkus : null;
 
     // Debug logging — visible in browser console; helps diagnose display-level issues
     console.log('[Campaign] visitor_customer:', JSON.stringify(vc));
