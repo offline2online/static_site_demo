@@ -52,7 +52,6 @@
     /* CONTENT AREA (page scrolls, not this div) */
     .ra-content {
       background: var(--bg);
-      overflow-x: auto;
       padding: 16px 20px;
     }
 
@@ -491,7 +490,7 @@
     }
     .ag-theme-alpine .ag-header {
       position: sticky;
-      top: 54px;
+      top: 0;
       z-index: 10;
       box-shadow: 0 2px 6px rgba(0,0,0,0.07);
     }
@@ -564,14 +563,6 @@
      RETAIL ADMIN MAIN COLUMN
      ============================================= -->
 <div class="ra-main">
-
-  <!-- STICKY TOPBAR -->
-  <div class="ra-topbar">
-    <div class="ra-topbar-title">Menu Admin</div>
-    <div id="storeCodeBadge" class="ra-store-badge" style="display:none;"></div>
-    <div class="ra-topbar-spacer"></div>
-    <a href="index.html" class="ra-topbar-back">← Portal</a>
-  </div>
 
   <!-- SCROLLABLE CONTENT -->
   <div class="ra-content">
@@ -800,6 +791,7 @@ function initGrid() {
     domLayout: 'autoHeight',
     rowHeight: 90,
     suppressCellFocus: true,
+    getRowId: params => params.data.sku,
     defaultColDef: {
       resizable: true,
       sortable: true,
@@ -875,7 +867,7 @@ function initGrid() {
         }),
         cellRenderer: (params) => {
           const wrap = document.createElement('div');
-          wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-content:center;align-items:center;height:100%;overflow:hidden;';
+          wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;align-content:center;align-items:center;height:100%;';
           (params.value || []).forEach(t => {
             const mt = MENU_TYPES.find(m => m.id === t);
             if (!mt) return;
@@ -946,7 +938,11 @@ function renderItems() {
     return a.name.localeCompare(b.name);
   });
 
+  const fm = storeItemsGridApi.getFilterModel();
   storeItemsGridApi.setGridOption('rowData', sorted);
+  if (fm && Object.keys(fm).length) {
+    setTimeout(() => storeItemsGridApi?.setFilterModel(fm), 0);
+  }
 }
 
 // OOS TOGGLE
