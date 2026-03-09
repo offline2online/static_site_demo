@@ -650,16 +650,7 @@ function render() {
       </div>`;
   }
 
-  const footerHtml = `
-    <div class="board-footer">
-      <div class="footer-text">${esc(brandName)} — Order Summary Board</div>
-      <div class="footer-refresh">
-        <span class="refresh-dot"></span> Live sync enabled
-      </div>
-    </div>
-  `;
-
-  boardRoot.innerHTML = headerHtml + bodyHtml + footerHtml;
+  boardRoot.innerHTML = headerHtml + bodyHtml;
   updateClock();
 }
 
