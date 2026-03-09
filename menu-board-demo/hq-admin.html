@@ -1162,11 +1162,9 @@ async function savePhApi() {
     phApi.authToken = await encryptToken(rawToken);
   }
 
-  if (!phApi.authToken) { toast('\u26A0\uFE0F API Auth Token is required', 'warning'); return; }
-
   saveSettingsData({ ..._settings, phApi });
   document.getElementById('phAuthToken').value = '';
-  document.getElementById('phTokenStatus').style.display = 'block';
+  if (phApi.authToken) document.getElementById('phTokenStatus').style.display = 'block';
   toast('\u2705 Changes Updated', 'success');
 }
 
