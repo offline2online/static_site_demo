@@ -1149,7 +1149,7 @@ async function decryptToken(b64) {
 async function savePhApi() {
   const baseUrl      = (document.getElementById('phBaseUrl').value || '').trim().replace(/\/$/, '');
   const rawToken     = (document.getElementById('phAuthToken').value || '').trim();
-  const campaignMode = document.getElementById('phCampaignMode').value;
+  const campaignMode = (document.getElementById('phCampaignMode') || {}).value || 'override';
   const statusEl     = document.getElementById('phApiStatus');
   statusEl.textContent = '';
 
@@ -1167,7 +1167,7 @@ async function savePhApi() {
   saveSettingsData({ ..._settings, phApi });
   document.getElementById('phAuthToken').value = '';
   document.getElementById('phTokenStatus').style.display = 'block';
-  toast('\u2705 API settings saved');
+  toast('\u2705 Changes Updated', 'success');
 }
 
 async function testPhApi() {
