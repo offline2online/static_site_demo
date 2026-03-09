@@ -313,7 +313,8 @@
       padding-bottom: calc(clamp(16px, 2vw, 32px) + var(--qr-safe-bottom, 0px));
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      gap: clamp(12px, 2vw, 32px);
       flex-shrink: 0;
     }
     .order-total-label {
@@ -362,15 +363,18 @@
       letter-spacing: 2px;
     }
 
-    /* Personalised greeting in clock bar */
+    /* Personalised greeting in clock bar — matches menu-board .greeting-text */
     .clock-bar .customer-greeting {
       font-family: 'Oswald', sans-serif;
-      font-size: clamp(14px, 2.5vw, 36px);
-      font-weight: 600;
-      color: var(--green);
-      letter-spacing: 1px;
+      font-size: clamp(18px, 2.1vw, 31px);
+      font-weight: 700;
+      color: var(--clock-text, #1e293b);
+      letter-spacing: 1.5px;
       text-transform: uppercase;
       margin-right: auto;
+    }
+    .board.landscape .clock-bar .customer-greeting {
+      font-size: clamp(25px, 3.1vw, 48px);
     }
   </style>
 </head>
@@ -412,6 +416,7 @@ let _cart     = null;   // Firestore cart document, or null if never written
 let _cartExists = false; // true once the document has been seen at least once
 let _settings = { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
 let _brands   = [];
+let _storeName = null;  // from PH API store_location.store_name
 
 // ── CUSTOMER IDENTITY & INACTIVITY ────────────────────────────────────────────
 let _customerName        = '';     // from cart.customerName written by order.html
@@ -480,6 +485,56 @@ function updateClock() {
   el.textContent = timeStr + '  ·  ' + dateStr;
 }
 
+// ── PERSONALISATION HUB API — STORE NAME LOOKUP ───────────────────────────────
+const _ENC_PASS = 'rob-ph-demos-phapi-v1';
+const _ENC_SALT = new TextEncoder().encode('ph-menuboard-salt-2024');
+
+let _derivedKeyPromise = null;
+async function _deriveKey() {
+  if (!_derivedKeyPromise) {
+    _derivedKeyPromise = (async () => {
+      const mat = await crypto.subtle.importKey(
+        'raw', new TextEncoder().encode(_ENC_PASS), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: _ENC_SALT, iterations: 100000, hash: 'SHA-256' },
+        mat, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    })();
+  }
+  return _derivedKeyPromise;
+}
+
+let _tokenCache = { b64: null, plain: null };
+async function decryptToken(b64) {
+  if (_tokenCache.b64 === b64) return _tokenCache.plain;
+  const key   = await _deriveKey();
+  const buf   = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const pt    = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
+  const plain = new TextDecoder().decode(pt);
+  _tokenCache = { b64, plain };
+  return plain;
+}
+
+async function pollCampaign() {
+  if (!DEVICE_UDID) return;
+  const phApi = _settings.phApi;
+  if (!phApi || !phApi.baseUrl || !phApi.authToken) return;
+  try {
+    const token = await decryptToken(phApi.authToken);
+    const url   = `${phApi.baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`;
+    const resp  = await fetch(url, { headers: { accept: 'application/json', 'x-api-key': token } });
+    if (!resp.ok) { console.warn(`[Campaign] API returned HTTP ${resp.status}`); return; }
+    const json = await resp.json();
+    const d    = json?.data;
+    const storeName = (d?.store_location?.store_name || '').trim() || null;
+    if (storeName !== _storeName) {
+      _storeName = storeName;
+      render();
+    }
+  } catch (e) {
+    console.warn('[Campaign] poll failed:', e);
+  }
+}
+
 // ── INACTIVITY TIMER ──────────────────────────────────────────────────────────
 function resetInactivityTimer() {
   clearTimeout(_inactivityTimer);
@@ -536,7 +591,9 @@ function render() {
     </div>
     ${showClock ? `
     <div class="clock-bar">
-      ${(_customerName && items) ? `<div class="store-label customer-greeting">Hi ${esc(_customerName)}!</div>` : ''}
+      ${(_customerName && items)
+          ? `<div class="customer-greeting">Hi ${esc(_customerName)}!</div>`
+          : (_storeName ? `<div class="customer-greeting">${esc(_storeName)}</div>` : '')}
       <div class="time-display" id="clockDisplay"></div>
     </div>` : ''}
   `;
@@ -621,6 +678,13 @@ if (!DEVICE_UDID) {
   updateClock();
   setInterval(updateClock, 1000);
 
+  // Campaign polling for store_name
+  if (DEVICE_UDID) {
+    _deriveKey();
+    pollCampaign();
+    setInterval(pollCampaign, 5000);
+  }
+
   // Listen to cart document for this UDID
   onSnapshot(doc(db, 'carts', DEVICE_UDID), snap => {
     const data   = snap.exists() ? snap.data() : null;
@@ -665,6 +729,7 @@ if (!DEVICE_UDID) {
     _settings = snap.exists() ? snap.data()
       : { restaurantName: 'Our Restaurant', currency: '$', logo: '', logoRight: '' };
     render();
+    if (DEVICE_UDID) pollCampaign();
   });
 }
 </script>
