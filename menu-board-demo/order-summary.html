@@ -247,11 +247,11 @@
       line-height: 1.6;
     }
 
-    /* Order list area — no scroll; font scaling handles overflow */
+    /* Order list area — no scroll; font/column scaling handles overflow */
     .order-list-wrap {
       flex: 1;
       min-height: 0;
-      overflow-y: hidden;
+      overflow: hidden;
       padding: clamp(12px, 1.5vw, 28px) clamp(20px, 3vw, 56px);
       display: flex;
       flex-direction: column;
@@ -551,14 +551,27 @@ function scheduleInactivityTimeout() {
   }, INACTIVITY_MS);
 }
 
-// ── DYNAMIC ROW SCALING ───────────────────────────────────────────────────────
-// Progressively reduces font sizes and padding so all items fit without scrolling.
+// ── DYNAMIC ROW SCALING + MULTI-COLUMN LAYOUT ────────────────────────────────
+// • 1–13 items  → single column, progressive font reduction
+// • 14–27 items → 2 columns
+// • 28–41 items → 3 columns
+// • 42+ items   → 3 columns, extras clip (total is always correct from Firestore)
+// Font/padding tier is driven by rows-per-column so density stays consistent.
 function buildItemScaleCSS(count) {
-  if (count <= 5) return ''; // default CSS is fine
+  if (count === 0) return '';
 
-  let listPad, listGap, rowPad, rowGap, rowBr, qtyPriceSz, nameSz, modsSz;
+  const cols      = count >= 28 ? 3 : count >= 14 ? 2 : 1;
+  const rowsPerCol = Math.ceil(count / cols);
+  // 42+ in 3-col: cap rendered rows at 14 per column; extras overflow hidden
+  const gridRows  = (cols === 3 && count >= 42) ? 14 : rowsPerCol;
+  // Tier is based on rows-per-column (same visual density regardless of col count)
+  const tierRows  = rowsPerCol;
 
-  if (count <= 6) {         // 6 items — slight reduction
+  if (cols === 1 && count <= 5) return ''; // default CSS is fine
+
+  let listPad, listGap, rowPad, rowGap, rowBr, qtyPriceSz, nameSz, modsSz, qtyMinW;
+
+  if (tierRows <= 6) {         // slight reduction
     listPad    = 'clamp(8px, 1vw, 18px) clamp(20px, 3vw, 56px)';
     listGap    = 'clamp(5px, 0.7vw, 12px)';
     rowPad     = 'clamp(8px, 1vw, 16px) clamp(12px, 1.6vw, 26px)';
@@ -567,7 +580,8 @@ function buildItemScaleCSS(count) {
     qtyPriceSz = 'clamp(16px, 2.5vw, 36px)';
     nameSz     = 'clamp(14px, 2.1vw, 28px)';
     modsSz     = 'clamp(10px, 1.1vw, 15px)';
-  } else if (count <= 8) {  // 7–8 items — medium reduction
+    qtyMinW    = 'clamp(28px, 3.5vw, 52px)';
+  } else if (tierRows <= 8) {  // medium reduction
     listPad    = 'clamp(5px, 0.7vw, 10px) clamp(20px, 3vw, 56px)';
     listGap    = 'clamp(4px, 0.5vw, 8px)';
     rowPad     = 'clamp(5px, 0.65vw, 10px) clamp(10px, 1.3vw, 20px)';
@@ -576,7 +590,8 @@ function buildItemScaleCSS(count) {
     qtyPriceSz = 'clamp(13px, 2vw, 28px)';
     nameSz     = 'clamp(12px, 1.8vw, 24px)';
     modsSz     = 'clamp(9px, 0.95vw, 13px)';
-  } else if (count <= 11) { // 9–11 items — strong reduction
+    qtyMinW    = 'clamp(24px, 3vw, 44px)';
+  } else if (tierRows <= 11) { // strong reduction
     listPad    = 'clamp(4px, 0.5vw, 7px) clamp(20px, 3vw, 56px)';
     listGap    = 'clamp(3px, 0.38vw, 6px)';
     rowPad     = 'clamp(4px, 0.5vw, 7px) clamp(8px, 1vw, 16px)';
@@ -585,7 +600,8 @@ function buildItemScaleCSS(count) {
     qtyPriceSz = 'clamp(11px, 1.6vw, 22px)';
     nameSz     = 'clamp(10px, 1.45vw, 19px)';
     modsSz     = 'clamp(8px, 0.8vw, 11px)';
-  } else {                  // 12+ items — maximum compression
+    qtyMinW    = 'clamp(20px, 2.5vw, 36px)';
+  } else {                     // maximum compression (12+ rows per col)
     listPad    = 'clamp(3px, 0.35vw, 5px) clamp(20px, 3vw, 56px)';
     listGap    = 'clamp(2px, 0.28vw, 4px)';
     rowPad     = 'clamp(3px, 0.38vw, 6px) clamp(7px, 0.9vw, 13px)';
@@ -594,12 +610,20 @@ function buildItemScaleCSS(count) {
     qtyPriceSz = 'clamp(10px, 1.35vw, 18px)';
     nameSz     = 'clamp(9px, 1.2vw, 16px)';
     modsSz     = 'clamp(7px, 0.7vw, 10px)';
+    qtyMinW    = 'clamp(16px, 2vw, 28px)';
   }
 
+  const gridCss = cols > 1 ? `
+    display: grid;
+    grid-template-columns: repeat(${cols}, 1fr);
+    grid-template-rows: repeat(${gridRows}, 1fr);
+    grid-auto-flow: column;` : '';
+
   return `
-    .order-list-wrap { padding: ${listPad}; gap: ${listGap}; }
+    .order-list-wrap { padding: ${listPad}; gap: ${listGap}; ${gridCss} }
     .order-row { padding: ${rowPad}; gap: ${rowGap}; border-radius: ${rowBr}; }
-    .order-row-qty, .order-row-price { font-size: ${qtyPriceSz}; }
+    .order-row-qty { font-size: ${qtyPriceSz}; min-width: ${qtyMinW}; }
+    .order-row-price { font-size: ${qtyPriceSz}; }
     .order-row-name { font-size: ${nameSz}; }
     .order-row-mods { font-size: ${modsSz}; }
   `;
