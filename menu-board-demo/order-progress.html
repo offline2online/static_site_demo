@@ -160,6 +160,29 @@
   }
   .no-store h1 { font-size: 28px; font-weight: 700; }
   .no-store p  { font-size: 16px; opacity: .75; }
+
+  /* ── DEBUG PANEL ── */
+  #debugPanel {
+    position: fixed; bottom: 12px; left: 12px; z-index: 9999;
+    background: rgba(0,0,0,0.88); color: #ccc;
+    font-family: 'Courier New', monospace; font-size: 11.5px; font-weight: 500;
+    line-height: 1.8; padding: 10px 14px; border-radius: 8px;
+    max-width: 420px; word-break: break-all;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.6); display: none;
+  }
+  #debugPanel.visible { display: block; }
+  #debugPanel b       { color: #fff; font-size: 12px; }
+  #debugPanel .ok     { color: #2ecc71; }
+  #debugPanel .warn   { color: #f39c12; }
+  #debugPanel .err    { color: #e74c3c; }
+  #debugPanel button.env-btn {
+    display: inline-block; margin: 4px 6px 4px 0;
+    padding: 8px 14px; border-radius: 6px; border: 1px solid #555;
+    background: #222; color: #aaa; font-family: 'Courier New', monospace;
+    font-size: 13px; cursor: pointer; line-height: 1.4;
+  }
+  #debugPanel button.env-btn:hover  { border-color: #888; color: #fff; }
+  #debugPanel button.env-btn.active { background: #1a4a2a; border-color: #2ecc71; color: #2ecc71; }
 </style>
 </head>
 <body>
@@ -224,6 +247,25 @@ const STORE_CODE  = (urlParams.get('store')  || '').trim().toUpperCase();
 const DEVICE_UDID = (urlParams.get('device') || '').trim();
 const MB = 'menuboard';
 
+// ── DEBUG PANEL VISIBILITY + LONG-PRESS TRIGGER ───────────────────────────────
+let _debugPanelVisible = (urlParams.get('debug') === '1');
+{
+  let _lpt = null;
+  const _CP = 120, _HM = 800;
+  const _isBL = (x, y) => x <= _CP && y >= window.innerHeight - _CP;
+  document.addEventListener('mousedown', e => {
+    if (!_isBL(e.clientX, e.clientY)) return;
+    _lpt = setTimeout(() => { _debugPanelVisible = !_debugPanelVisible; _updateDebugPanel(); }, _HM);
+  });
+  document.addEventListener('mouseup', () => { clearTimeout(_lpt); _lpt = null; });
+  document.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    if (!_isBL(t.clientX, t.clientY)) return;
+    _lpt = setTimeout(() => { _debugPanelVisible = !_debugPanelVisible; _updateDebugPanel(); }, _HM);
+  }, { passive: true });
+  document.addEventListener('touchend', () => { clearTimeout(_lpt); _lpt = null; }, { passive: true });
+}
+
 // ── CLOCK ──────────────────────────────────────────────────────────────────
 function updateClock() {
   const n = new Date();
@@ -284,15 +326,34 @@ async function decryptToken(b64) {
   return plain;
 }
 
+// ── ENDPOINT PREFERENCE (shared localStorage key with menu-board.html) ────────
+function _epPrefKey()            { return `ph-ep-${DEVICE_UDID}`; }
+function _loadPreferredBaseUrl() { try { return localStorage.getItem(_epPrefKey()) || null; } catch (_) { return null; } }
+function _savePreferredBaseUrl(url) {
+  try { url ? localStorage.setItem(_epPrefKey(), url) : localStorage.removeItem(_epPrefKey()); } catch (_) {}
+}
+function _getActiveEndpoint() {
+  const endpoints = _settings?.phApi?.endpoints;
+  if (Array.isArray(endpoints) && endpoints.length > 0) {
+    const preferred = _loadPreferredBaseUrl();
+    if (preferred) { const ep = endpoints.find(e => e.baseUrl === preferred); if (ep) return ep; }
+    return endpoints[0];
+  }
+  // Legacy single-endpoint fallback
+  const phApi = _settings?.phApi;
+  if (phApi?.baseUrl && phApi?.authToken) return { baseUrl: phApi.baseUrl, authToken: phApi.authToken };
+  return null;
+}
+
 let _storeName = null;  // from PH API store_location.store_name
 
 async function pollStoreName() {
   if (!DEVICE_UDID) return;
-  const phApi = _settings.phApi;
-  if (!phApi || !phApi.baseUrl || !phApi.authToken) return;
+  const ep = _getActiveEndpoint();
+  if (!ep) return;
   try {
-    const token = await decryptToken(phApi.authToken);
-    const url   = `${phApi.baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`;
+    const token = await decryptToken(ep.authToken);
+    const url   = `${ep.baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`;
     const resp  = await fetch(url, { headers: { accept: 'application/json', 'x-api-key': token } });
     if (!resp.ok) { console.warn(`[StoreData] API returned HTTP ${resp.status}`); return; }
     const json  = await resp.json();
@@ -302,10 +363,45 @@ async function pollStoreName() {
       const el = document.getElementById('headerStoreName');
       if (el) el.textContent = _storeName || '';
     }
+    _updateDebugPanel();
   } catch (e) {
     console.warn('[StoreData] poll failed:', e);
   }
 }
+
+function _updateDebugPanel() {
+  const el = document.getElementById('debugPanel');
+  if (!el) return;
+  if (!_debugPanelVisible) { el.classList.remove('visible'); return; }
+  const ep        = _getActiveEndpoint();
+  const activeUrl = ep?.baseUrl || null;
+  const endpoints = Array.isArray(_settings?.phApi?.endpoints) ? _settings.phApi.endpoints : [];
+  const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const deviceHtml = DEVICE_UDID
+    ? `<span class="ok">✓ ${esc(DEVICE_UDID)}</span>`
+    : `<span class="err">✗ NOT SET — add ?device=UDID to URL</span>`;
+  const apiHtml = activeUrl
+    ? `<span class="ok">✓ ${esc(activeUrl)}</span>`
+    : `<span class="warn">⚠ Not configured</span>`;
+  const envBtns = endpoints.length > 1 ? endpoints.map(e => {
+    let host = e.baseUrl; try { host = new URL(e.baseUrl).hostname; } catch (_) {}
+    const active = e.baseUrl === activeUrl;
+    const safe   = e.baseUrl.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return `<button class="env-btn${active ? ' active' : ''}" onclick="window._switchEndpoint('${safe}')">${active ? '✓ ' : ''}${esc(host)}</button>`;
+  }).join('') : '';
+  el.innerHTML =
+    `<div><b>🛠 PH API</b></div>` +
+    `<div>Device UDID : ${deviceHtml}</div>` +
+    `<div>Active API  : ${apiHtml}</div>` +
+    (envBtns ? `<div>Environment : ${envBtns}</div>` : '') +
+    `<div>Store name  : ${_storeName ? `<span class="ok">"${esc(_storeName)}"</span>` : '<span class="warn">none</span>'}</div>`;
+  el.classList.add('visible');
+}
+window._switchEndpoint = function(baseUrl) {
+  _savePreferredBaseUrl(baseUrl);
+  pollStoreName();
+  _updateDebugPanel();
+};
 
 if (DEVICE_UDID) {
   _deriveKey();  // warm up key derivation immediately
@@ -315,6 +411,7 @@ if (DEVICE_UDID) {
 onSnapshot(doc(db, MB, 'settings'), snap => {
   _settings = snap.exists() ? snap.data() : {};
   if (DEVICE_UDID) pollStoreName();
+  _updateDebugPanel();
 });
 
 // ── DATA ───────────────────────────────────────────────────────────────────
@@ -431,5 +528,6 @@ if (STORE_CODE) {
   });
 }
 </script>
+<div id="debugPanel"></div>
 </body>
 </html>
