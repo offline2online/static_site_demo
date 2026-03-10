@@ -1008,12 +1008,15 @@ function render() {
   let campaignFiltered = displayFiltered;
   if (_campaignSkus && _campaignSkus.length > 0) {
     const mode = brand.campaignMode || (_settings.phApi && _settings.phApi.campaignMode) || 'override';
+    // Case-insensitive SKU set — handles mismatches between API and Firestore casing
+    const skuSetLower = new Set(_campaignSkus.map(s => (s || '').trim().toLowerCase()));
+    const skuMatch = i => skuSetLower.has((i.sku || '').trim().toLowerCase());
     if (mode === 'override') {
       // Ignore menu type — show any active item matching campaign SKUs
       campaignFiltered = items.filter(i =>
         i.active &&
         (!i.brand || i.brand === brand.id) &&
-        _campaignSkus.includes(i.sku)
+        skuMatch(i)
       );
       // Also apply hideOutOfStock if brand requires it
       if (brand.display && brand.display.hideOutOfStock) {
@@ -1021,8 +1024,9 @@ function render() {
       }
     } else {
       // 'filter' mode — campaign SKUs narrowed to current menu type
-      campaignFiltered = displayFiltered.filter(i => _campaignSkus.includes(i.sku));
+      campaignFiltered = displayFiltered.filter(i => skuMatch(i));
     }
+    console.log('[Render] Campaign SKUs:', _campaignSkus, '| Matched', campaignFiltered.length, 'of', items.length, 'items');
   }
 
   // Sort: in-stock first, then by category, then name
@@ -1165,11 +1169,15 @@ function render() {
   let bodyHtml = '';
 
   if (!totalItems) {
+    const campaignActive = _campaignSkus && _campaignSkus.length > 0;
     bodyHtml = `
       <div class="board-empty">
         <div class="icon">${meta.emoji}</div>
-        <h2>No Items Available</h2>
-        <p>There are currently no active ${esc(meta.label)} items for this location.</p>
+        <h2>${campaignActive ? 'No Recommended Items' : 'No Items Available'}</h2>
+        <p>${campaignActive
+          ? 'No menu items match your personalised selection.'
+          : `There are currently no active ${esc(meta.label)} items for this location.`
+        }</p>
       </div>
     `;
   } else {
