@@ -515,6 +515,34 @@
       color: var(--text2);
       margin-top: 4px;
     }
+
+    /* ── PH ENDPOINT LIST ──────────────────────────────────────── */
+    .ph-ep-list { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+    .ph-ep-row {
+      display:flex; align-items:flex-start; gap:8px;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; padding:10px 12px;
+    }
+    .ph-ep-num {
+      min-width:24px; height:24px; background:var(--primary); color:#fff;
+      border-radius:50%; font-size:11px; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+      margin-top:7px; flex-shrink:0;
+    }
+    .ph-ep-fields { flex:1; display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start; }
+    .ph-ep-url, .ph-ep-token {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; padding:8px 11px; color:var(--text);
+      font-size:13px; font-family:'Inter',sans-serif; outline:none;
+      transition:border-color 0.15s;
+    }
+    .ph-ep-url  { flex:2; min-width:180px; }
+    .ph-ep-token { flex:3; min-width:160px; }
+    .ph-ep-url:focus, .ph-ep-token:focus {
+      border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-light);
+    }
+    .ph-ep-actions { display:flex; align-items:flex-start; gap:6px; flex-shrink:0; margin-top:1px; }
+    .ph-ep-status { font-size:11px; margin-top:5px; min-height:16px; line-height:1.3; }
   </style>
 </head>
 <body>
@@ -627,20 +655,26 @@
 
           <div class="settings-section">
             <h3>&#x1F517; Personalisation Hub API</h3>
-            <p class="settings-desc">Connect the menu board to the PersonalisationHub campaign API so the PWA Player can retrieve personalised product SKUs per device. The Device UDID is automatically passed as a URL parameter to the board.</p>
-            <div class="form-group">
-              <label>API Authentication Token</label>
-              <div style="display:flex;gap:8px;align-items:flex-start;max-width:480px;">
-                <input type="password" id="phAuthToken" placeholder="Paste your API key or bearer token here&hellip;" style="flex:1;">
-              </div>
-              <p class="form-help">&#x1F512; Stored encrypted in Firestore. Leave blank to keep your existing token unchanged.</p>
-              <p id="phTokenStatus" style="font-size:12px;color:var(--success);margin-top:6px;display:none;">&#x2705; Token saved securely (encrypted).</p>
+            <p class="settings-desc">Configure one or more API environments (e.g. dev, staging, production). The menu board probes each in order and uses the first that responds successfully. Tokens are stored AES-256-GCM encrypted in Firestore.</p>
+
+            <div class="form-group" style="max-width:320px;margin-bottom:18px;">
+              <label>Campaign Mode</label>
+              <select id="phCampaignMode">
+                <option value="override">Override &mdash; show only campaign SKUs</option>
+                <option value="filter">Filter &mdash; highlight campaign SKUs within menu</option>
+              </select>
+              <p class="form-help">Controls how the board renders when campaign SKUs are active.</p>
             </div>
-            <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
-              <button class="btn btn-primary" onclick="savePhApi()">Save API Settings</button>
-              <button class="btn btn-ghost" onclick="testPhApi()">&#x1F50D; Test Connection</button>
+
+            <div class="ph-ep-list" id="phEpList"></div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px;">
+              <button class="btn btn-ghost btn-sm" onclick="addPhEndpoint()">&#x2795; Add Environment</button>
+              <button class="btn btn-primary" onclick="savePhApi()">&#x1F4BE; Save API Settings</button>
             </div>
             <p id="phApiStatus" style="font-size:12px;margin-top:10px;min-height:18px;"></p>
+
+            <p id="phLegacyNotice" style="display:none;font-size:12px;color:var(--warning);margin-top:10px;background:rgba(217,119,6,0.08);padding:8px 11px;border-radius:7px;border:1px solid rgba(217,119,6,0.25);">&#x26A0;&#xFE0F; Settings use an older single-token format. Please re-enter your API token(s) above and save.</p>
           </div>
         </div>
 
@@ -1027,7 +1061,8 @@ const DEFAULT_DISPLAY = {
 
 // ===== IN-MEMORY CACHE =====
 let _items    = [];
-let _settings = { restaurantName: 'My Restaurant', currency: '$', logo: '' };
+let _settings    = { restaurantName: 'My Restaurant', currency: '$', logo: '' };
+let _phEndpoints = []; // [{ baseUrl: string, authToken: string /* AES-256-GCM encrypted */ }]
 let _cats     = [];
 let _brands   = [];
 let _allStock = {};
@@ -1141,52 +1176,125 @@ async function decryptToken(b64) {
   return new TextDecoder().decode(pt);
 }
 
-async function savePhApi() {
-  const rawToken     = (document.getElementById('phAuthToken').value || '').trim();
-  const campaignMode = (document.getElementById('phCampaignMode') || {}).value || 'override';
-  const statusEl     = document.getElementById('phApiStatus');
-  statusEl.textContent = '';
+// ===== PH ENDPOINT LIST — RENDER & MUTATE =====
 
-  const existing = (_settings.phApi) || {};
-  const phApi    = { authToken: existing.authToken || '', campaignMode };
-
-  if (rawToken) {
-    phApi.authToken = await encryptToken(rawToken);
+function renderPhEndpoints() {
+  const list = document.getElementById('phEpList');
+  if (!list) return;
+  if (_phEndpoints.length === 0) {
+    list.innerHTML = '<p style="font-size:12px;color:var(--text2);padding:4px 0;">No environments configured. Click \u201cAdd Environment\u201d to get started.</p>';
+    return;
   }
-
-  saveSettingsData({ ..._settings, phApi });
-  document.getElementById('phAuthToken').value = '';
-  if (phApi.authToken) document.getElementById('phTokenStatus').style.display = 'block';
-  toast('\u2705 Changes Updated', 'success');
+  list.innerHTML = _phEndpoints.map((ep, i) => {
+    const hasToken = !!ep.authToken;
+    const tokPh    = hasToken ? 'Token saved \u2014 enter new to replace' : 'Paste API key or bearer token\u2026';
+    return `
+      <div class="ph-ep-row" id="phEpRow${i}">
+        <span class="ph-ep-num">${i + 1}</span>
+        <div style="flex:1;">
+          <div class="ph-ep-fields">
+            <input type="text" class="ph-ep-url" id="phEpUrl${i}"
+              placeholder="https://api.personalisationhub.com"
+              value="${escHtml(ep.baseUrl)}">
+            <input type="password" class="ph-ep-token" id="phEpToken${i}"
+              placeholder="${tokPh}">
+            <div class="ph-ep-actions">
+              <button class="btn btn-ghost btn-sm" onclick="testPhEndpoint(${i})">&#x1F50D; Test</button>
+              <button class="btn btn-sm" style="background:rgba(220,38,38,0.08);color:var(--danger);border:1px solid rgba(220,38,38,0.2);" onclick="removePhEndpoint(${i})">&#x2715;</button>
+            </div>
+          </div>
+          <p class="ph-ep-status" id="phEpStatus${i}"></p>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-async function testPhApi() {
-  const statusEl = document.getElementById('phApiStatus');
+function addPhEndpoint() {
+  _phEndpoints.push({ baseUrl: '', authToken: '' });
+  renderPhEndpoints();
+  const idx = _phEndpoints.length - 1;
+  const urlInput = document.getElementById(`phEpUrl${idx}`);
+  if (urlInput) urlInput.focus();
+}
+
+function removePhEndpoint(i) {
+  _phEndpoints.splice(i, 1);
+  renderPhEndpoints();
+}
+
+async function testPhEndpoint(i) {
+  const statusEl = document.getElementById(`phEpStatus${i}`);
+  if (!statusEl) return;
   statusEl.style.color = 'var(--text2)';
-  statusEl.textContent = 'Testing connection\u2026';
-  const phApi = (_settings.phApi) || {};
-  if (!phApi.authToken) {
-    statusEl.textContent = '\u26A0\uFE0F Save API settings first.'; return;
+  statusEl.textContent = 'Testing\u2026';
+
+  const baseUrl  = (document.getElementById(`phEpUrl${i}`)?.value   || '').trim();
+  const rawToken = (document.getElementById(`phEpToken${i}`)?.value || '').trim();
+
+  if (!baseUrl) {
+    statusEl.style.color = 'var(--warning)';
+    statusEl.textContent = '\u26A0\uFE0F Enter a Base URL first.';
+    return;
   }
+
+  let token;
   try {
-    const token   = await decryptToken(phApi.authToken);
-    const testDev = '6cfd0049-40ce-4ac3-9eba-353337b48427';
-    const baseUrl = window.location.origin;
-    const resp    = await fetch(
-      `${baseUrl}/location-api/device/${testDev}/campaign_data`,
-      { headers: { accept: 'application/json', 'x-api-key': token } }
-    );
+    if (rawToken) {
+      token = rawToken;
+    } else if (_phEndpoints[i]?.authToken) {
+      token = await decryptToken(_phEndpoints[i].authToken);
+    } else {
+      statusEl.style.color = 'var(--warning)';
+      statusEl.textContent = '\u26A0\uFE0F Enter an Auth Token first.';
+      return;
+    }
+  } catch (_) {
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = '\u274C Could not decrypt stored token.';
+    return;
+  }
+
+  const testDev = '6cfd0049-40ce-4ac3-9eba-353337b48427';
+  try {
+    const resp = await fetch(`${baseUrl}/location-api/device/${testDev}/campaign_data`,
+      { headers: { accept: 'application/json', 'x-api-key': token } });
     if (resp.ok) {
       statusEl.style.color = 'var(--success)';
-      statusEl.textContent = `\u2705 Connected successfully (HTTP ${resp.status})`;
+      statusEl.textContent = `\u2705 Connected (HTTP ${resp.status})`;
     } else {
       statusEl.style.color = 'var(--danger)';
-      statusEl.textContent = `\u274C HTTP ${resp.status} \u2014 check Token`;
+      statusEl.textContent = `\u274C HTTP ${resp.status} \u2014 check URL or Token`;
     }
   } catch (e) {
     statusEl.style.color = 'var(--danger)';
     statusEl.textContent = `\u274C ${e.message}`;
   }
+}
+
+async function savePhApi() {
+  const campaignMode = document.getElementById('phCampaignMode')?.value || 'override';
+  document.getElementById('phApiStatus').textContent = '';
+
+  const updated = [];
+  for (let i = 0; i < _phEndpoints.length; i++) {
+    const baseUrl  = (document.getElementById(`phEpUrl${i}`)?.value   || '').trim();
+    const rawToken = (document.getElementById(`phEpToken${i}`)?.value || '').trim();
+    if (!baseUrl && !rawToken && !_phEndpoints[i].authToken) continue; // skip fully blank rows
+    let authToken = _phEndpoints[i].authToken || '';
+    if (rawToken) authToken = await encryptToken(rawToken);
+    updated.push({ baseUrl, authToken });
+  }
+  _phEndpoints = updated;
+
+  saveSettingsData({ ..._settings, phApi: { endpoints: _phEndpoints, campaignMode } });
+
+  // Clear token inputs after save (security: don't leave plain text in DOM)
+  _phEndpoints.forEach((_, i) => {
+    const t = document.getElementById(`phEpToken${i}`);
+    if (t) t.value = '';
+  });
+  renderPhEndpoints();
+  toast('\u2705 Changes Updated', 'success');
 }
 
 // Fix: normalize categories — could be stored as objects from old imports
@@ -2398,11 +2506,15 @@ onSnapshot(doc(db, MB, 'categories'), snap => {
 
 onSnapshot(doc(db, MB, 'settings'), snap => {
   _settings = snap.exists() ? snap.data() : { restaurantName: 'My Restaurant', currency: '$', logo: '' };
-  // Populate Personalisation Hub API settings UI
-  const phApi  = _settings.phApi || {};
-  const modeEl = document.getElementById('phCampaignMode');
+  const phApi    = _settings.phApi || {};
+  const modeEl   = document.getElementById('phCampaignMode');
   if (modeEl) modeEl.value = phApi.campaignMode || 'override';
-  document.getElementById('phTokenStatus').style.display = phApi.authToken ? 'block' : 'none';
+  // Legacy: old single-token format had phApi.authToken but no phApi.endpoints
+  const isLegacy = !!phApi.authToken && !phApi.endpoints;
+  const legacyEl = document.getElementById('phLegacyNotice');
+  if (legacyEl) legacyEl.style.display = isLegacy ? 'block' : 'none';
+  _phEndpoints = isLegacy ? [] : (Array.isArray(phApi.endpoints) ? phApi.endpoints : []);
+  renderPhEndpoints();
 });
 
 onSnapshot(collection(db, STOCK_COLL), snapshot => {
@@ -2415,8 +2527,10 @@ onSnapshot(collection(db, STOCK_COLL), snapshot => {
 showView(localStorage.getItem('hqAdminView') || 'dashboard');
 
 // Expose async functions to global scope so HTML onclick attributes can call them
-window.savePhApi  = savePhApi;
-window.testPhApi  = testPhApi;
+window.savePhApi        = savePhApi;
+window.addPhEndpoint    = addPhEndpoint;
+window.removePhEndpoint = removePhEndpoint;
+window.testPhEndpoint   = testPhEndpoint;
 </script>
 </body>
 </html>

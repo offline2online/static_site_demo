@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "menu-board",
+      "name": "menu-board-demo",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "3456"],
+      "runtimeArgs": ["/tmp/mb_serve.py"],
       "port": 3456
     }
   ]

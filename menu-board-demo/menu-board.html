@@ -783,53 +783,115 @@ async function _deriveKey() {
   return _derivedKeyPromise;
 }
 
-// Cache the decrypted token so we never re-run PBKDF2 + AES for the same ciphertext
-let _tokenCache = { b64: null, plain: null };
+// Map-based decrypt cache — handles N endpoints without thrashing
+const _tokenCache = new Map(); // encrypted b64 → plaintext
 async function decryptToken(b64) {
-  if (_tokenCache.b64 === b64) return _tokenCache.plain;
+  if (_tokenCache.has(b64)) return _tokenCache.get(b64);
   const key   = await _deriveKey();
   const buf   = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   const pt    = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
   const plain = new TextDecoder().decode(pt);
-  _tokenCache = { b64, plain };
+  _tokenCache.set(b64, plain);
   return plain;
+}
+
+// ── ACTIVE ENDPOINT + LOCALSTORAGE PREFERENCE ────────────────────────────────
+let _activeEndpoint = null; // { baseUrl: string, token: string } — current working endpoint
+
+function _epPrefKey()            { return `ph-ep-${DEVICE_UDID}`; }
+function _loadPreferredBaseUrl() {
+  try { return localStorage.getItem(_epPrefKey()) || null; } catch (_) { return null; }
+}
+function _savePreferredBaseUrl(url) {
+  try { url ? localStorage.setItem(_epPrefKey(), url) : localStorage.removeItem(_epPrefKey()); }
+  catch (_) {}
 }
 
 async function pollCampaign() {
   if (!DEVICE_UDID) return;
   try {
-    let json;
+    let json = null;
 
     if (MOCK_API_FILE) {
       // ── MOCK MODE: bypass real API — load local JSON file instead ──────────
       const mockPath = MOCK_API_FILE === '1' ? './mock-ph-api.json' : `./${MOCK_API_FILE}`;
-      console.log('[Campaign] 🧪 MOCK MODE — loading', mockPath);
+      console.log('[Campaign] \uD83E\uDDEA MOCK MODE — loading', mockPath);
       const resp = await fetch(mockPath);
       if (!resp.ok) { console.warn('[Campaign] Mock file not found:', mockPath); return; }
       json = await resp.json();
+
     } else {
-      // ── REAL API MODE ───────────────────────────────────────────────────────
-      // Base URL is derived from the player's own origin — no manual config needed
-      const phApi = _settings.phApi;
-      if (!phApi || !phApi.authToken) return;
-      const token   = await decryptToken(phApi.authToken);
-      const baseUrl = window.location.origin;
-      const url     = `${baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`;
-      let resp;
-      try {
-        resp = await fetch(url, { headers: { accept: 'application/json', 'x-api-key': token } });
-      } catch (fetchErr) {
-        _setApiError(`${baseUrl} \u2014 ${fetchErr.message}`);
-        console.warn('[Campaign] fetch failed:', fetchErr);
-        return;
+      // ── REAL API MODE — multi-endpoint probe ─────────────────────────────────
+      const endpoints = _settings.phApi?.endpoints;
+
+      // Backwards compat: old single-token format or no config — wait until admin saves
+      if (!Array.isArray(endpoints) || endpoints.length === 0) return;
+
+      // Phase 1: try the cached active endpoint (avoids re-probing on every poll)
+      if (_activeEndpoint) {
+        const { baseUrl, token } = _activeEndpoint;
+        try {
+          const resp = await fetch(
+            `${baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`,
+            { headers: { accept: 'application/json', 'x-api-key': token } }
+          );
+          if (resp.ok) {
+            _setApiError(null);
+            json = await resp.json();
+          } else {
+            console.warn(`[Campaign] Active endpoint HTTP ${resp.status} \u2014 re-probing`);
+            _activeEndpoint = null;
+          }
+        } catch (activeErr) {
+          console.warn('[Campaign] Active endpoint unreachable:', activeErr.message, '\u2014 re-probing');
+          _activeEndpoint = null;
+        }
       }
-      if (!resp.ok) {
-        _setApiError(`${baseUrl} \u2014 HTTP ${resp.status}`);
-        console.warn(`[Campaign] API returned HTTP ${resp.status}`);
-        return;
+
+      // Phase 2: probe all endpoints in preference order
+      if (!json) {
+        // Build probe order: localStorage-preferred first, then remaining in array order
+        const preferred  = _loadPreferredBaseUrl();
+        const probeOrder = [];
+        if (preferred) {
+          const prefEp = endpoints.find(e => e.baseUrl === preferred);
+          if (prefEp) probeOrder.push(prefEp);
+        }
+        for (const ep of endpoints) {
+          if (!probeOrder.some(p => p.baseUrl === ep.baseUrl)) probeOrder.push(ep);
+        }
+
+        let lastTriedUrl = '';
+        for (const ep of probeOrder) {
+          if (!ep.baseUrl || !ep.authToken) continue;
+          let token;
+          try { token = await decryptToken(ep.authToken); }
+          catch (_) { console.warn('[Campaign] Decrypt failed for', ep.baseUrl); continue; }
+
+          const url = `${ep.baseUrl}/location-api/device/${DEVICE_UDID}/campaign_data`;
+          lastTriedUrl = ep.baseUrl;
+          try {
+            const resp = await fetch(url, { headers: { accept: 'application/json', 'x-api-key': token } });
+            if (resp.ok) {
+              _activeEndpoint = { baseUrl: ep.baseUrl, token };
+              _savePreferredBaseUrl(ep.baseUrl);
+              _setApiError(null);
+              json = await resp.json();
+              console.log('[Campaign] Using endpoint:', ep.baseUrl);
+              break;
+            } else {
+              console.warn(`[Campaign] ${ep.baseUrl} \u2014 HTTP ${resp.status}`);
+            }
+          } catch (fetchErr) {
+            console.warn(`[Campaign] ${ep.baseUrl} \u2014 ${fetchErr.message}`);
+          }
+        }
+
+        if (!json) {
+          _setApiError(`All configured API endpoints failed. Last tried: ${lastTriedUrl || 'none'}`);
+          return;
+        }
       }
-      _setApiError(null);
-      json = await resp.json();
     }
 
     // ── Parse visitor_customer — handle both store-level and display-level responses ──
@@ -857,7 +919,7 @@ async function pollCampaign() {
 
     // Debug logging — visible in browser console; helps diagnose display-level issues
     console.log('[Campaign] visitor_customer:', JSON.stringify(vc));
-    console.log('[Campaign] resolved → firstName:', firstName, '| SKUs:', newSkus, '| storeName:', storeName);
+    console.log('[Campaign] resolved \u2192 firstName:', firstName, '| SKUs:', newSkus, '| storeName:', storeName);
 
     const skusChanged      = JSON.stringify(newSkus) !== JSON.stringify(_campaignSkus);
     const nameChanged      = firstName !== _campaignFirstName;
@@ -871,7 +933,7 @@ async function pollCampaign() {
     }
   } catch (e) {
     console.warn('[Campaign] poll failed:', e);
-    _setApiError(window.location.origin + ' \u2014 ' + e.message);
+    _setApiError(`Poll error \u2014 ${e.message}`);
   }
 }
 
@@ -895,7 +957,10 @@ onSnapshot(doc(db, MB, 'settings'), snap => {
   render();
   // Trigger an immediate campaign poll when settings first load (or change) so we
   // don't have to wait up to 30 s for the interval to fire.
-  if (DEVICE_UDID) pollCampaign();
+  if (DEVICE_UDID) {
+    _activeEndpoint = null;  // force re-probe with new settings
+    pollCampaign();
+  }
 });
 
 // ── RENDER ───────────────────────────────────────────────────────────────────
