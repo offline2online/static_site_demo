@@ -601,9 +601,9 @@
     <div class="icon" id="confirmIcon">❓</div>
     <h3 id="confirmTitle">Confirm Action</h3>
     <p id="confirmMsg">Are you sure?</p>
-    <div class="confirm-actions">
+    <div class="confirm-actions" id="confirmActions">
       <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
-      <button class="btn" id="confirmBtn">Confirm</button>
+      <button class="btn btn-danger" id="confirmBtn">Confirm</button>
     </div>
   </div>
 </div>
@@ -647,6 +647,7 @@ const STAFF_ID = (urlParams.get('staff') || '').trim().toUpperCase();
 let _items    = [];
 let _stock    = {};
 let _settings = { currency: '$' };
+let _brands   = [];
 
 // ===== FIRESTORE LISTENERS =====
 onSnapshot(collection(db, ITEMS_COLL), snap => {
@@ -661,9 +662,21 @@ onSnapshot(doc(db, MB, 'settings'), snap => {
 if (STORE_CODE) {
   onSnapshot(doc(db, STOCK_COLL, STORE_CODE), snap => {
     _stock = snap.exists() ? snap.data() : {};
-    if (document.getElementById('mainPage').style.display !== 'none') renderItems();
+    if (document.getElementById('mainPage').style.display !== 'none') {
+      if (storeItemsGridApi) {
+        storeItemsGridApi.refreshCells({ force: true });
+        updateSummaryBar();
+      } else {
+        renderItems();
+      }
+    }
   });
 }
+
+onSnapshot(doc(db, MB, 'brands'), snap => {
+  _brands = snap.exists() ? (snap.data().data || []) : [];
+  if (STORE_CODE && document.getElementById('mainPage').style.display !== 'none') renderItems();
+});
 
 let storeItemsGridApi = null;
 
@@ -783,6 +796,11 @@ function isOos(sku) {
   return !!(stock[sku] && stock[sku].outOfStock);
 }
 
+function isNotStocked(sku) {
+  const stock = getStock();
+  return !!(stock[sku] && stock[sku].notStocked);
+}
+
 // GRID INIT
 function initGrid() {
   const el = document.getElementById('itemsGrid');
@@ -792,6 +810,12 @@ function initGrid() {
     rowHeight: 90,
     suppressCellFocus: true,
     getRowId: params => params.data.sku,
+    getRowStyle: params => {
+      if (params.data && isNotStocked(params.data.sku)) {
+        return { opacity: '0.45' };
+      }
+      return null;
+    },
     defaultColDef: {
       resizable: true,
       sortable: true,
@@ -891,32 +915,82 @@ function initGrid() {
         cellStyle: { fontWeight: '700', color: 'var(--primary)' }
       },
       {
-        headerName: 'In Stock', flex: 1.2, minWidth: 140,
+        headerName: 'Stock Status', flex: 1.8, minWidth: 200,
         sortable: true,
         filter: CheckboxSetFilter,
-        valueGetter: (p) => isOos(p.data.sku) ? 'Out of Stock' : 'In Stock',
+        valueGetter: (p) => {
+          if (isNotStocked(p.data.sku)) return 'Not Stocked';
+          if (isOos(p.data.sku)) return 'Out of Stock';
+          return 'In Stock';
+        },
         cellRenderer: (params) => {
           const item = params.data;
           const oos = isOos(item.sku);
-          const btn = document.createElement('div');
-          btn.style.cssText = `display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid ${oos ? 'var(--danger)' : 'var(--success)'};color:${oos ? 'var(--danger)' : 'var(--success)'};background:${oos ? 'rgba(220,38,38,0.06)' : 'rgba(5,150,105,0.06)'};`;
-          btn.textContent = oos ? '\u26D4 Out of Stock' : '\u2705 In Stock';
-          btn.addEventListener('click', () => toggleOos(item.sku, item.name, oos));
-          return btn;
+          const ns  = isNotStocked(item.sku);
+          const qty = typeof (_stock[item.sku] || {}).quantity === 'number' ? _stock[item.sku].quantity : null;
+
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;flex-direction:column;justify-content:center;gap:5px;height:100%;padding:6px 0;';
+
+          // Status pill
+          const pill = document.createElement('div');
+          if (ns) {
+            pill.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--border2);color:var(--text2);background:var(--surface2);width:fit-content;';
+            pill.innerHTML = '&#x1F6AB; We don\'t sell/stock this';
+          } else if (oos) {
+            pill.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--danger);color:var(--danger);background:rgba(220,38,38,0.06);width:fit-content;';
+            pill.innerHTML = '&#x26D4; Out of Stock';
+          } else {
+            pill.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--success);color:var(--success);background:rgba(5,150,105,0.06);width:fit-content;';
+            pill.innerHTML = '&#x2705; In Stock';
+          }
+          pill.addEventListener('click', () => cycleStockStatus(item.sku, item.name));
+          wrap.appendChild(pill);
+
+          // Stock quantity row (shown when In Stock or Out of Stock, not when Not Stocked)
+          if (!ns) {
+            const qtyRow = document.createElement('div');
+            qtyRow.style.cssText = 'display:flex;align-items:center;gap:5px;';
+            const qtyLabel = document.createElement('span');
+            qtyLabel.style.cssText = 'font-size:11px;color:var(--text2);';
+            qtyLabel.textContent = qty !== null ? 'Stock: ' + qty + ' units' : 'Stock: —';
+            const btnMinus = document.createElement('button');
+            btnMinus.style.cssText = 'width:20px;height:20px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;line-height:1;';
+            btnMinus.textContent = '−';
+            btnMinus.title = 'Subtract 1 (sale)';
+            btnMinus.addEventListener('click', (e) => { e.stopPropagation(); adjustQuantity(item.sku, -1); });
+            const btnPlus = document.createElement('button');
+            btnPlus.style.cssText = 'width:20px;height:20px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--primary);padding:0;line-height:1;';
+            btnPlus.textContent = '+';
+            btnPlus.title = 'Add 1 (return/restock)';
+            btnPlus.addEventListener('click', (e) => { e.stopPropagation(); adjustQuantity(item.sku, +1); });
+            qtyRow.appendChild(btnMinus);
+            qtyRow.appendChild(qtyLabel);
+            qtyRow.appendChild(btnPlus);
+            wrap.appendChild(qtyRow);
+          }
+
+          return wrap;
         }
       }
     ]
   });
 }
 
-// RENDER
-function renderItems() {
+// SUMMARY BAR ONLY (called from stock onSnapshot without full re-render)
+function updateSummaryBar() {
   const allItems = getItems();
-
-  // Summary counts (always based on all items)
-  const totalActive = allItems.filter(i => i.active).length;
-  const totalOos = allItems.filter(i => i.active && isOos(i.sku)).length;
-  const totalIn = totalActive - totalOos;
+  const visibleItems = allItems.filter(i => {
+    if (!i.brand) return true;
+    const brand = _brands.find(b => b.id === i.brand);
+    if (!brand) return true;
+    if (!brand.stores || !brand.stores.length) return true;
+    return brand.stores.map(s => s.toUpperCase()).includes(STORE_CODE);
+  });
+  const totalActive = visibleItems.filter(i => i.active).length;
+  const totalNotStocked = visibleItems.filter(i => i.active && isNotStocked(i.sku)).length;
+  const totalOos = visibleItems.filter(i => i.active && isOos(i.sku) && !isNotStocked(i.sku)).length;
+  const totalIn = totalActive - totalOos - totalNotStocked;
 
   document.getElementById('summaryBar').innerHTML = `
     <div class="summary-chip">
@@ -928,13 +1002,34 @@ function renderItems() {
     <div class="summary-chip">
       <div><div class="num" style="color:var(--danger)">${totalOos}</div><div class="lbl">Out of Stock</div></div>
     </div>
+    <div class="summary-chip">
+      <div><div class="num" style="color:var(--text2)">${totalNotStocked}</div><div class="lbl">Not Stocked</div></div>
+    </div>
   `;
+}
+
+// RENDER
+function renderItems() {
+  const allItems = getItems();
+
+  // Filter by brand-store assignment
+  const visibleItems = allItems.filter(i => {
+    if (!i.brand) return true;
+    const brand = _brands.find(b => b.id === i.brand);
+    if (!brand) return true;
+    if (!brand.stores || !brand.stores.length) return true;
+    return brand.stores.map(s => s.toUpperCase()).includes(STORE_CODE);
+  });
+
+  updateSummaryBar();
 
   if (!storeItemsGridApi) return;
 
-  // Sort: active first, then alphabetically — AG-Grid handles column-level filtering
-  const sorted = [...allItems].sort((a, b) => {
+  // Sort: active first, not-stocked last, then alphabetically
+  const sorted = [...visibleItems].sort((a, b) => {
     if (a.active !== b.active) return a.active ? -1 : 1;
+    const aNs = isNotStocked(a.sku), bNs = isNotStocked(b.sku);
+    if (aNs !== bNs) return aNs ? 1 : -1;
     return a.name.localeCompare(b.name);
   });
 
@@ -945,38 +1040,102 @@ function renderItems() {
   }
 }
 
-// OOS TOGGLE
-let pendingOos = null;
+// STOCK STATUS TOGGLE (3-state)
+let pendingStockAction = null;
 
-function toggleOos(sku, name, currentlyOos) {
-  pendingOos = { sku, currentlyOos };
-  const action = currentlyOos ? 'Mark as In Stock' : 'Mark as Out of Stock';
-  const icon = currentlyOos ? '✅' : '⛔';
-  const msg = currentlyOos
-    ? `"${name}" will be marked as available. The menu board will update immediately.`
-    : `"${name}" will be flagged as Out of Stock for ${STORE_CODE}. An Out of Stock badge will appear on the menu board.`;
+function cycleStockStatus(sku, name) {
+  const oos = isOos(sku);
+  const ns  = isNotStocked(sku);
 
-  document.getElementById('confirmIcon').textContent = icon;
-  document.getElementById('confirmTitle').textContent = action;
-  document.getElementById('confirmMsg').textContent = msg;
+  if (ns) {
+    // Not Stocked → Mark as In Stock
+    pendingStockAction = { sku, outOfStock: false, notStocked: false };
+    document.getElementById('confirmIcon').textContent = '✅';
+    document.getElementById('confirmTitle').textContent = 'Mark as In Stock';
+    document.getElementById('confirmMsg').textContent = `"${name}" will be marked as available again for ${STORE_CODE}.`;
+    const btn = document.getElementById('confirmBtn');
+    btn.textContent = 'Mark as In Stock';
+    btn.className = 'btn btn-primary';
+    btn.onclick = doStockAction;
+    document.getElementById('confirmOverlay').classList.add('open');
+    return;
+  }
 
+  if (oos) {
+    // Out of Stock → offer In Stock OR Not Stocked
+    showOosChoiceDialog(sku, name);
+    return;
+  }
+
+  // In Stock → Mark as Out of Stock
+  pendingStockAction = { sku, outOfStock: true, notStocked: false };
+  document.getElementById('confirmIcon').textContent = '⛔';
+  document.getElementById('confirmTitle').textContent = 'Mark as Out of Stock';
+  document.getElementById('confirmMsg').textContent = `"${name}" will be flagged as Out of Stock for ${STORE_CODE}. An Out of Stock badge will appear on the menu board.`;
   const btn = document.getElementById('confirmBtn');
-  btn.textContent = action;
-  btn.className = 'btn ' + (currentlyOos ? 'btn-primary' : 'btn-danger');
-  btn.onclick = doToggleOos;
-
+  btn.textContent = 'Mark as Out of Stock';
+  btn.className = 'btn btn-danger';
+  btn.onclick = doStockAction;
   document.getElementById('confirmOverlay').classList.add('open');
 }
 
-function doToggleOos() {
-  if (!pendingOos) return;
-  const { sku, currentlyOos } = pendingOos;
+function showOosChoiceDialog(sku, name) {
+  // Replace confirm dialog content with choice buttons
+  document.getElementById('confirmIcon').textContent = '⛔';
+  document.getElementById('confirmTitle').textContent = 'Out of Stock — What next?';
+  document.getElementById('confirmMsg').textContent = `Choose how to update "${name}" for ${STORE_CODE}:`;
+
+  const actionsEl = document.getElementById('confirmActions');
+  if (!actionsEl) {
+    // Fallback: just mark as in stock
+    pendingStockAction = { sku, outOfStock: false, notStocked: false };
+    document.getElementById('confirmBtn').textContent = 'Mark as In Stock';
+    document.getElementById('confirmBtn').className = 'btn btn-primary';
+    document.getElementById('confirmBtn').onclick = doStockAction;
+    document.getElementById('confirmOverlay').classList.add('open');
+    return;
+  }
+
+  actionsEl.innerHTML = `
+    <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+    <button class="btn btn-primary" onclick="window._doMarkInStock('${sku}')">✅ Back In Stock</button>
+    <button class="btn" style="background:var(--text2);color:#fff;" onclick="window._doMarkNotStocked('${sku}')">🚫 We don't sell/stock this</button>
+  `;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+window._doMarkInStock = function(sku) {
+  pendingStockAction = { sku, outOfStock: false, notStocked: false };
+  doStockAction();
+  // Restore confirm actions
+  _restoreConfirmActions();
+};
+
+window._doMarkNotStocked = function(sku) {
+  pendingStockAction = { sku, outOfStock: false, notStocked: true };
+  doStockAction();
+  _restoreConfirmActions();
+};
+
+function _restoreConfirmActions() {
+  const actionsEl = document.getElementById('confirmActions');
+  if (actionsEl) actionsEl.innerHTML = `
+    <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+    <button class="btn btn-danger" id="confirmBtn">Confirm</button>
+  `;
+}
+
+function doStockAction() {
+  if (!pendingStockAction) return;
+  const { sku, outOfStock, notStocked } = pendingStockAction;
   const stock = { ...getStock() };
+  const existing = stock[sku] || {};
   const now = new Date().toISOString();
 
-  if (!stock[sku]) stock[sku] = {};
   stock[sku] = {
-    outOfStock: !currentlyOos,
+    ...existing,
+    outOfStock,
+    notStocked: notStocked || false,
     updatedBy: STAFF_ID || null,
     updatedAt: now
   };
@@ -985,13 +1144,40 @@ function doToggleOos() {
   closeConfirm();
   renderItems();
 
-  const msg = currentlyOos ? '✅ Item marked as In Stock' : '⛔ Item marked as Out of Stock';
-  toast(msg, currentlyOos ? 'success' : 'error');
+  let msg, type;
+  if (notStocked) { msg = '🚫 Marked as not stocked here'; type = 'info'; }
+  else if (outOfStock) { msg = '⛔ Item marked as Out of Stock'; type = 'error'; }
+  else { msg = '✅ Item marked as In Stock'; type = 'success'; }
+  toast(msg, type);
 }
+
+// Keep doToggleOos as alias for backward compat
+function doToggleOos() { doStockAction(); }
 
 function closeConfirm() {
   document.getElementById('confirmOverlay').classList.remove('open');
-  pendingOos = null;
+  pendingStockAction = null;
+  _restoreConfirmActions();
+}
+
+// STOCK QUANTITY ADJUSTMENT
+function adjustQuantity(sku, delta) {
+  const stock = { ...getStock() };
+  if (!stock[sku]) stock[sku] = {};
+  const existing = stock[sku];
+  const current = typeof existing.quantity === 'number' ? existing.quantity : 0;
+  const newQty = Math.max(0, current + delta);
+  stock[sku] = {
+    ...existing,
+    quantity: newQty,
+    updatedBy: STAFF_ID || null,
+    updatedAt: new Date().toISOString()
+  };
+  // Auto-flag OOS when quantity hits 0
+  if (newQty === 0 && !existing.notStocked) stock[sku].outOfStock = true;
+  // Auto-clear OOS when quantity goes above 0
+  if (newQty > 0 && existing.outOfStock) stock[sku].outOfStock = false;
+  saveStock(stock);
 }
 
 // UTILS
@@ -1018,10 +1204,13 @@ function toast(msg, type = 'info') {
 }
 
 // ===== WINDOW EXPORTS (for inline event handlers) =====
-window.renderItems = renderItems;
-window.toggleOos = toggleOos;
-window.doToggleOos = doToggleOos;
-window.closeConfirm = closeConfirm;
+window.renderItems      = renderItems;
+window.cycleStockStatus = cycleStockStatus;
+window.doStockAction    = doStockAction;
+window.doToggleOos      = doToggleOos;
+window.closeConfirm     = closeConfirm;
+window.adjustQuantity   = adjustQuantity;
+window.updateSummaryBar = updateSummaryBar;
 
 // INIT
 init();

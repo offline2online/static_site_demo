@@ -52,6 +52,7 @@
     .method-get { background: #DCFCE7; color: #166534; }
     .method-post { background: #DBEAFE; color: #1E3A8A; }
     .method-put { background: #FEF9C3; color: #713F12; }
+    .method-patch { background: #F3E8FF; color: #581C87; }
     .method-delete { background: #FEE2E2; color: #7F1D1D; }
     .endpoint-path { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); font-weight: 500; }
     .endpoint-desc { font-size: 12px; color: var(--text2); margin-left: auto; }
@@ -122,6 +123,12 @@
     <div class="sidebar-section">Implementation</div>
     <a class="sidebar-link" href="#localStorage-api">localStorage Bridge</a>
     <a class="sidebar-link" href="#webhook">Change Webhooks</a>
+    <div class="sidebar-section">Stock API</div>
+    <a class="sidebar-link" href="#stock-api">Overview &amp; Auth</a>
+    <a class="sidebar-link" href="#get-stock">GET /stock/:store</a>
+    <a class="sidebar-link" href="#patch-stock">PATCH /stock/:store</a>
+    <a class="sidebar-link" href="#post-stock-sale">POST /stock/:store/sale</a>
+    <a class="sidebar-link" href="#post-stock-return">POST /stock/:store/return</a>
   </aside>
 
   <!-- MAIN CONTENT -->
@@ -661,6 +668,300 @@ X-MenuBoard-Secret: &lt;your-shared-secret&gt;
       <div class="note">
         <span class="note-icon">💡</span>
         <span>Menu boards poll <code>mb_last_updated</code> every 5 seconds. Any write to this key (from any source) causes all connected menu boards on that device to re-render immediately.</span>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════════
+         STOCK API
+    ═══════════════════════════════════════════════ -->
+
+    <!-- Overview & Auth -->
+    <div id="stock-api" class="section">
+      <h2 class="section-title">Stock API</h2>
+      <p class="section-desc">
+        The Stock API lets external systems (POS, ERP, warehouse management) read and update per-store stock levels and availability flags in real time. Stock data is stored in Firestore under <code>stock/{STORE_CODE}</code> and is read directly by the Retail Admin and Menu Board displays.
+      </p>
+
+      <div class="note">
+        <span class="note-icon">🔑</span>
+        <span>All Stock API requests must include the <code>X-Stock-Api-Key</code> header. Set your API key in <strong>HQ Admin → Settings → Stock API</strong>. In production, enforce this header via Firestore Security Rules — the demo uses open rules but the key is stored in <code>menuboard/settings.stockApiKey</code> for reference.</span>
+      </div>
+
+      <div class="code-label">Authentication Header</div>
+      <pre>X-Stock-Api-Key: {your-api-key-from-hq-settings}</pre>
+
+      <p class="section-desc" style="margin-top:18px;">Stock document data model — one document per store at <code>stock/{STORE_CODE}</code>:</p>
+      <div class="code-label">Stock Document Schema</div>
+      <pre>{
+  <span class="hl-key">"BRK001"</span>: {
+    <span class="hl-key">"quantity"</span>:   <span class="hl-num">24</span>,                          <span class="hl-comment">// Current estimated stock level (null = unknown)</span>
+    <span class="hl-key">"outOfStock"</span>: <span class="hl-bool">false</span>,                       <span class="hl-comment">// true = OOS, hides from menu board</span>
+    <span class="hl-key">"notStocked"</span>: <span class="hl-bool">false</span>,                       <span class="hl-comment">// true = store never carries this SKU</span>
+    <span class="hl-key">"updatedAt"</span>:  <span class="hl-str">"2026-03-11T09:15:00.000Z"</span>,  <span class="hl-comment">// ISO 8601 timestamp of last change</span>
+    <span class="hl-key">"updatedBy"</span>:  <span class="hl-str">"staff@example.com"</span>          <span class="hl-comment">// Staff ID who made the last change</span>
+  },
+  <span class="hl-key">"LUN005"</span>: {
+    <span class="hl-key">"quantity"</span>:   <span class="hl-null">null</span>,
+    <span class="hl-key">"outOfStock"</span>: <span class="hl-bool">true</span>,
+    <span class="hl-key">"notStocked"</span>: <span class="hl-bool">false</span>,
+    <span class="hl-key">"updatedAt"</span>:  <span class="hl-str">"2026-03-10T14:22:00.000Z"</span>,
+    <span class="hl-key">"updatedBy"</span>:  <span class="hl-str">"staff@example.com"</span>
+  }
+}</pre>
+    </div>
+
+    <!-- GET /stock/:store -->
+    <div id="get-stock" class="section">
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-path">/stock/{store}</span>
+          <span class="endpoint-desc">Read full stock status for a store</span>
+        </div>
+        <div class="endpoint-body">
+          <p style="margin:0 0 12px;color:var(--text2);font-size:13px;">Returns all SKU stock records for the given store. Uses the Firestore REST API directly — replace <code>{PROJECT_ID}</code> and <code>{FIREBASE_API_KEY}</code> with your project values.</p>
+
+          <div class="params-label">Path Parameters</div>
+          <table>
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">store</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>Store code (e.g. <code>STORE001</code>). Must match the store document in Firestore.</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-label">Example Request</div>
+          <pre>curl -X GET \
+  "https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents/stock/STORE001?key={FIREBASE_API_KEY}" \
+  -H "X-Stock-Api-Key: your-api-key"</pre>
+
+          <div class="code-label">200 OK — Success Response</div>
+          <pre>{
+  <span class="hl-key">"name"</span>: <span class="hl-str">"projects/{PROJECT_ID}/databases/(default)/documents/stock/STORE001"</span>,
+  <span class="hl-key">"fields"</span>: {
+    <span class="hl-key">"BRK001"</span>: {
+      <span class="hl-key">"mapValue"</span>: { <span class="hl-key">"fields"</span>: {
+        <span class="hl-key">"quantity"</span>:   { <span class="hl-key">"integerValue"</span>: <span class="hl-str">"24"</span> },
+        <span class="hl-key">"outOfStock"</span>: { <span class="hl-key">"booleanValue"</span>: <span class="hl-bool">false</span> },
+        <span class="hl-key">"notStocked"</span>: { <span class="hl-key">"booleanValue"</span>: <span class="hl-bool">false</span> },
+        <span class="hl-key">"updatedAt"</span>:  { <span class="hl-key">"stringValue"</span>: <span class="hl-str">"2026-03-11T09:15:00.000Z"</span> },
+        <span class="hl-key">"updatedBy"</span>:  { <span class="hl-key">"stringValue"</span>: <span class="hl-str">"staff@example.com"</span> }
+      }}
+    }
+  },
+  <span class="hl-key">"createTime"</span>: <span class="hl-str">"2026-02-01T00:00:00Z"</span>,
+  <span class="hl-key">"updateTime"</span>: <span class="hl-str">"2026-03-11T09:15:00Z"</span>
+}</pre>
+
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+            <span class="resp-code resp-404">404 Not Found — store has no stock document yet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATCH /stock/:store -->
+    <div id="patch-stock" class="section">
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-patch">PATCH</span>
+          <span class="endpoint-path">/stock/{store}</span>
+          <span class="endpoint-desc">Bulk-update stock levels for multiple SKUs</span>
+        </div>
+        <div class="endpoint-body">
+          <p style="margin:0 0 12px;color:var(--text2);font-size:13px;">Write stock data for one or more SKUs in a single request. Uses Firestore's PATCH with <code>updateMask</code> to perform a partial update — only the specified SKU fields are overwritten. All other SKUs in the store document remain unchanged.</p>
+
+          <div class="params-label">Path Parameters</div>
+          <table>
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">store</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>Store code (e.g. <code>STORE001</code>)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="params-label">Request Body Fields</div>
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">quantity</td><td class="param-type">integer</td><td><span class="param-req req-no">Optional</span></td><td>Current stock level. Set to <code>null</code> to clear.</td></tr>
+              <tr><td class="param-name">outOfStock</td><td class="param-type">boolean</td><td><span class="param-req req-no">Optional</span></td><td>When <code>true</code>, hides item from menu board.</td></tr>
+              <tr><td class="param-name">notStocked</td><td class="param-type">boolean</td><td><span class="param-req req-no">Optional</span></td><td>When <code>true</code>, marks as never stocked at this store.</td></tr>
+              <tr><td class="param-name">updatedBy</td><td class="param-type">string</td><td><span class="param-req req-no">Optional</span></td><td>Identifier of the system or user making the change.</td></tr>
+              <tr><td class="param-name">updatedAt</td><td class="param-type">string</td><td><span class="param-req req-no">Optional</span></td><td>ISO 8601 timestamp of the change. Defaults to server time if omitted.</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-label">Example Request — update two SKUs</div>
+          <pre>curl -X PATCH \
+  "https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents/stock/STORE001?updateMask.fieldPaths=BRK001&updateMask.fieldPaths=LUN005&key={FIREBASE_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -H "X-Stock-Api-Key: your-api-key" \
+  -d '{
+    "fields": {
+      "BRK001": {
+        "mapValue": { "fields": {
+          "quantity":   { "integerValue": "18" },
+          "outOfStock": { "booleanValue": false },
+          "notStocked": { "booleanValue": false },
+          "updatedAt":  { "stringValue": "2026-03-11T10:00:00.000Z" },
+          "updatedBy":  { "stringValue": "pos-system" }
+        }}
+      },
+      "LUN005": {
+        "mapValue": { "fields": {
+          "quantity":   { "integerValue": "0" },
+          "outOfStock": { "booleanValue": true },
+          "notStocked": { "booleanValue": false },
+          "updatedAt":  { "stringValue": "2026-03-11T10:00:00.000Z" },
+          "updatedBy":  { "stringValue": "pos-system" }
+        }}
+      }
+    }
+  }'</pre>
+
+          <div class="code-label">200 OK — Success Response</div>
+          <pre>{
+  <span class="hl-key">"name"</span>: <span class="hl-str">"projects/{PROJECT_ID}/databases/(default)/documents/stock/STORE001"</span>,
+  <span class="hl-key">"fields"</span>: { <span class="hl-comment">/* full updated document returned */</span> },
+  <span class="hl-key">"updateTime"</span>: <span class="hl-str">"2026-03-11T10:00:00Z"</span>
+}</pre>
+
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+            <span class="resp-code resp-400">400 Bad Request — malformed field data</span>
+            <span class="resp-code resp-403">403 Forbidden — invalid or missing API key</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST /stock/:store/sale -->
+    <div id="post-stock-sale" class="section">
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-path">/stock/{store}/sale</span>
+          <span class="endpoint-desc">Decrement quantity by 1 (record a sale)</span>
+        </div>
+        <div class="endpoint-body">
+          <p style="margin:0 0 12px;color:var(--text2);font-size:13px;">Atomically decrements a SKU's <code>quantity</code> by 1 using a Firestore field transform. The quantity will not go below 0. If the resulting quantity reaches 0, <code>outOfStock</code> is automatically set to <code>true</code> by the Retail Admin listener — for POS-only integrations, set <code>outOfStock</code> explicitly via PATCH if needed.</p>
+
+          <div class="params-label">Path Parameters</div>
+          <table>
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">store</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>Store code (e.g. <code>STORE001</code>)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="params-label">Request Body</div>
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">sku</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>SKU of the product sold (e.g. <code>BRK001</code>)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-label">Example Request</div>
+          <pre>curl -X POST \
+  "https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents:commit?key={FIREBASE_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -H "X-Stock-Api-Key: your-api-key" \
+  -d '{
+    "writes": [{
+      "transform": {
+        "document": "projects/{PROJECT_ID}/databases/(default)/documents/stock/STORE001",
+        "fieldTransforms": [{
+          "fieldPath": "BRK001.quantity",
+          "increment": { "integerValue": "-1" }
+        }]
+      }
+    }]
+  }'</pre>
+
+          <div class="code-label">200 OK — Success Response</div>
+          <pre>{
+  <span class="hl-key">"writeResults"</span>: [{
+    <span class="hl-key">"transformResults"</span>: [{ <span class="hl-key">"integerValue"</span>: <span class="hl-str">"17"</span> }],   <span class="hl-comment">// new quantity after decrement</span>
+    <span class="hl-key">"updateTime"</span>: <span class="hl-str">"2026-03-11T10:05:00Z"</span>
+  }],
+  <span class="hl-key">"commitTime"</span>: <span class="hl-str">"2026-03-11T10:05:00Z"</span>
+}</pre>
+
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+            <span class="resp-code resp-400">400 Bad Request — SKU field not found or invalid</span>
+            <span class="resp-code resp-403">403 Forbidden — invalid or missing API key</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST /stock/:store/return -->
+    <div id="post-stock-return" class="section">
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-path">/stock/{store}/return</span>
+          <span class="endpoint-desc">Increment quantity by 1 (record a return or restock)</span>
+        </div>
+        <div class="endpoint-body">
+          <p style="margin:0 0 12px;color:var(--text2);font-size:13px;">Atomically increments a SKU's <code>quantity</code> by 1 using a Firestore field transform. Use this for customer returns, void transactions, or adding individual units back to available stock. If <code>quantity</code> rises above 0 and the item was previously marked OOS, clear <code>outOfStock</code> via a subsequent PATCH or let the Retail Admin auto-correct on the next stock sync.</p>
+
+          <div class="params-label">Path Parameters</div>
+          <table>
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">store</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>Store code (e.g. <code>STORE001</code>)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="params-label">Request Body</div>
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td class="param-name">sku</td><td class="param-type">string</td><td><span class="param-req req-yes">Required</span></td><td>SKU of the product returned (e.g. <code>BRK001</code>)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="code-label">Example Request</div>
+          <pre>curl -X POST \
+  "https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents:commit?key={FIREBASE_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -H "X-Stock-Api-Key: your-api-key" \
+  -d '{
+    "writes": [{
+      "transform": {
+        "document": "projects/{PROJECT_ID}/databases/(default)/documents/stock/STORE001",
+        "fieldTransforms": [{
+          "fieldPath": "BRK001.quantity",
+          "increment": { "integerValue": "1" }
+        }]
+      }
+    }]
+  }'</pre>
+
+          <div class="code-label">200 OK — Success Response</div>
+          <pre>{
+  <span class="hl-key">"writeResults"</span>: [{
+    <span class="hl-key">"transformResults"</span>: [{ <span class="hl-key">"integerValue"</span>: <span class="hl-str">"19"</span> }],   <span class="hl-comment">// new quantity after increment</span>
+    <span class="hl-key">"updateTime"</span>: <span class="hl-str">"2026-03-11T10:08:00Z"</span>
+  }],
+  <span class="hl-key">"commitTime"</span>: <span class="hl-str">"2026-03-11T10:08:00Z"</span>
+}</pre>
+
+          <div class="note" style="margin-top:14px;">
+            <span class="note-icon">💡</span>
+            <span>For bulk restocks (e.g. delivery of 48 units), use the <a href="#patch-stock">PATCH /stock/:store</a> endpoint and set <code>quantity</code> directly. The increment endpoints are designed for single-unit POS transactions.</span>
+          </div>
+
+          <div class="response-codes">
+            <span class="resp-code resp-200">200 OK</span>
+            <span class="resp-code resp-400">400 Bad Request — SKU field not found or invalid</span>
+            <span class="resp-code resp-403">403 Forbidden — invalid or missing API key</span>
+          </div>
+        </div>
       </div>
     </div>
 

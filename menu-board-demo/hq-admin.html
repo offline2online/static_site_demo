@@ -561,7 +561,7 @@
         </div>
         <div class="nav-item" onclick="showView('items')">
           <span class="icon">&#x1F35C;</span>
-          <span>Menu Items</span>
+          <span>Products / Items</span>
           <span class="nav-badge" id="navBadgeItems">0</span>
         </div>
         <div class="nav-label">Configuration</div>
@@ -610,6 +610,16 @@
             </div>
             <div id="oosSummaryContent"></div>
           </div>
+
+          <!-- LOW STOCK SUMMARY -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+              <span style="font-size:15px;">&#x26A0;&#xFE0F;</span>
+              <div style="font-size:13px;font-weight:700;color:var(--text);">Low on Stock — Store Summary</div>
+              <span id="lowStockThresholdBadge" style="font-size:11px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;">threshold: 5</span>
+            </div>
+            <div id="lowStockContent"></div>
+          </div>
         </div>
 
         <!-- MENU ITEMS -->
@@ -651,6 +661,32 @@
               <button class="btn btn-danger" onclick="clearAllData()">&#x1F5D1;&#xFE0F; Clear All Data</button>
             </div>
             <p style="margin-top:10px;font-size:12px;color:var(--text2);">&#x2601;&#xFE0F; Data is stored in Firebase Firestore and synced in real-time across all devices.</p>
+          </div>
+
+          <div class="settings-section">
+            <h3>&#x1F4CA; Stock Alerts</h3>
+            <p class="settings-desc">Configure when stores are flagged as running Low on Stock on the HQ Dashboard.</p>
+            <div class="form-row" style="max-width:420px;align-items:flex-end;">
+              <div class="form-group" style="flex:1;">
+                <label>Low Stock Alert Threshold</label>
+                <input type="number" id="lowStockThresholdInput" min="1" max="999" placeholder="5">
+                <p class="form-help">Items with stock at or below this quantity are highlighted in the Low on Stock dashboard tile.</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveLowStockThreshold()" style="margin-bottom:20px;">&#x1F4BE; Save</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>&#x1F511; Stock API Key</h3>
+            <p class="settings-desc">Set a secret key that external platforms must include when calling the Stock API. Used as the <code>X-Stock-Api-Key</code> header in API requests.</p>
+            <div class="form-row" style="max-width:520px;align-items:flex-end;">
+              <div class="form-group" style="flex:1;">
+                <label>API Key</label>
+                <input type="text" id="stockApiKeyInput" placeholder="e.g. sk-live-abc123..." autocomplete="off" spellcheck="false" style="font-family:monospace;font-size:12px;">
+                <p class="form-help">Store this securely &mdash; share only with authorised integrations. See <a href="api-reference.html" target="_blank" style="color:var(--primary);">API Reference</a> for usage.</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveStockApiKey()" style="margin-bottom:20px;">&#x1F4BE; Save</button>
+            </div>
           </div>
 
           <div class="settings-section">
@@ -973,6 +1009,40 @@
         <p style="font-size:12px;color:var(--text2);margin-top:4px;">Controls how campaign SKUs interact with the board&rsquo;s selected menu type (breakfast / lunch / etc.)</p>
       </div>
 
+      <div class="section-divider">&#x1F3EA; Store Distribution</div>
+      <div class="form-group">
+        <label>Which stores stock this brand?</label>
+        <select id="bStoreMode" onchange="toggleStoreModeUI()">
+          <option value="all">All Stores &mdash; available at every location</option>
+          <option value="specific">Specific Stores &mdash; only selected locations</option>
+        </select>
+        <p style="font-size:12px;color:var(--text2);margin-top:4px;">When set to &ldquo;Specific Stores&rdquo;, this brand&rsquo;s products will only appear in the Store Admin for the listed store codes.</p>
+      </div>
+      <div id="bStoreSelector" style="display:none;">
+        <div class="form-row" style="align-items:flex-end;gap:8px;">
+          <div class="form-group" style="flex:1;margin-bottom:0;">
+            <label>Add from known stores</label>
+            <select id="bKnownStoreSelect">
+              <option value="">— select a store code —</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addKnownStore()" style="margin-bottom:0;flex-shrink:0;">+ Add</button>
+        </div>
+        <div class="form-group" style="margin-top:10px;">
+          <label>Or enter a store code manually</label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="bManualStore" placeholder="e.g. STORE042" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addManualStore();}">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addManualStore()">+ Add</button>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:4px;">
+          <label>Selected stores</label>
+          <div class="tag-chip-wrap" id="bStoreChipsWrap" style="min-height:36px;cursor:default;">
+            <span id="bStoreChipsEmpty" style="font-size:12px;color:var(--text2);padding:4px 0;">No stores selected — add at least one store code above.</span>
+          </div>
+        </div>
+      </div>
+
       <div class="section-divider">&#x1F6CD;&#xFE0F; Takeout Bag</div>
       <div class="form-row">
         <div class="form-group">
@@ -1271,6 +1341,22 @@ async function testPhEndpoint(i) {
   }
 }
 
+function saveStockApiKey() {
+  const key = (document.getElementById('stockApiKeyInput')?.value || '').trim();
+  const updated = { ..._settings, stockApiKey: key };
+  setDoc(doc(db, MB, 'settings'), updated)
+    .then(() => toast('\u2705 Stock API key saved', 'success'))
+    .catch(err => toast('\u274C Failed to save: ' + (err.message || err), 'error'));
+}
+
+function saveLowStockThreshold() {
+  const val = parseInt(document.getElementById('lowStockThresholdInput')?.value) || 5;
+  const updated = { ..._settings, lowStockThreshold: val };
+  setDoc(doc(db, MB, 'settings'), updated)
+    .then(() => toast('\u2705 Low stock threshold saved', 'success'))
+    .catch(err => toast('\u274C Failed to save: ' + (err.message || err), 'error'));
+}
+
 async function savePhApi() {
   const campaignMode = document.getElementById('phCampaignMode')?.value || 'override';
   document.getElementById('phApiStatus').textContent = '';
@@ -1327,7 +1413,7 @@ function showView(view) {
   const idx = navMap[view];
   if (idx !== undefined) navItems[idx].classList.add('active');
 
-  const titles = { dashboard: 'Dashboard', items: 'Menu Items', brands: 'Brands', categories: 'Categories', settings: 'Settings' };
+  const titles = { dashboard: 'Dashboard', items: 'Products / Items', brands: 'Brands', categories: 'Categories', settings: 'Settings' };
   document.getElementById('topbarTitle').textContent = titles[view] || '';
 
   if (view === 'dashboard')  renderDashboard();
@@ -1479,6 +1565,51 @@ function renderDashboard() {
 
     oosSummaryEl.innerHTML = html;
   }
+
+  // ── LOW STOCK SUMMARY ──────────────────────────────────────────
+  const lowStockEl = document.getElementById('lowStockContent');
+  const badgeEl = document.getElementById('lowStockThresholdBadge');
+  const threshold = parseInt(_settings.lowStockThreshold) || 5;
+  if (badgeEl) badgeEl.textContent = 'threshold: ≤' + threshold;
+
+  if (!storeStockKeys.length) {
+    lowStockEl.innerHTML = `<div style="color:var(--text2);font-size:13px;padding:4px 0;">No store stock data found. Data is populated when stores use the Store Admin interface.</div>`;
+  } else {
+    const lowReports = storeStockKeys.map(key => {
+      const stock = _allStock[key];
+      const lowSkus = Object.keys(stock).filter(sku => {
+        const s = stock[sku];
+        return typeof s.quantity === 'number' && s.quantity > 0 && s.quantity <= threshold && !s.outOfStock;
+      });
+      const lowItems = lowSkus.map(sku => ({ item: items.find(i => i.sku === sku), sku, quantity: stock[sku].quantity })).filter(r => r.item);
+      return { storeCode: key, lowItems };
+    }).filter(r => r.lowItems.length > 0);
+
+    if (!lowReports.length) {
+      lowStockEl.innerHTML = `<div style="color:var(--success);font-size:13px;font-weight:500;">&#x2705; All stores are adequately stocked.</div>`;
+    } else {
+      lowStockEl.innerHTML = lowReports.map(r => {
+        const itemRows = r.lowItems.map(({ item, sku, quantity }) => `
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;">
+            <span style="color:var(--warning);flex-shrink:0;">&#x26A0;&#xFE0F;</span>
+            <span style="font-weight:600;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(item.name)}</span>
+            <span style="color:var(--text2);font-family:monospace;">${escHtml(sku)}</span>
+            <span style="background:var(--warning-light);color:var(--warning);border:1px solid rgba(217,119,6,0.3);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0;">${quantity} left</span>
+          </div>
+        `).join('');
+        return `
+          <div style="border:1px solid rgba(217,119,6,0.3);border-radius:8px;overflow:hidden;margin-bottom:10px;">
+            <div style="background:var(--warning-light);padding:9px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:15px;">&#x1F3EA;</span>
+              <div style="font-weight:700;font-size:13px;color:var(--warning);flex:1;">Store ${escHtml(r.storeCode)}</div>
+              <span style="background:var(--warning);color:#fff;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;">${r.lowItems.length} Low Stock</span>
+            </div>
+            <div style="padding:4px 14px 6px;">${itemRows}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
 }
 
 // ===== AG-GRID INIT =====
@@ -1508,9 +1639,13 @@ class CheckboxSetFilter {
     this._refresh();
   }
   _rawValue(data) {
-    const customVg = this.params.colDef.getFilterValue ||
+    // Check colDef.context.getFilterValue first (AG Grid-safe location for custom data)
+    const contextFn = this.params.colDef.context && this.params.colDef.context.getFilterValue;
+    if (contextFn) return contextFn(data);
+    // Legacy: getFilterValue placed directly on colDef (still works but triggers AG Grid warning)
+    const legacyFn = this.params.colDef.getFilterValue ||
                      (this.params.filterParams && this.params.filterParams.valueGetter);
-    if (customVg) return customVg(data);
+    if (legacyFn) return legacyFn(data);
     const vg = this.params.colDef.valueGetter;
     if (typeof vg === 'function') return vg({ data, node: { data } });
     return data[this.params.colDef.field];
@@ -1598,6 +1733,7 @@ function initGrids() {
       rowHeight: 64,
       domLayout: 'autoHeight',
       suppressCellFocus: true,
+      getRowId: params => params.data.id,
       defaultColDef: {
         resizable: true,
         sortable: true,
@@ -1639,9 +1775,18 @@ function initGrids() {
         },
         {
           headerName: 'Brand', field: 'brand', flex: 1.5, minWidth: 110,
-          valueGetter: (params) => {
-            const b = getBrands().find(b => b.id === params.data.brand);
-            return b ? b.name : (params.data.brand || '—');
+          filter: CheckboxSetFilter,
+          // valueFormatter for display only — does NOT affect valueGetter/cell data type inference
+          valueFormatter: (params) => {
+            const b = getBrands().find(b => b.id === params.value);
+            return b ? b.name : (params.value || '—');
+          },
+          // context.getFilterValue: AG Grid-safe location for custom data used by CheckboxSetFilter
+          context: {
+            getFilterValue: (data) => {
+              const b = getBrands().find(b => b.id === data.brand);
+              return b ? b.name : (data.brand || '—');
+            }
           }
         },
         {
@@ -1751,6 +1896,25 @@ function initGrids() {
           cellStyle: { fontFamily: 'monospace', fontSize: '12px', color: 'var(--text2)' }
         },
         { headerName: 'Currency', field: 'currency', flex: 0.8, minWidth: 80 },
+        {
+          headerName: 'Stores', flex: 1.5, minWidth: 130,
+          valueGetter: (params) => {
+            const s = params.data.stores;
+            return (!s || s.length === 0) ? 'All Stores' : s.join(', ');
+          },
+          cellRenderer: (params) => {
+            const s = params.data.stores;
+            const allStores = !s || s.length === 0;
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;align-items:center;height:100%;';
+            if (allStores) {
+              div.innerHTML = '<span style="font-size:12px;color:var(--success);font-weight:600;">&#x1F310; All Stores</span>';
+            } else {
+              div.innerHTML = `<span style="font-size:11px;color:var(--primary);font-weight:600;">${escHtml(s.join(', '))}</span>`;
+            }
+            return div;
+          }
+        },
         {
           headerName: 'Colors', flex: 1.8, minWidth: 200,
           filter: false, sortable: false,
@@ -2153,6 +2317,11 @@ function openAddBrandModal() {
   brandEditingBagIcon = '';
   document.getElementById('bBagLabel').value = '';
   document.getElementById('bBagIconPreview').style.display = 'none';
+  // Store distribution — default "All Stores"
+  window.editingStores = [];
+  document.getElementById('bStoreMode').value = 'all';
+  document.getElementById('bStoreSelector').style.display = 'none';
+  _renderStoreChips();
   document.getElementById('brandModal').classList.add('open');
 }
 
@@ -2208,6 +2377,18 @@ function openEditBrandModal(id) {
     document.getElementById('bBagIconPreview').style.display = 'none';
   }
 
+  // Store distribution
+  const stores = Array.isArray(brand.stores) ? brand.stores : [];
+  window.editingStores = [...stores];
+  if (stores.length === 0) {
+    document.getElementById('bStoreMode').value = 'all';
+    document.getElementById('bStoreSelector').style.display = 'none';
+  } else {
+    document.getElementById('bStoreMode').value = 'specific';
+    document.getElementById('bStoreSelector').style.display = 'block';
+  }
+  _renderStoreChips();
+
   document.getElementById('brandModal').classList.add('open');
 }
 
@@ -2248,6 +2429,73 @@ function clearBagIcon() {
   document.getElementById('bBagIconImg').src = '';
 }
 
+// ===== BRAND STORE DISTRIBUTION =====
+window.editingStores = [];
+
+function toggleStoreModeUI() {
+  const mode = document.getElementById('bStoreMode').value;
+  document.getElementById('bStoreSelector').style.display = mode === 'specific' ? 'block' : 'none';
+}
+
+function _populateKnownStoresDropdown() {
+  const sel = document.getElementById('bKnownStoreSelect');
+  if (!sel) return;
+  const known = Object.keys(_allStock).sort();
+  sel.innerHTML = '<option value="">— select a store code —</option>';
+  known.forEach(code => {
+    if (!window.editingStores.includes(code)) {
+      const opt = document.createElement('option');
+      opt.value = code; opt.textContent = code;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+function _renderStoreChips() {
+  const wrap = document.getElementById('bStoreChipsWrap');
+  const emptyMsg = document.getElementById('bStoreChipsEmpty');
+  wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  if (window.editingStores.length === 0) {
+    if (emptyMsg) emptyMsg.style.display = '';
+  } else {
+    if (emptyMsg) emptyMsg.style.display = 'none';
+    window.editingStores.forEach((code, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `<span>${escHtml(code)}</span><button class="tag-chip-remove" type="button" onclick="removeStoreChip(${i})" title="Remove">&#x2715;</button>`;
+      wrap.insertBefore(chip, emptyMsg || null);
+    });
+  }
+  _populateKnownStoresDropdown();
+}
+
+window.removeStoreChip = function(i) {
+  window.editingStores.splice(i, 1);
+  _renderStoreChips();
+};
+
+function addKnownStore() {
+  const sel = document.getElementById('bKnownStoreSelect');
+  const val = (sel.value || '').trim().toUpperCase();
+  if (!val) return;
+  if (!window.editingStores.includes(val)) {
+    window.editingStores.push(val);
+    _renderStoreChips();
+  }
+  sel.value = '';
+}
+
+function addManualStore() {
+  const inp = document.getElementById('bManualStore');
+  const val = (inp.value || '').trim().toUpperCase();
+  if (!val) return;
+  if (!window.editingStores.includes(val)) {
+    window.editingStores.push(val);
+    _renderStoreChips();
+  }
+  inp.value = '';
+}
+
 function saveBrand() {
   const id       = document.getElementById('bEditId').value;
   const name     = document.getElementById('bName').value.trim();
@@ -2284,6 +2532,7 @@ function saveBrand() {
   const showHeader   = document.getElementById('bShowHeader').value !== 'false';
   const campaignMode = document.getElementById('bCampaignMode').value || 'override';
   const bagLabel     = (document.getElementById('bBagLabel').value || '').trim();
+  const stores       = document.getElementById('bStoreMode').value === 'specific' ? [...window.editingStores] : [];
 
   const brands = getBrands();
   const now    = new Date().toISOString();
@@ -2291,10 +2540,10 @@ function saveBrand() {
   if (id) {
     const idx = brands.findIndex(b => b.id === id);
     if (idx === -1) return;
-    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, bagLabel, bagIcon: brandEditingBagIcon, updatedAt: now };
+    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, bagLabel, bagIcon: brandEditingBagIcon, stores, updatedAt: now };
     toast('\u2705 Brand updated', 'success');
   } else {
-    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, bagLabel, bagIcon: brandEditingBagIcon, createdAt: now, updatedAt: now });
+    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, bagLabel, bagIcon: brandEditingBagIcon, stores, createdAt: now, updatedAt: now });
     toast('\u2705 Brand added', 'success');
   }
 
@@ -2361,22 +2610,63 @@ function importData(event) {
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
+
+      // ── ITEMS: merge by id (upsert — never delete existing items) ────────
       if (data.items) {
         const { sanitized, stripped } = stripOversizedImages(data.items);
-        saveItems(sanitized);
         if (stripped.length) {
           toast(
             `\u26A0\uFE0F ${stripped.length} item${stripped.length > 1 ? 's' : ''} had oversized images removed: ${stripped.join(', ')}`,
             'error'
           );
         }
+        const existing = getItems();
+        const merged = [...existing];
+        let added = 0, updated = 0;
+        for (const item of sanitized) {
+          const idx = merged.findIndex(i => i.id === item.id);
+          if (idx >= 0) { merged[idx] = item; updated++; }
+          else           { merged.push(item); added++; }
+        }
+        saveItems(merged);
+
+        // ── BRANDS: merge by id (upsert — never delete existing brands) ────
+        if (data.brands) {
+          const existingBrands = getBrands();
+          const mergedBrands = [...existingBrands];
+          for (const b of data.brands) {
+            const idx = mergedBrands.findIndex(x => x.id === b.id);
+            if (idx >= 0) mergedBrands[idx] = b;
+            else          mergedBrands.push(b);
+          }
+          saveBrands(mergedBrands);
+        }
+
+        // ── CATEGORIES: merge as strings (union, deduped) ─────────────────
+        if (data.categories) {
+          const catStr = c => (typeof c === 'string' ? c : (c.name || String(c)));
+          const existingCats  = getCats().map(catStr);
+          const incomingCats  = data.categories.map(catStr);
+          const mergedCats    = [...new Set([...existingCats, ...incomingCats])].filter(Boolean);
+          saveCats(mergedCats);
+        }
+
+        // Settings are intentionally NOT overwritten on brand merge imports.
+        // Configure global settings manually in the Settings tab.
+
+        renderDashboard();
+        renderItems();
+        const brandCount = getBrands().length;
+        toast(`\u{1F4E5} Merged: +${added} new item${added !== 1 ? 's' : ''}, ${updated} updated \u2022 ${brandCount} brand${brandCount !== 1 ? 's' : ''} total`, 'success');
+      } else {
+        // Legacy full-replace import (no items array — treat as settings-only)
+        if (data.settings)   saveSettingsData(data.settings);
+        if (data.categories) saveCats(data.categories);
+        if (data.brands)     saveBrands(data.brands);
+        renderDashboard();
+        renderItems();
+        toast('\u{1F4E5} Data imported successfully', 'success');
       }
-      if (data.settings)   saveSettingsData(data.settings);
-      if (data.categories) saveCats(data.categories);
-      if (data.brands)     saveBrands(data.brands);
-      renderDashboard();
-      renderItems();
-      toast('\u{1F4E5} Data imported successfully', 'success');
     } catch(err) {
       toast('\u274C Import failed: ' + (err.message || err), 'error');
     }
@@ -2462,6 +2752,9 @@ window.openEditBrandModal = openEditBrandModal;
 window.closeBrandModal    = closeBrandModal;
 window.saveBrand          = saveBrand;
 window.confirmDeleteBrand = confirmDeleteBrand;
+window.toggleStoreModeUI  = toggleStoreModeUI;
+window.addKnownStore      = addKnownStore;
+window.addManualStore     = addManualStore;
 window.exportData         = exportData;
 window.importData         = importData;
 window.clearAllData       = clearAllData;
@@ -2495,6 +2788,12 @@ onSnapshot(doc(db, MB, 'brands'), snap => {
   if (activeView) {
     if (activeView.id === 'view-brands')    renderBrands();
     if (activeView.id === 'view-dashboard') renderDashboard();
+    if (activeView.id === 'view-items') {
+      // Force-refresh brand column cells: valueFormatter depends on external brands data.
+      // With getRowId set, AG Grid won't re-render unchanged rows on setGridOption('rowData'),
+      // so we must explicitly force the brand column to re-evaluate its valueFormatter.
+      setTimeout(() => itemsGridApi?.refreshCells({ columns: ['brand'], force: true }), 0);
+    }
   }
 });
 
@@ -2515,6 +2814,12 @@ onSnapshot(doc(db, MB, 'settings'), snap => {
   if (legacyEl) legacyEl.style.display = isLegacy ? 'block' : 'none';
   _phEndpoints = isLegacy ? [] : (Array.isArray(phApi.endpoints) ? phApi.endpoints : []);
   renderPhEndpoints();
+  // Low stock threshold
+  const threshEl = document.getElementById('lowStockThresholdInput');
+  if (threshEl) threshEl.value = _settings.lowStockThreshold || 5;
+  // Stock API key
+  const stockKeyEl = document.getElementById('stockApiKeyInput');
+  if (stockKeyEl) stockKeyEl.value = _settings.stockApiKey || '';
 });
 
 onSnapshot(collection(db, STOCK_COLL), snapshot => {
@@ -2527,6 +2832,8 @@ onSnapshot(collection(db, STOCK_COLL), snapshot => {
 showView(localStorage.getItem('hqAdminView') || 'dashboard');
 
 // Expose async functions to global scope so HTML onclick attributes can call them
+window.saveLowStockThreshold = saveLowStockThreshold;
+window.saveStockApiKey       = saveStockApiKey;
 window.savePhApi        = savePhApi;
 window.addPhEndpoint    = addPhEndpoint;
 window.removePhEndpoint = removePhEndpoint;

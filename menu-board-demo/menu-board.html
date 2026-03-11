@@ -648,8 +648,9 @@ let _debugPanelVisible = DEBUG_MODE; // toggled by long-press on bottom-left cor
 
 function getBrands() { return _brands; }
 
-// Returns brand object. If no brands in storage, builds legacy compat from mb_settings.
-// Matches ?brand= param against brand name (case-insensitive). Falls back to first brand.
+// Returns the active brand object for filtering, or null when no ?brand= param is set
+// (null = "show all brands" mode). A separate themeSource is used for UI styling.
+// If no brands in Firestore, returns a legacy compat object built from mb_settings.
 function getActiveBrand() {
   const brands = getBrands();
 
@@ -675,11 +676,11 @@ function getActiveBrand() {
   // If a brand name was supplied in the URL, match it case-insensitively
   if (BRAND_ID) {
     const found = brands.find(b => b.name.toLowerCase() === BRAND_ID.toLowerCase());
-    if (found) return found;
+    return found || brands[0]; // found brand, or first brand if name didn't match
   }
 
-  // No param or no match — always fall back to the first brand
-  return brands[0];
+  // No ?brand= param — return null to signal "show all brands, no filter"
+  return null;
 }
 
 // ── COLOR SCHEME ─────────────────────────────────────────────────────────────
@@ -1117,8 +1118,9 @@ onSnapshot(doc(db, MB, 'brands'), snap => {
   _brandsHash = h;
   _brands = newBrands;
   const brand = getActiveBrand();
+  const _titleBrand = brand || getBrands()[0];
   if (MENU_TYPE && MENU_META[MENU_TYPE]) {
-    document.title = MENU_META[MENU_TYPE].label + (brand ? ' \u2014 ' + brand.name : ' \u2014 ' + STORE_CODE);
+    document.title = MENU_META[MENU_TYPE].label + (_titleBrand ? ' \u2014 ' + _titleBrand.name : ' \u2014 ' + STORE_CODE);
   }
   render();
 });
@@ -1145,12 +1147,17 @@ onSnapshot(doc(db, MB, 'settings'), snap => {
 // ── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
   if (!MENU_TYPE || !MENU_META[MENU_TYPE] || (!STORE_CODE && !DEVICE_UDID)) return;
-  const meta     = MENU_META[MENU_TYPE];
-  const brand    = getActiveBrand();
+  const meta = MENU_META[MENU_TYPE];
 
-  // brand is always populated (falls back to first brand) — no error screen needed
+  // brand = null means "no ?brand= param — show all brands"
+  // themeSource is always a valid brand object used for colours, logos, layout
+  const brand       = getActiveBrand();
+  const themeSource = brand || getBrands()[0] || (() => {
+    const s = getSettings();
+    return { name: s.restaurantName || 'Our Restaurant', currency: s.currency || '$', logo: s.logo || '', logoRight: s.logoRight || '', colors: s.colors || {}, showClock: true, timeFormat: 'british', display: { portrait: { cols: 3, rows: 5, maxItems: 15 }, landscape: { cols: 5, rows: 3, maxItems: 15 } } };
+  })();
 
-  applyColorScheme(brand);
+  applyColorScheme(themeSource);
 
   // Apply orientation class to boardRoot
   const boardRoot = document.getElementById('boardRoot');
@@ -1165,40 +1172,43 @@ function render() {
   }
 
   const items     = getItems();
-  const logoLeft  = brand.logo      || '';
-  const logoRight = brand.logoRight || brand.logo || '';
-  const brandName = esc(brand.name  || 'Our Restaurant');
-  const currency  = esc(brand.currency || '$');
+  const logoLeft  = themeSource.logo      || '';
+  const logoRight = themeSource.logoRight || themeSource.logo || '';
+  const brandName = esc(themeSource.name  || 'Our Restaurant');
+  const currency  = esc(themeSource.currency || '$');
 
   // ── STEP 1: Filter first so totalItems drives layout ────────────────────────
+  // brand === null means no brand filter — show all active items for this menu type
   const allFiltered = items.filter(i =>
     i.active &&
     (i.menuTypes || []).includes(MENU_TYPE) &&
-    (!i.brand || i.brand === brand.id)
+    (brand === null || !i.brand || i.brand === brand.id)
   );
 
   // Apply hideOutOfStock brand option — remove OOS items from display entirely
-  const displayFiltered = (brand.display && brand.display.hideOutOfStock)
+  const displayFiltered = (themeSource.display && themeSource.display.hideOutOfStock)
     ? allFiltered.filter(i => !isOos(i.sku))
     : allFiltered;
 
   // ── STEP 1b: Apply campaign SKU filter (Personalisation Hub) ────────────────
   // When a Device UDID is in the URL and the API returns SKUs, override the display.
+  // When brand === null (show-all mode), campaign SKU filtering is skipped entirely —
+  // only a board with a defined brand applies personalised SKU filtering.
   let campaignFiltered = displayFiltered;
-  if (_campaignSkus && _campaignSkus.length > 0) {
+  if (_campaignSkus && _campaignSkus.length > 0 && brand !== null) {
     const mode = brand.campaignMode || (_settings.phApi && _settings.phApi.campaignMode) || 'override';
     // Case-insensitive SKU set — handles mismatches between API and Firestore casing
     const skuSetLower = new Set(_campaignSkus.map(s => (s || '').trim().toLowerCase()));
     const skuMatch = i => skuSetLower.has((i.sku || '').trim().toLowerCase());
     if (mode === 'override') {
-      // Ignore menu type — show any active item matching campaign SKUs
+      // Ignore menu type — show any active item matching campaign SKUs (brand-constrained)
       campaignFiltered = items.filter(i =>
         i.active &&
         (!i.brand || i.brand === brand.id) &&
         skuMatch(i)
       );
       // Also apply hideOutOfStock if brand requires it
-      if (brand.display && brand.display.hideOutOfStock) {
+      if (themeSource.display && themeSource.display.hideOutOfStock) {
         campaignFiltered = campaignFiltered.filter(i => !isOos(i.sku));
       }
     } else {
@@ -1223,7 +1233,7 @@ function render() {
   const totalItems = campaignFiltered.length;
 
   // ── STEP 2: Compute layout based on totalItems ───────────────────────────────
-  const dispCfg = (brand.display && brand.display[ORIENTATION]) || {};
+  const dispCfg = (themeSource.display && themeSource.display[ORIENTATION]) || {};
   let COLS, PAGE_SIZE;
 
   if (totalItems > 0 && totalItems <= 10) {
@@ -1324,8 +1334,8 @@ function render() {
     ? `<div class="header-logo-wrap"><img src="${src}" alt="${esc(side)} logo"></div>`
     : `<div class="header-logo-wrap no-logo"></div>`;
 
-  const showHeader = brand.showHeader !== false;
-  const showClock  = brand.showClock  !== false;
+  const showHeader = themeSource.showHeader !== false;
+  const showClock  = themeSource.showClock  !== false;
   const headerHtml = `
     ${showHeader ? `
     <div class="board-header">
