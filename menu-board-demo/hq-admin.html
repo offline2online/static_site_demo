@@ -586,6 +586,34 @@
     }
     .ph-ep-actions { display:flex; align-items:flex-start; gap:6px; flex-shrink:0; margin-top:1px; }
     .ph-ep-status { font-size:11px; margin-top:5px; min-height:16px; line-height:1.3; }
+
+    /* ── BRAND MODAL TABS ─────────────────────── */
+    .modal-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); padding:0 22px; background:var(--surface); flex-shrink:0; }
+    .modal-tab { padding:12px 16px; font-size:13px; font-weight:600; color:var(--text2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; transition:color .15s,border-color .15s; user-select:none; }
+    .modal-tab:hover { color:var(--text); }
+    .modal-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+    .modal-tab-pane { display:none; }
+    .modal-tab-pane.active { display:block; }
+
+    /* ── OFFER BOARD TEMPLATES ───────────────── */
+    .tpl-list { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .tpl-row { display:flex; align-items:center; gap:10px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; }
+    .tpl-row-name { flex:1; font-size:13px; font-weight:600; color:var(--text); }
+    .tpl-default-badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:2px 7px; border-radius:20px; background:var(--primary-light); color:var(--primary); flex-shrink:0; }
+    .tpl-actions { display:flex; gap:6px; flex-shrink:0; }
+    .tpl-editor-panel { display:none; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .tpl-editor-panel.open { display:block; }
+    .tpl-editor-header { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:13px; font-weight:700; color:var(--text); }
+    .tpl-editor-back { background:none; border:none; cursor:pointer; color:var(--primary); font-size:13px; font-weight:600; padding:0; }
+    .tpl-editor-back:hover { opacity:.75; }
+    .tpl-editor-body { padding:16px; }
+
+    /* ── DISABLED BUTTON STATE ──────────────── */
+    .btn:disabled { opacity:0.38; cursor:not-allowed; pointer-events:none; }
+
+    /* ── CLICKABLE BRAND NAME ────────────────── */
+    .brand-name-link { color:var(--primary); font-weight:600; cursor:pointer; text-decoration:none; font-size:13px; }
+    .brand-name-link:hover { text-decoration:underline; }
   </style>
 </head>
 <body>
@@ -906,203 +934,235 @@
       <h2 id="brandModalTitle">Add Brand</h2>
       <button class="modal-close" onclick="closeBrandModal()">&#x2715;</button>
     </div>
-    <div class="modal-body">
-      <input type="hidden" id="bEditId">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Brand / Restaurant Name <span class="req">*</span></label>
-          <input type="text" id="bName" placeholder="e.g. The Grand Caf&#233;">
-        </div>
-        <div class="form-group">
-          <label>Currency Symbol</label>
-          <input type="text" id="bCurrency" placeholder="$" maxlength="3">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Brand Logo</label>
-        <div class="img-upload-zone" onclick="document.getElementById('bLogoUpload').click()" style="padding:12px;">
-          <input type="file" id="bLogoUpload" accept="image/*" onchange="uploadBrandLogo(event)">
-          <div id="bLogoPreview" style="display:none;margin-bottom:8px;"><img id="bLogoImg" style="height:48px;border-radius:8px;object-fit:contain;"></div>
-          <p>Click to upload brand logo</p>
-        </div>
-      </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="brandTab-settings" onclick="switchBrandTab('settings')">Brand Settings</div>
+      <div class="modal-tab" id="brandTab-boards" onclick="switchBrandTab('boards')">Manage Offer Boards</div>
+    </div>
+    <div class="modal-body" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
 
-      <div class="section-divider">Menu Header</div>
-      <div class="form-group">
-        <label>Show Menu Header Bar</label>
-        <select id="bShowHeader">
-          <option value="true">On &mdash; Show brand name, logo and menu type on board</option>
-          <option value="false">Off &mdash; Hide menu header (more space for items)</option>
-        </select>
-      </div>
+      <!-- TAB PANE 1: Brand Settings -->
+      <div class="modal-tab-pane active" id="brandPane-settings" style="overflow-y:auto;flex:1;padding:22px;">
+        <input type="hidden" id="bEditId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Brand / Restaurant Name <span class="req">*</span></label>
+            <input type="text" id="bName" placeholder="e.g. The Grand Caf&#233;">
+          </div>
+          <div class="form-group">
+            <label>Currency Symbol</label>
+            <input type="text" id="bCurrency" placeholder="$" maxlength="3">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Brand Logo</label>
+          <div class="img-upload-zone" onclick="document.getElementById('bLogoUpload').click()" style="padding:12px;">
+            <input type="file" id="bLogoUpload" accept="image/*" onchange="uploadBrandLogo(event)">
+            <div id="bLogoPreview" style="display:none;margin-bottom:8px;"><img id="bLogoImg" style="height:48px;border-radius:8px;object-fit:contain;"></div>
+            <p>Click to upload brand logo</p>
+          </div>
+        </div>
 
-      <div class="section-divider">Colour Scheme</div>
-      <div class="form-row cols-3">
+        <div class="section-divider">Store Distribution</div>
         <div class="form-group">
-          <label>Header Background</label>
-          <input type="color" id="bColorHeader" value="#ffffff" style="height:40px;padding:4px;cursor:pointer;">
-        </div>
-        <div class="form-group">
-          <label>Header Font</label>
-          <input type="color" id="bColorHeaderText" value="#006241" style="height:40px;padding:4px;cursor:pointer;">
-        </div>
-        <div class="form-group">
-          <label>Brand Accent</label>
-          <input type="color" id="bColorAccent" value="#006241" style="height:40px;padding:4px;cursor:pointer;">
-        </div>
-        <div class="form-group">
-          <label>Category Badge</label>
-          <input type="color" id="bColorCatBar" value="#006241" style="height:40px;padding:4px;cursor:pointer;">
-        </div>
-        <div class="form-group">
-          <label>Body Background</label>
-          <input type="color" id="bColorBody" value="#f9f4ec" style="height:40px;padding:4px;cursor:pointer;">
-        </div>
-        <div class="form-group">
-          <label>Item Text</label>
-          <input type="color" id="bColorText" value="#1a1a1a" style="height:40px;padding:4px;cursor:pointer;">
-        </div>
-        <div class="form-group">
-          <label>Price</label>
-          <input type="color" id="bColorPrice" value="#004d33" style="height:40px;padding:4px;cursor:pointer;">
-        </div>
-        <div class="form-group">
-          <label>Clock Bar Text</label>
-          <input type="color" id="bColorClockText" value="#1e293b" style="height:40px;padding:4px;cursor:pointer;">
-        </div>
-      </div>
-
-      <div class="section-divider">Portrait Display <span class="opt-tag">1080&times;1920px</span></div>
-      <div class="form-row cols-3">
-        <div class="form-group">
-          <label>Items per Row</label>
-          <input type="number" id="bPortraitCols" value="3" min="1" max="6" placeholder="3">
-          <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Columns across screen</span>
-        </div>
-        <div class="form-group">
-          <label>Lines per Screen</label>
-          <input type="number" id="bPortraitRows" value="5" min="1" max="10" placeholder="5">
-          <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Rows down screen</span>
-        </div>
-        <div class="form-group">
-          <label>Max Items per Screen</label>
-          <input type="number" id="bPortraitMax" value="15" min="1" max="60" placeholder="15">
-          <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Cap (&#8804; cols &times; rows)</span>
-        </div>
-      </div>
-
-      <div class="section-divider">Landscape Display <span class="opt-tag">1920&times;1080px</span></div>
-      <div class="form-row cols-3">
-        <div class="form-group">
-          <label>Items per Row</label>
-          <input type="number" id="bLandscapeCols" value="5" min="1" max="8" placeholder="5">
-          <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Columns across screen</span>
-        </div>
-        <div class="form-group">
-          <label>Lines per Screen</label>
-          <input type="number" id="bLandscapeRows" value="3" min="1" max="8" placeholder="3">
-          <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Rows down screen</span>
-        </div>
-        <div class="form-group">
-          <label>Max Items per Screen</label>
-          <input type="number" id="bLandscapeMax" value="15" min="1" max="60" placeholder="15">
-          <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Cap (&#8804; cols &times; rows)</span>
-        </div>
-      </div>
-
-      <div class="section-divider">Sold Out Behaviour</div>
-      <div class="form-group">
-        <label>When a product is Sold Out</label>
-        <select id="bHideOos">
-          <option value="false">Show with &ldquo;Sold Out&rdquo; stamp &mdash; item remains visible</option>
-          <option value="true">Hide completely &mdash; remove from menu board</option>
-        </select>
-      </div>
-
-      <div class="section-divider">Date &amp; Time Bar</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Show Date &amp; Time Bar</label>
-          <select id="bShowClock">
-            <option value="true">On &mdash; Show date &amp; time on menu board</option>
-            <option value="false">Off &mdash; Hide date &amp; time bar</option>
+          <label>Which stores stock this brand?</label>
+          <select id="bStoreMode" onchange="toggleStoreModeUI()">
+            <option value="all">All Stores &mdash; available at every location</option>
+            <option value="specific">Specific Stores &mdash; only selected locations</option>
           </select>
+          <p style="font-size:12px;color:var(--text2);margin-top:4px;">When set to &ldquo;Specific Stores&rdquo;, this brand&rsquo;s products will only appear in the Store Admin for the listed store codes.</p>
+        </div>
+        <div id="bStoreSelector" style="display:none;">
+          <div class="form-row" style="align-items:flex-end;gap:8px;">
+            <div class="form-group" style="flex:1;margin-bottom:0;">
+              <label>Add from known stores</label>
+              <select id="bKnownStoreSelect">
+                <option value="">— select a store code —</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addKnownStore()" style="margin-bottom:0;flex-shrink:0;">+ Add</button>
+          </div>
+          <div class="form-group" style="margin-top:10px;">
+            <label>Or enter a store code manually</label>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="bManualStore" placeholder="e.g. STORE042" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addManualStore();}">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="addManualStore()">+ Add</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:4px;">
+            <label>Selected stores</label>
+            <div class="tag-chip-wrap" id="bStoreChipsWrap" style="min-height:36px;cursor:default;">
+              <span id="bStoreChipsEmpty" style="font-size:12px;color:var(--text2);padding:4px 0;">No stores selected — add at least one store code above.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider">Takeout Bag</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Bag Label <span style="font-size:11px;font-weight:400;text-transform:none;color:var(--text2);">(shown in bag panel &amp; order summary)</span></label>
+            <input type="text" id="bBagLabel" placeholder="Takeout Bag" maxlength="40">
+          </div>
         </div>
         <div class="form-group">
-          <label>Time &amp; Date Format</label>
-          <select id="bTimeFormat">
-            <option value="british">British &mdash; DD/MM/YYYY, 24-hour</option>
-            <option value="us">US &mdash; MM/DD/YYYY, 12-hour AM/PM</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="section-divider">Campaign Hub</div>
-      <div class="form-group">
-        <label>Campaign Filter Mode</label>
-        <select id="bCampaignMode">
-          <option value="override">Override Completely &mdash; show campaign SKUs regardless of menu type</option>
-          <option value="filter">Apply on Top &mdash; only show campaign SKUs that match the current menu type</option>
-        </select>
-        <p style="font-size:12px;color:var(--text2);margin-top:4px;">Controls how campaign SKUs interact with the board&rsquo;s selected menu type (breakfast / lunch / etc.)</p>
-      </div>
-
-      <div class="section-divider">Store Distribution</div>
-      <div class="form-group">
-        <label>Which stores stock this brand?</label>
-        <select id="bStoreMode" onchange="toggleStoreModeUI()">
-          <option value="all">All Stores &mdash; available at every location</option>
-          <option value="specific">Specific Stores &mdash; only selected locations</option>
-        </select>
-        <p style="font-size:12px;color:var(--text2);margin-top:4px;">When set to &ldquo;Specific Stores&rdquo;, this brand&rsquo;s products will only appear in the Store Admin for the listed store codes.</p>
-      </div>
-      <div id="bStoreSelector" style="display:none;">
-        <div class="form-row" style="align-items:flex-end;gap:8px;">
-          <div class="form-group" style="flex:1;margin-bottom:0;">
-            <label>Add from known stores</label>
-            <select id="bKnownStoreSelect">
-              <option value="">— select a store code —</option>
-            </select>
-          </div>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="addKnownStore()" style="margin-bottom:0;flex-shrink:0;">+ Add</button>
-        </div>
-        <div class="form-group" style="margin-top:10px;">
-          <label>Or enter a store code manually</label>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="bManualStore" placeholder="e.g. STORE042" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addManualStore();}">
-            <button type="button" class="btn btn-ghost btn-sm" onclick="addManualStore()">+ Add</button>
-          </div>
-        </div>
-        <div class="form-group" style="margin-top:4px;">
-          <label>Selected stores</label>
-          <div class="tag-chip-wrap" id="bStoreChipsWrap" style="min-height:36px;cursor:default;">
-            <span id="bStoreChipsEmpty" style="font-size:12px;color:var(--text2);padding:4px 0;">No stores selected — add at least one store code above.</span>
+          <label>Bag Icon <span style="font-size:11px;font-weight:400;text-transform:none;color:var(--text2);">(transparent PNG &mdash; leave blank to use emoji &#x1F6CD;)</span></label>
+          <div class="img-upload-zone" onclick="document.getElementById('bBagIconUpload').click()" style="padding:12px;">
+            <input type="file" id="bBagIconUpload" accept="image/png,image/webp,image/svg+xml" onchange="uploadBagIcon(event)">
+            <div id="bBagIconPreview" style="display:none;margin-bottom:8px;align-items:center;gap:12px;">
+              <img id="bBagIconImg" style="height:40px;width:40px;object-fit:contain;">
+              <button type="button" onclick="clearBagIcon()" style="font-size:12px;color:var(--danger);text-decoration:underline;background:none;border:none;cursor:pointer;">Remove icon</button>
+            </div>
+            <p>Click to upload bag icon (PNG recommended, max 200KB)</p>
           </div>
         </div>
       </div>
 
-      <div class="section-divider">Takeout Bag</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Bag Label <span style="font-size:11px;font-weight:400;text-transform:none;color:var(--text2);">(shown in bag panel &amp; order summary)</span></label>
-          <input type="text" id="bBagLabel" placeholder="Takeout Bag" maxlength="40">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Bag Icon <span style="font-size:11px;font-weight:400;text-transform:none;color:var(--text2);">(transparent PNG &mdash; leave blank to use emoji &#x1F6CD;)</span></label>
-        <div class="img-upload-zone" onclick="document.getElementById('bBagIconUpload').click()" style="padding:12px;">
-          <input type="file" id="bBagIconUpload" accept="image/png,image/webp,image/svg+xml" onchange="uploadBagIcon(event)">
-          <div id="bBagIconPreview" style="display:none;margin-bottom:8px;align-items:center;gap:12px;">
-            <img id="bBagIconImg" style="height:40px;width:40px;object-fit:contain;">
-            <button type="button" onclick="clearBagIcon()" style="font-size:12px;color:var(--danger);text-decoration:underline;background:none;border:none;cursor:pointer;">Remove icon</button>
+      <!-- TAB PANE 2: Manage Offer Boards -->
+      <div class="modal-tab-pane" id="brandPane-boards" style="overflow-y:auto;flex:1;padding:22px;">
+
+        <!-- LIST VIEW -->
+        <div id="tplListView">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:13px;color:var(--text2);">Each template defines a different display layout for this brand&rsquo;s menu boards.</div>
+            <button class="btn btn-primary btn-sm" onclick="openNewTemplateEditor()">+ Add Template</button>
           </div>
-          <p>Click to upload bag icon (PNG recommended, max 200KB)</p>
+          <div class="tpl-list" id="tplList"></div>
         </div>
+
+        <!-- INLINE EDITOR PANEL -->
+        <div class="tpl-editor-panel" id="tplEditorPanel">
+          <div class="tpl-editor-header">
+            <button class="tpl-editor-back" onclick="closeTplEditor()">&#8592; Back to templates</button>
+            <span id="tplEditorTitle" style="margin-left:auto;font-size:12px;color:var(--text2);font-weight:400;"></span>
+          </div>
+          <div class="tpl-editor-body">
+            <input type="hidden" id="tplEditId">
+
+            <div class="form-group">
+              <label>Template Name <span class="req">*</span></label>
+              <input type="text" id="tplName" placeholder="e.g. Summer Menu">
+            </div>
+
+            <div class="section-divider">Header Layout</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Show Menu Header Bar</label>
+                <select id="tplShowHeader">
+                  <option value="true">On &mdash; Show header</option>
+                  <option value="false">Off &mdash; Hide header</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Icon Position</label>
+                <select id="tplIconPosition">
+                  <option value="left">Left</option>
+                  <option value="center">Center</option>
+                  <option value="right">Right</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Header Copy <span style="font-size:11px;font-weight:400;text-transform:none;color:var(--text2);">(tagline shown in header)</span></label>
+              <input type="text" id="tplHeaderCopy" placeholder="e.g. Fresh food, freshly made">
+            </div>
+
+            <div class="section-divider">Colour Scheme</div>
+            <div class="form-row cols-3" style="row-gap:12px;">
+              <div class="form-group"><label>Header Background</label><input type="color" id="tplColorHeader" style="height:40px;padding:4px;cursor:pointer;"></div>
+              <div class="form-group"><label>Header Font</label><input type="color" id="tplColorHeaderText" style="height:40px;padding:4px;cursor:pointer;"></div>
+              <div class="form-group"><label>Brand Accent</label><input type="color" id="tplColorAccent" style="height:40px;padding:4px;cursor:pointer;"></div>
+              <div class="form-group"><label>Category Badge</label><input type="color" id="tplColorCatBar" style="height:40px;padding:4px;cursor:pointer;"></div>
+              <div class="form-group"><label>Body Background</label><input type="color" id="tplColorBody" style="height:40px;padding:4px;cursor:pointer;"></div>
+              <div class="form-group"><label>Item Text</label><input type="color" id="tplColorText" style="height:40px;padding:4px;cursor:pointer;"></div>
+              <div class="form-group"><label>Price</label><input type="color" id="tplColorPrice" style="height:40px;padding:4px;cursor:pointer;"></div>
+              <div class="form-group"><label>Clock Bar Text</label><input type="color" id="tplColorClockText" style="height:40px;padding:4px;cursor:pointer;"></div>
+            </div>
+
+            <div class="section-divider">Menu Board Settings</div>
+            <div class="form-group">
+              <label>Sold Out Behaviour</label>
+              <select id="tplHideOos">
+                <option value="false">Show with &ldquo;Sold Out&rdquo; stamp &mdash; item remains visible</option>
+                <option value="true">Hide completely &mdash; remove from menu board</option>
+              </select>
+            </div>
+
+            <div class="section-divider">Portrait Display <span class="opt-tag">1080&times;1920px</span></div>
+            <div class="form-row cols-3">
+              <div class="form-group">
+                <label>Items per Row</label>
+                <input type="number" id="tplPortraitCols" min="1" max="6">
+                <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Columns across screen</span>
+              </div>
+              <div class="form-group">
+                <label>Lines per Screen</label>
+                <input type="number" id="tplPortraitRows" min="1" max="10">
+                <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Rows down screen</span>
+              </div>
+              <div class="form-group">
+                <label>Max Items</label>
+                <input type="number" id="tplPortraitMax" min="1" max="60">
+                <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Cap (&#8804; cols &times; rows)</span>
+              </div>
+            </div>
+
+            <div class="section-divider">Landscape Display <span class="opt-tag">1920&times;1080px</span></div>
+            <div class="form-row cols-3">
+              <div class="form-group">
+                <label>Items per Row</label>
+                <input type="number" id="tplLandscapeCols" min="1" max="8">
+                <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Columns across screen</span>
+              </div>
+              <div class="form-group">
+                <label>Lines per Screen</label>
+                <input type="number" id="tplLandscapeRows" min="1" max="8">
+                <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Rows down screen</span>
+              </div>
+              <div class="form-group">
+                <label>Max Items</label>
+                <input type="number" id="tplLandscapeMax" min="1" max="60">
+                <span style="font-size:11px;color:var(--text2);margin-top:4px;display:block;">Cap (&#8804; cols &times; rows)</span>
+              </div>
+            </div>
+
+            <div class="section-divider">Date &amp; Time Settings</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Show Date &amp; Time Bar</label>
+                <select id="tplShowClock">
+                  <option value="true">On &mdash; Show date &amp; time on menu board</option>
+                  <option value="false">Off &mdash; Hide date &amp; time bar</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Time &amp; Date Format</label>
+                <select id="tplTimeFormat">
+                  <option value="british">British &mdash; DD/MM/YYYY, 24-hour</option>
+                  <option value="us">US &mdash; MM/DD/YYYY, 12-hour AM/PM</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="section-divider">Campaign Filter Mode</div>
+            <div class="form-group">
+              <label>Campaign Filter Mode</label>
+              <select id="tplCampaignMode">
+                <option value="override">Override Completely &mdash; show campaign SKUs regardless of menu type</option>
+                <option value="filter">Apply on Top &mdash; only show campaign SKUs that match the current menu type</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+              <button class="btn btn-ghost btn-sm" onclick="closeTplEditor()">Cancel</button>
+              <button class="btn btn-primary btn-sm" onclick="saveTemplate()">Save Template</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeBrandModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveBrand()">Save Changes</button>
+      <button class="btn btn-primary" id="brandSaveBtn" onclick="saveBrand()">Save Changes</button>
     </div>
   </div>
 </div>
@@ -1949,7 +2009,21 @@ function initGrids() {
         filter: 'agTextColumnFilter',
       },
       columnDefs: [
-        { headerName: 'Brand Name', field: 'name', flex: 2, minWidth: 130 },
+        {
+          headerName: 'Brand Name', field: 'name', flex: 2, minWidth: 130,
+          cellRenderer: (params) => {
+            const b = params.data;
+            const a = document.createElement('a');
+            a.className = 'brand-name-link';
+            a.textContent = b.name || '';
+            a.href = '#';
+            a.addEventListener('click', e => { e.preventDefault(); openEditBrandModal(b.id); });
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex;align-items:center;height:100%;';
+            wrap.appendChild(a);
+            return wrap;
+          }
+        },
         {
           headerName: 'ID', field: 'id', flex: 1.5, minWidth: 110,
           cellStyle: { fontFamily: 'monospace', fontSize: '12px', color: 'var(--text2)' }
@@ -2584,6 +2658,8 @@ function renderBrands() {
 
 let brandEditingLogoLeft = '';
 let brandEditingBagIcon = '';
+let _editingBrandTemplates = [];
+let _tplEditingId = null;
 
 function openAddBrandModal() {
   document.getElementById('brandModalTitle').textContent = 'Add Brand';
@@ -2592,26 +2668,6 @@ function openAddBrandModal() {
   document.getElementById('bCurrency').value  = '$';
   brandEditingLogoLeft = '';
   document.getElementById('bLogoPreview').style.display = 'none';
-  // Colors — defaults
-  document.getElementById('bColorHeader').value      = DEFAULT_COLORS.header;
-  document.getElementById('bColorHeaderText').value  = DEFAULT_COLORS.headerText;
-  document.getElementById('bColorAccent').value      = DEFAULT_COLORS.accent;
-  document.getElementById('bColorCatBar').value      = DEFAULT_COLORS.catBar;
-  document.getElementById('bColorBody').value        = DEFAULT_COLORS.body;
-  document.getElementById('bColorText').value        = DEFAULT_COLORS.text;
-  document.getElementById('bColorPrice').value       = DEFAULT_COLORS.price;
-  document.getElementById('bColorClockText').value   = DEFAULT_COLORS.clockText;
-  // Display defaults
-  document.getElementById('bPortraitCols').value  = DEFAULT_DISPLAY.portrait.cols;
-  document.getElementById('bPortraitRows').value  = DEFAULT_DISPLAY.portrait.rows;
-  document.getElementById('bPortraitMax').value   = DEFAULT_DISPLAY.portrait.maxItems;
-  document.getElementById('bLandscapeCols').value = DEFAULT_DISPLAY.landscape.cols;
-  document.getElementById('bLandscapeRows').value = DEFAULT_DISPLAY.landscape.rows;
-  document.getElementById('bLandscapeMax').value  = DEFAULT_DISPLAY.landscape.maxItems;
-  document.getElementById('bShowClock').value    = 'true';
-  document.getElementById('bTimeFormat').value   = 'british';
-  document.getElementById('bShowHeader').value   = 'true';
-  document.getElementById('bCampaignMode').value = 'override';
   brandEditingBagIcon = '';
   document.getElementById('bBagLabel').value = '';
   document.getElementById('bBagIconPreview').style.display = 'none';
@@ -2620,15 +2676,15 @@ function openAddBrandModal() {
   document.getElementById('bStoreMode').value = 'all';
   document.getElementById('bStoreSelector').style.display = 'none';
   _renderStoreChips();
+  _editingBrandTemplates = [];
+  switchBrandTab('settings');
+  closeTplEditor();
   document.getElementById('brandModal').classList.add('open');
 }
 
 function openEditBrandModal(id) {
   const brand = getBrands().find(b => b.id === id);
   if (!brand) return;
-  const c    = brand.colors   || DEFAULT_COLORS;
-  const pD   = brand.display?.portrait  || DEFAULT_DISPLAY.portrait;
-  const lD   = brand.display?.landscape || DEFAULT_DISPLAY.landscape;
 
   document.getElementById('brandModalTitle').textContent = 'Edit Brand';
   document.getElementById('bEditId').value    = id;
@@ -2643,28 +2699,6 @@ function openEditBrandModal(id) {
   } else {
     document.getElementById('bLogoPreview').style.display = 'none';
   }
-
-  document.getElementById('bColorHeader').value      = c.header     || DEFAULT_COLORS.header;
-  document.getElementById('bColorHeaderText').value  = c.headerText || DEFAULT_COLORS.headerText;
-  document.getElementById('bColorAccent').value      = c.accent     || DEFAULT_COLORS.accent;
-  document.getElementById('bColorCatBar').value      = c.catBar     || DEFAULT_COLORS.catBar;
-  document.getElementById('bColorBody').value        = c.body       || DEFAULT_COLORS.body;
-  document.getElementById('bColorText').value        = c.text       || DEFAULT_COLORS.text;
-  document.getElementById('bColorPrice').value       = c.price      || DEFAULT_COLORS.price;
-  document.getElementById('bColorClockText').value   = c.clockText  || DEFAULT_COLORS.clockText;
-
-  document.getElementById('bPortraitCols').value  = pD.cols     || 3;
-  document.getElementById('bPortraitRows').value  = pD.rows     || 5;
-  document.getElementById('bPortraitMax').value   = pD.maxItems || 15;
-  document.getElementById('bLandscapeCols').value = lD.cols     || 5;
-  document.getElementById('bLandscapeRows').value = lD.rows     || 3;
-  document.getElementById('bLandscapeMax').value  = lD.maxItems || 15;
-
-  document.getElementById('bShowClock').value    = brand.showClock === false ? 'false' : 'true';
-  document.getElementById('bTimeFormat').value   = brand.timeFormat || 'british';
-  document.getElementById('bHideOos').value      = String(!!(brand.display && brand.display.hideOutOfStock));
-  document.getElementById('bShowHeader').value   = brand.showHeader === false ? 'false' : 'true';
-  document.getElementById('bCampaignMode').value = brand.campaignMode || 'override';
 
   brandEditingBagIcon = brand.bagIcon || '';
   document.getElementById('bBagLabel').value = brand.bagLabel || '';
@@ -2687,6 +2721,9 @@ function openEditBrandModal(id) {
   }
   _renderStoreChips();
 
+  _editingBrandTemplates = _ensureTemplates(brand).map(t => Object.assign({}, t));
+  switchBrandTab('settings');
+  closeTplEditor();
   document.getElementById('brandModal').classList.add('open');
 }
 
@@ -2801,34 +2838,6 @@ function saveBrand() {
 
   if (!name) { toast('\u26A0\uFE0F Brand name is required.', 'error'); return; }
 
-  const colors = {
-    header:     document.getElementById('bColorHeader').value,
-    headerText: document.getElementById('bColorHeaderText').value,
-    accent:     document.getElementById('bColorAccent').value,
-    catBar:     document.getElementById('bColorCatBar').value,
-    body:       document.getElementById('bColorBody').value,
-    text:       document.getElementById('bColorText').value,
-    price:      document.getElementById('bColorPrice').value,
-    clockText:  document.getElementById('bColorClockText').value,
-  };
-  const display = {
-    portrait: {
-      cols:     parseInt(document.getElementById('bPortraitCols').value)  || 3,
-      rows:     parseInt(document.getElementById('bPortraitRows').value)  || 5,
-      maxItems: parseInt(document.getElementById('bPortraitMax').value)   || 15,
-    },
-    landscape: {
-      cols:     parseInt(document.getElementById('bLandscapeCols').value) || 5,
-      rows:     parseInt(document.getElementById('bLandscapeRows').value) || 3,
-      maxItems: parseInt(document.getElementById('bLandscapeMax').value)  || 15,
-    },
-    hideOutOfStock: document.getElementById('bHideOos').value === 'true',
-  };
-
-  const showClock    = document.getElementById('bShowClock').value !== 'false';
-  const timeFormat   = document.getElementById('bTimeFormat').value || 'british';
-  const showHeader   = document.getElementById('bShowHeader').value !== 'false';
-  const campaignMode = document.getElementById('bCampaignMode').value || 'override';
   const bagLabel     = (document.getElementById('bBagLabel').value || '').trim();
   const stores       = document.getElementById('bStoreMode').value === 'specific' ? [...window.editingStores] : [];
 
@@ -2838,10 +2847,11 @@ function saveBrand() {
   if (id) {
     const idx = brands.findIndex(b => b.id === id);
     if (idx === -1) return;
-    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, bagLabel, bagIcon: brandEditingBagIcon, stores, updatedAt: now };
+    // colors/display/showClock etc. are now managed exclusively via templates; preserve existing brand values via spread
+    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', bagLabel, bagIcon: brandEditingBagIcon, stores, templates: _editingBrandTemplates, updatedAt: now };
     toast('\u2705 Brand updated', 'success');
   } else {
-    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors, display, showClock, timeFormat, showHeader, campaignMode, bagLabel, bagIcon: brandEditingBagIcon, stores, createdAt: now, updatedAt: now });
+    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors: { ...DEFAULT_COLORS }, display: { portrait: { ...DEFAULT_DISPLAY.portrait }, landscape: { ...DEFAULT_DISPLAY.landscape }, hideOutOfStock: false }, showClock: true, timeFormat: 'british', showHeader: true, campaignMode: 'override', bagLabel, bagIcon: brandEditingBagIcon, stores, templates: [], createdAt: now, updatedAt: now });
     toast('\u2705 Brand added', 'success');
   }
 
@@ -2866,6 +2876,204 @@ function doDeleteBrand(id) {
   renderBrands();
   renderDashboard();
   toast('\u{1F5D1}\uFE0F Brand deleted', 'info');
+}
+
+// ===== BRAND MODAL TABS =====
+function switchBrandTab(tabName) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('brandTab-' + tabName).classList.add('active');
+  document.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('brandPane-' + tabName).classList.add('active');
+  document.getElementById('brandSaveBtn').style.display = tabName === 'settings' ? '' : 'none';
+  if (tabName === 'boards') renderTemplateList();
+}
+
+// ===== OFFER BOARD TEMPLATES =====
+function _ensureTemplates(brand) {
+  if (Array.isArray(brand.templates) && brand.templates.length > 0) return brand.templates;
+  const c  = brand.colors  || DEFAULT_COLORS;
+  const pD = (brand.display && brand.display.portrait)  || DEFAULT_DISPLAY.portrait;
+  const lD = (brand.display && brand.display.landscape) || DEFAULT_DISPLAY.landscape;
+  return [{
+    id: genId(), name: 'Default Template', isDefault: true,
+    showHeader: brand.showHeader !== false, iconPosition: 'left', headerCopy: '',
+    colors: Object.assign({}, DEFAULT_COLORS, c),
+    display: {
+      portrait:  { cols: pD.cols || 3, rows: pD.rows || 5, maxItems: pD.maxItems || 15 },
+      landscape: { cols: lD.cols || 5, rows: lD.rows || 3, maxItems: lD.maxItems || 15 },
+      hideOutOfStock: !!(brand.display && brand.display.hideOutOfStock)
+    },
+    showClock: brand.showClock !== false, timeFormat: brand.timeFormat || 'british',
+    campaignMode: brand.campaignMode || 'override'
+  }];
+}
+
+function renderTemplateList() {
+  const list = document.getElementById('tplList');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!_editingBrandTemplates.length) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--text2);padding:8px 0;">No templates yet. Click + Add Template to create one.</div>';
+    return;
+  }
+  _editingBrandTemplates.forEach(tpl => {
+    const row = document.createElement('div');
+    row.className = 'tpl-row';
+    const canDelete = _editingBrandTemplates.length > 1;
+    row.innerHTML = `
+      <div class="tpl-row-name">${escHtml(tpl.name)}</div>
+      ${tpl.isDefault ? '<span class="tpl-default-badge">Default</span>' : ''}
+      <div class="tpl-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openEditTemplateEditor('${tpl.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteTemplate('${tpl.id}')" ${canDelete ? '' : 'disabled title="Cannot delete the only template"'}>Delete</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function openNewTemplateEditor() {
+  _tplEditingId = null;
+  document.getElementById('tplEditorTitle').textContent = 'New Template';
+  document.getElementById('tplEditId').value = '';
+  document.getElementById('tplName').value = '';
+  // Seed from first existing template, or fall back to defaults
+  const _seedTpl = _editingBrandTemplates[0] || null;
+  const _seedC   = (_seedTpl && _seedTpl.colors)             || DEFAULT_COLORS;
+  const _seedPD  = (_seedTpl && _seedTpl.display && _seedTpl.display.portrait)  || DEFAULT_DISPLAY.portrait;
+  const _seedLD  = (_seedTpl && _seedTpl.display && _seedTpl.display.landscape) || DEFAULT_DISPLAY.landscape;
+  document.getElementById('tplShowHeader').value      = _seedTpl ? String(_seedTpl.showHeader !== false) : 'true';
+  document.getElementById('tplIconPosition').value    = (_seedTpl && _seedTpl.iconPosition) || 'left';
+  document.getElementById('tplHeaderCopy').value      = (_seedTpl && _seedTpl.headerCopy)   || '';
+  document.getElementById('tplColorHeader').value     = _seedC.header     || DEFAULT_COLORS.header;
+  document.getElementById('tplColorHeaderText').value = _seedC.headerText || DEFAULT_COLORS.headerText;
+  document.getElementById('tplColorAccent').value     = _seedC.accent     || DEFAULT_COLORS.accent;
+  document.getElementById('tplColorCatBar').value     = _seedC.catBar     || DEFAULT_COLORS.catBar;
+  document.getElementById('tplColorBody').value       = _seedC.body       || DEFAULT_COLORS.body;
+  document.getElementById('tplColorText').value       = _seedC.text       || DEFAULT_COLORS.text;
+  document.getElementById('tplColorPrice').value      = _seedC.price      || DEFAULT_COLORS.price;
+  document.getElementById('tplColorClockText').value  = _seedC.clockText  || DEFAULT_COLORS.clockText;
+  document.getElementById('tplPortraitCols').value    = _seedPD.cols     || 3;
+  document.getElementById('tplPortraitRows').value    = _seedPD.rows     || 5;
+  document.getElementById('tplPortraitMax').value     = _seedPD.maxItems || 15;
+  document.getElementById('tplLandscapeCols').value   = _seedLD.cols     || 5;
+  document.getElementById('tplLandscapeRows').value   = _seedLD.rows     || 3;
+  document.getElementById('tplLandscapeMax').value    = _seedLD.maxItems || 15;
+  document.getElementById('tplHideOos').value         = _seedTpl ? String(!!((_seedTpl.display || {}).hideOutOfStock)) : 'false';
+  document.getElementById('tplShowClock').value       = _seedTpl ? String(_seedTpl.showClock !== false) : 'true';
+  document.getElementById('tplTimeFormat').value      = (_seedTpl && _seedTpl.timeFormat)   || 'british';
+  document.getElementById('tplCampaignMode').value    = (_seedTpl && _seedTpl.campaignMode) || 'override';
+  _showTplEditor();
+}
+
+function openEditTemplateEditor(tplId) {
+  const tpl = _editingBrandTemplates.find(t => t.id === tplId);
+  if (!tpl) return;
+  _tplEditingId = tplId;
+  document.getElementById('tplEditorTitle').textContent = tpl.isDefault ? 'Default Template' : 'Edit Template';
+  document.getElementById('tplEditId').value = tplId;
+  document.getElementById('tplName').value = tpl.name || '';
+  document.getElementById('tplShowHeader').value = tpl.showHeader !== false ? 'true' : 'false';
+  document.getElementById('tplIconPosition').value = tpl.iconPosition || 'left';
+  document.getElementById('tplHeaderCopy').value = tpl.headerCopy || '';
+  const c = tpl.colors || DEFAULT_COLORS;
+  document.getElementById('tplColorHeader').value     = c.header     || DEFAULT_COLORS.header;
+  document.getElementById('tplColorHeaderText').value = c.headerText || DEFAULT_COLORS.headerText;
+  document.getElementById('tplColorAccent').value     = c.accent     || DEFAULT_COLORS.accent;
+  document.getElementById('tplColorCatBar').value     = c.catBar     || DEFAULT_COLORS.catBar;
+  document.getElementById('tplColorBody').value       = c.body       || DEFAULT_COLORS.body;
+  document.getElementById('tplColorText').value       = c.text       || DEFAULT_COLORS.text;
+  document.getElementById('tplColorPrice').value      = c.price      || DEFAULT_COLORS.price;
+  document.getElementById('tplColorClockText').value  = c.clockText  || DEFAULT_COLORS.clockText;
+  const pD = (tpl.display && tpl.display.portrait)  || DEFAULT_DISPLAY.portrait;
+  const lD = (tpl.display && tpl.display.landscape) || DEFAULT_DISPLAY.landscape;
+  document.getElementById('tplPortraitCols').value    = pD.cols     || 3;
+  document.getElementById('tplPortraitRows').value    = pD.rows     || 5;
+  document.getElementById('tplPortraitMax').value     = pD.maxItems || 15;
+  document.getElementById('tplLandscapeCols').value   = lD.cols     || 5;
+  document.getElementById('tplLandscapeRows').value   = lD.rows     || 3;
+  document.getElementById('tplLandscapeMax').value    = lD.maxItems || 15;
+  document.getElementById('tplHideOos').value         = String(!!(tpl.display && tpl.display.hideOutOfStock));
+  document.getElementById('tplShowClock').value       = tpl.showClock !== false ? 'true' : 'false';
+  document.getElementById('tplTimeFormat').value      = tpl.timeFormat   || 'british';
+  document.getElementById('tplCampaignMode').value    = tpl.campaignMode || 'override';
+  _showTplEditor();
+}
+
+function _showTplEditor() {
+  document.getElementById('tplListView').style.display = 'none';
+  document.getElementById('tplEditorPanel').classList.add('open');
+}
+
+function closeTplEditor() {
+  document.getElementById('tplEditorPanel').classList.remove('open');
+  document.getElementById('tplListView').style.display = '';
+  renderTemplateList();
+}
+
+function saveTemplate() {
+  const name = document.getElementById('tplName').value.trim();
+  if (!name) { toast('⚠️ Template name is required.', 'error'); return; }
+
+  const tplData = {
+    name,
+    showHeader:    document.getElementById('tplShowHeader').value !== 'false',
+    iconPosition:  document.getElementById('tplIconPosition').value || 'left',
+    headerCopy:    document.getElementById('tplHeaderCopy').value.trim(),
+    colors: {
+      header:     document.getElementById('tplColorHeader').value,
+      headerText: document.getElementById('tplColorHeaderText').value,
+      accent:     document.getElementById('tplColorAccent').value,
+      catBar:     document.getElementById('tplColorCatBar').value,
+      body:       document.getElementById('tplColorBody').value,
+      text:       document.getElementById('tplColorText').value,
+      price:      document.getElementById('tplColorPrice').value,
+      clockText:  document.getElementById('tplColorClockText').value,
+    },
+    display: {
+      portrait: {
+        cols:     parseInt(document.getElementById('tplPortraitCols').value)  || 3,
+        rows:     parseInt(document.getElementById('tplPortraitRows').value)  || 5,
+        maxItems: parseInt(document.getElementById('tplPortraitMax').value)   || 15,
+      },
+      landscape: {
+        cols:     parseInt(document.getElementById('tplLandscapeCols').value) || 5,
+        rows:     parseInt(document.getElementById('tplLandscapeRows').value) || 3,
+        maxItems: parseInt(document.getElementById('tplLandscapeMax').value)  || 15,
+      },
+      hideOutOfStock: document.getElementById('tplHideOos').value === 'true',
+    },
+    showClock:    document.getElementById('tplShowClock').value !== 'false',
+    timeFormat:   document.getElementById('tplTimeFormat').value   || 'british',
+    campaignMode: document.getElementById('tplCampaignMode').value || 'override',
+  };
+
+  if (_tplEditingId) {
+    const idx = _editingBrandTemplates.findIndex(t => t.id === _tplEditingId);
+    if (idx !== -1) _editingBrandTemplates[idx] = Object.assign({}, _editingBrandTemplates[idx], tplData);
+  } else {
+    _editingBrandTemplates.push(Object.assign({ id: genId(), isDefault: false }, tplData));
+  }
+
+  toast('✅ Template saved. Click Save Changes to persist.', 'success');
+  closeTplEditor();
+}
+
+function confirmDeleteTemplate(tplId) {
+  if (_editingBrandTemplates.length <= 1) {
+    toast('Cannot delete the only template.', 'error');
+    return;
+  }
+  const tpl = _editingBrandTemplates.find(t => t.id === tplId);
+  if (!tpl) return;
+  document.getElementById('confirmTitle').textContent = 'Delete Template?';
+  document.getElementById('confirmMsg').textContent   = `"${tpl.name}" will be removed from this brand.`;
+  document.getElementById('confirmBtn').onclick = () => {
+    _editingBrandTemplates = _editingBrandTemplates.filter(t => t.id !== tplId);
+    closeConfirm();
+    renderTemplateList();
+    toast('🗑️ Template removed. Click Save Changes to persist.', 'info');
+  };
+  document.getElementById('confirmOverlay').classList.add('open');
 }
 
 // ===== IMPORT / EXPORT =====
@@ -3139,14 +3347,20 @@ window.handleImages       = handleImages;
 window.removeImage        = removeImage;
 window.addCategory        = addCategory;
 window.deleteCategory     = deleteCategory;
-window.openAddBrandModal  = openAddBrandModal;
-window.openEditBrandModal = openEditBrandModal;
-window.closeBrandModal    = closeBrandModal;
-window.saveBrand          = saveBrand;
-window.confirmDeleteBrand = confirmDeleteBrand;
-window.toggleStoreModeUI  = toggleStoreModeUI;
-window.addKnownStore      = addKnownStore;
-window.addManualStore     = addManualStore;
+window.openAddBrandModal      = openAddBrandModal;
+window.openEditBrandModal     = openEditBrandModal;
+window.closeBrandModal        = closeBrandModal;
+window.saveBrand              = saveBrand;
+window.confirmDeleteBrand     = confirmDeleteBrand;
+window.toggleStoreModeUI      = toggleStoreModeUI;
+window.addKnownStore          = addKnownStore;
+window.addManualStore         = addManualStore;
+window.switchBrandTab         = switchBrandTab;
+window.openNewTemplateEditor  = openNewTemplateEditor;
+window.openEditTemplateEditor = openEditTemplateEditor;
+window.closeTplEditor         = closeTplEditor;
+window.saveTemplate           = saveTemplate;
+window.confirmDeleteTemplate  = confirmDeleteTemplate;
 window.exportData         = exportData;
 window.importData         = importData;
 window.clearAllData       = clearAllData;
