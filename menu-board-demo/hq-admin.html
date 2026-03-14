@@ -751,18 +751,6 @@
         <!-- SETTINGS -->
         <div id="view-settings" class="view">
           <div class="settings-section">
-            <h3>Data Management</h3>
-            <p class="settings-desc">Export all menu data to a JSON file, or import from a previously exported file to restore data.</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn btn-ghost" onclick="exportData()">&#x1F4E4; Export All Data</button>
-              <button class="btn btn-ghost" onclick="document.getElementById('importFile2').click()">&#x1F4E5; Import Data</button>
-              <input type="file" id="importFile2" accept=".json" style="display:none" onchange="importData(event)">
-              <button class="btn btn-danger" onclick="clearAllData()">&#x1F5D1;&#xFE0F; Clear All Data</button>
-            </div>
-            <p style="margin-top:10px;font-size:12px;color:var(--text2);">&#x2601;&#xFE0F; Data is stored in Firebase Firestore and synced in real-time across all devices.</p>
-          </div>
-
-          <div class="settings-section">
             <h3>Stock Alerts</h3>
             <p class="settings-desc">Configure when stores are flagged as running Low on Stock on the HQ Dashboard.</p>
             <div class="form-row" style="max-width:420px;align-items:flex-end;">
@@ -948,7 +936,7 @@
 
 <!-- BRAND ADD/EDIT MODAL -->
 <div class="modal-overlay" id="brandModal">
-  <div class="modal" style="max-width:760px;">
+  <div class="modal" style="max-width:760px;height:85vh;">
     <div class="modal-header">
       <h2 id="brandModalTitle">Add Brand</h2>
       <button class="modal-close" onclick="closeBrandModal()">&#x2715;</button>
@@ -1031,6 +1019,19 @@
               <button type="button" onclick="clearBagIcon()" style="font-size:12px;color:var(--danger);text-decoration:underline;background:none;border:none;cursor:pointer;">Remove icon</button>
             </div>
             <p>Click to upload bag icon (PNG recommended, max 200KB)</p>
+          </div>
+        </div>
+      </div>
+
+        <!-- BRAND DATA MANAGEMENT -->
+        <div id="brandDataSection" style="display:none;border-top:1px solid var(--border);margin-top:8px;padding-top:18px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Data Management</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Export or import this brand&rsquo;s items, or remove all data for this brand.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="exportBrandData()">&#x1F4E4; Export Brand</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('brandImportFile').click()">&#x1F4E5; Import Data</button>
+            <input type="file" id="brandImportFile" accept=".json" style="display:none" onchange="importBrandData(event)">
+            <button class="btn btn-danger btn-sm" onclick="clearBrandData()">&#x1F5D1;&#xFE0F; Clear Brand Data</button>
           </div>
         </div>
       </div>
@@ -2736,6 +2737,7 @@ function openAddBrandModal() {
   _editingBrandTemplates = [];
   switchBrandTab('settings');
   closeTplEditor();
+  document.getElementById('brandDataSection').style.display = 'none';
   if (_brandSave) _brandSave.reset();
   document.getElementById('brandModal').classList.add('open');
 }
@@ -2782,6 +2784,7 @@ function openEditBrandModal(id) {
   _editingBrandTemplates = _ensureTemplates(brand).map(t => Object.assign({}, t));
   switchBrandTab('settings');
   closeTplEditor();
+  document.getElementById('brandDataSection').style.display = 'block';
   if (_brandSave) _brandSave.reset();
   document.getElementById('brandModal').classList.add('open');
 }
@@ -3437,6 +3440,121 @@ function clearAllData() {
   document.getElementById('confirmOverlay').classList.add('open');
 }
 
+// ===== BRAND-SPECIFIC DATA MANAGEMENT =====
+function exportBrandData() {
+  const brandId = document.getElementById('bEditId').value;
+  if (!brandId) return;
+  const brand = getBrands().find(b => b.id === brandId);
+  if (!brand) return;
+  const brandItems = getItems().filter(i => i.brand === brandId);
+  const data = {
+    brand,
+    items:      brandItems,
+    categories: getCats(),
+    types:      getTypes(),
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  const safeName = (brand.name || 'brand').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  a.download = `${safeName}-export-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('\u{1F4E4} Brand data exported', 'success');
+}
+
+function importBrandData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const brandId = document.getElementById('bEditId').value;
+  if (!brandId) { event.target.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Items — reassign all to current brand, then merge
+      if (data.items && Array.isArray(data.items)) {
+        const normalised = data.items.map(item => _normaliseLegacyItem({ ...item, brand: brandId }));
+        const { sanitized, stripped } = stripOversizedImages(normalised);
+        if (stripped.length) {
+          toast(`\u26A0\uFE0F ${stripped.length} item${stripped.length > 1 ? 's' : ''} had oversized images removed: ${stripped.join(', ')}`, 'error');
+        }
+        const existing = getItems();
+        const merged = [...existing];
+        let added = 0, updated = 0;
+        for (const item of sanitized) {
+          const idx = merged.findIndex(i => i.id === item.id);
+          if (idx >= 0) {
+            const existingImages = merged[idx].images || [];
+            const incomingImages = item.images || [];
+            merged[idx] = { ...item, images: incomingImages.length ? incomingImages : existingImages };
+            updated++;
+          } else {
+            merged.push(item); added++;
+          }
+        }
+        saveItems(merged);
+        // Categories — union
+        if (data.categories) {
+          const catStr = c => (typeof c === 'string' ? c : (c.name || String(c)));
+          const merged2 = [...new Set([...getCats().map(catStr), ...data.categories.map(catStr)])].filter(Boolean);
+          saveCats(merged2);
+        }
+        // Types — upsert
+        if (data.types && Array.isArray(data.types)) {
+          const existingTypes = getTypes();
+          const mergedTypes = [...existingTypes];
+          for (const t of data.types) {
+            if (!t.id || !t.label) continue;
+            const idx = mergedTypes.findIndex(x => x.id === t.id);
+            if (idx >= 0) mergedTypes[idx] = { ...mergedTypes[idx], ...t };
+            else          mergedTypes.push(t);
+          }
+          saveTypes(mergedTypes);
+        }
+        renderDashboard();
+        renderItems();
+        toast(`\u{1F4E5} Imported: +${added} new, ${updated} updated for this brand`, 'success');
+      } else {
+        toast('\u274C No items array found in file', 'error');
+      }
+    } catch(err) {
+      toast('\u274C Import failed: ' + (err.message || err), 'error');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function clearBrandData() {
+  const brandId = document.getElementById('bEditId').value;
+  if (!brandId) return;
+  const brand = getBrands().find(b => b.id === brandId);
+  const brandName = brand ? (brand.name || 'this brand') : 'this brand';
+  const brandItemCount = getItems().filter(i => i.brand === brandId).length;
+  document.getElementById('confirmTitle').textContent = `Clear Brand Data?`;
+  document.getElementById('confirmMsg').textContent   = `All ${brandItemCount} item${brandItemCount !== 1 ? 's' : ''} for "${brandName}" will be permanently deleted, and the brand will be removed. This cannot be undone.`;
+  document.getElementById('confirmBtn').onclick = async () => {
+    closeConfirm();
+    try {
+      // Remove brand's items
+      saveItems(getItems().filter(i => i.brand !== brandId));
+      // Remove brand record
+      const remainingBrands = getBrands().filter(b => b.id !== brandId);
+      saveBrands(remainingBrands);
+      closeBrandModal();
+      renderDashboard();
+      renderItems();
+      toast(`\u{1F5D1}\uFE0F "${brandName}" and its items removed`, 'info');
+    } catch (err) {
+      toast('\u274C Failed to clear: ' + (err.message || err), 'error');
+    }
+  };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
 // ===== TOAST =====
 function toast(msg, type = 'info') {
   const el      = document.createElement('div');
@@ -3491,6 +3609,9 @@ window.clearTplTypes          = clearTplTypes;
 window.exportData         = exportData;
 window.importData         = importData;
 window.clearAllData       = clearAllData;
+window.exportBrandData    = exportBrandData;
+window.importBrandData    = importBrandData;
+window.clearBrandData     = clearBrandData;
 window.uploadBrandLogo    = uploadBrandLogo;
 window.uploadBagIcon      = uploadBagIcon;
 window.clearBagIcon       = clearBagIcon;
