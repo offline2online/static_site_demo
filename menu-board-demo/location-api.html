@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Location API</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #283548;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --primary: #38bdf8;
+      --success: #4ade80;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      --radius: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 20px;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+
+    /* Header */
+    .api-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .api-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56,189,248,0.15);
+      border: 1px solid rgba(56,189,248,0.3);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    h1 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: var(--text2); line-height: 1.6; }
+    .back-link {
+      color: var(--text2);
+      font-size: 13px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .back-link:hover { color: var(--text); border-color: var(--text3); }
+
+    /* Endpoint reference */
+    .endpoint-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 24px;
+    }
+    .endpoint-box h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 10px; }
+    .endpoint-url {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--primary);
+      word-break: break-all;
+      margin-bottom: 14px;
+    }
+    .param-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .param-table th { text-align: left; padding: 6px 10px; color: var(--text3); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); }
+    .param-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+    .param-table tr:last-child td { border-bottom: none; }
+    .param-table .param-name { font-family: monospace; color: var(--primary); font-weight: 600; }
+    .param-table .required { color: var(--danger); font-size: 10px; font-weight: 700; }
+
+    /* Try it form */
+    .try-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 24px;
+    }
+    .try-box h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 14px; }
+    .try-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+    .try-field { flex: 1; min-width: 160px; }
+    .try-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+    .try-field input {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .try-field input:focus { border-color: var(--primary); }
+    .btn-run {
+      padding: 9px 20px;
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-run:hover { background: #7dd3fc; }
+    .btn-run:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--text2);
+      min-height: 28px;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+    .status-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+    .status-dot.ok { background: var(--success); }
+    .status-dot.error { background: var(--danger); }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+    /* Response display */
+    .response-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .response-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .response-header span { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-copy {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface);
+      color: var(--text2);
+      cursor: pointer;
+    }
+    .btn-copy:hover { color: var(--text); border-color: var(--text3); }
+    pre {
+      padding: 20px;
+      font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--text2);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .json-key    { color: #93c5fd; }
+    .json-string { color: #86efac; }
+    .json-number { color: #fda4af; }
+    .json-bool   { color: #fbbf24; }
+    .json-null   { color: var(--text3); }
+
+    /* Result cards */
+    .result-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .result-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .result-card-sku { font-family: monospace; font-size: 13px; font-weight: 700; color: var(--primary); }
+    .result-card-name { font-size: 13px; color: var(--text2); }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .pill-instock { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); color: #4ade80; }
+    .pill-oos     { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: #f87171; }
+    .pill-ns      { background: rgba(100,116,139,0.12); border: 1px solid rgba(100,116,139,0.3); color: #64748b; }
+    .loc-human {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.15);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .loc-details { display: flex; flex-wrap: wrap; gap: 8px; }
+    .loc-tag {
+      font-size: 11px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+      color: var(--text2);
+    }
+    .loc-tag span { color: var(--text3); margin-right: 3px; }
+    .no-location { font-size: 13px; color: var(--text3); font-style: italic; }
+    .not-found-card { border-color: rgba(248,113,113,0.2); }
+
+    .placeholder {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text3);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .placeholder .icon { font-size: 36px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="api-header">
+    <div>
+      <div class="api-badge">&#x1F4CD; Location API</div>
+      <h1>Product Location Lookup</h1>
+      <p class="subtitle">Retrieve store location data for products by Store Code and SKU list.<br>Returns stock status, inventory level, and physical shelf location for each SKU.</p>
+    </div>
+    <a href="retail-admin.html" class="back-link">&#x2190; Retail Admin</a>
+  </div>
+
+  <!-- Endpoint Reference -->
+  <div class="endpoint-box">
+    <h3>Endpoint</h3>
+    <div class="endpoint-url" id="endpointDisplay">location-api.html?store=STORE001&amp;skus=SKU001,SKU002</div>
+    <table class="param-table">
+      <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">store <span class="required">required</span></td><td>string</td><td>Unique store code (case-insensitive, e.g. <code>STORE001</code>)</td></tr>
+        <tr><td class="param-name">skus <span class="required">required</span></td><td>string</td><td>Comma-separated list of product SKUs to look up</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Try It -->
+  <div class="try-box">
+    <h3>Try It</h3>
+    <div class="try-form">
+      <div class="try-field">
+        <label for="inputStore">Store Code</label>
+        <input type="text" id="inputStore" placeholder="e.g. STORE001" value="">
+      </div>
+      <div class="try-field" style="flex:2;">
+        <label for="inputSkus">SKUs (comma-separated)</label>
+        <input type="text" id="inputSkus" placeholder="e.g. SKU001,SKU002,SKU003" value="">
+      </div>
+      <button class="btn-run" id="runBtn" onclick="runQuery()">&#x25B6; Run Query</button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Enter a store code and SKU list above to query locations.</span>
+  </div>
+
+  <!-- Results Cards -->
+  <div class="result-cards" id="resultCards"></div>
+
+  <!-- Raw JSON -->
+  <div class="response-box" id="responseBox" style="display:none;">
+    <div class="response-header">
+      <span>Raw JSON Response</span>
+      <button class="btn-copy" onclick="copyJson()">Copy JSON</button>
+    </div>
+    <pre id="jsonOutput"></pre>
+  </div>
+
+  <div class="placeholder" id="placeholder">
+    <div class="icon">&#x1F4CD;</div>
+    <div>No query run yet.<br>Enter your store code and SKU list above.</div>
+  </div>
+
+</div><!-- /container -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDrUKPNep2uxbZjYJ4i0vImdG7Xn_UuSXo",
+  authDomain: "rob-ph-demos.firebaseapp.com",
+  projectId: "rob-ph-demos",
+  storageBucket: "rob-ph-demos.firebasestorage.app",
+  messagingSenderId: "199417645406",
+  appId: "1:199417645406:web:0e7a54d00083b41ea9e7cf"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const STOCK_COLL = 'stock';
+const ITEMS_COLL = 'items';
+
+let _lastJson = null;
+
+function setStatus(state, msg) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ' + state;
+  document.getElementById('statusText').textContent = msg;
+}
+
+function buildLocationHuman(loc) {
+  if (!loc) return '';
+  const parts = [];
+  if (loc.floor)  parts.push(loc.floor);
+  if (loc.aisle)  parts.push('Aisle ' + loc.aisle);
+  if (loc.section)parts.push(loc.section);
+  if (loc.shelfLetter || loc.shelfNumber) parts.push('Shelf ' + ((loc.shelfLetter || '') + (loc.shelfNumber || '')));
+  return parts.join(' → ');
+}
+
+function stockStatusLabel(entry) {
+  if (!entry || entry.notStocked) return 'Not Stocked';
+  if (entry.outOfStock) return 'Out of Stock';
+  return 'In Stock';
+}
+
+async function runQuery() {
+  const storeRaw = document.getElementById('inputStore').value.trim();
+  const skusRaw  = document.getElementById('inputSkus').value.trim();
+  const store    = storeRaw.toUpperCase();
+  const skuList  = skusRaw.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (!store) { setStatus('error', 'Store code is required.'); return; }
+  if (skuList.length === 0) { setStatus('error', 'At least one SKU is required.'); return; }
+
+  // Update URL bar for shareability
+  const url = new URL(window.location.href);
+  url.searchParams.set('store', store);
+  url.searchParams.set('skus', skuList.join(','));
+  window.history.replaceState({}, '', url.toString());
+  document.getElementById('endpointDisplay').textContent = url.toString();
+
+  setStatus('loading', 'Querying Firestore…');
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('resultCards').innerHTML = '';
+  document.getElementById('responseBox').style.display = 'none';
+  document.getElementById('placeholder').style.display = 'none';
+
+  try {
+    const [stockSnap, itemsSnap] = await Promise.all([
+      getDoc(doc(db, STOCK_COLL, store)),
+      // We fetch all items to get product names — in a real API this would be optimised
+      Promise.all(skuList.map(sku => getDoc(doc(db, ITEMS_COLL, sku)).catch(() => null)))
+    ]);
+
+    const stockData  = stockSnap.exists() ? stockSnap.data() : {};
+    // Build name map from items collection (doc IDs may differ from SKUs, so we scan)
+    const nameMap = {};
+    // Also try fetching by querying the items collection
+    // For now, use the items collection if doc IDs match SKUs
+    (itemsSnap || []).forEach(snap => { if (snap && snap.exists()) { const d = snap.data(); nameMap[d.sku] = d.name || d.productName || null; } });
+
+    const requestedAt = new Date().toISOString();
+    const results = skuList.map(sku => {
+      const entry  = stockData[sku] || null;
+      const status = stockStatusLabel(entry);
+      const loc    = entry ? (entry.location || null) : null;
+      const human  = loc ? (loc.humanReadable || buildLocationHuman(loc)) : null;
+      return {
+        sku,
+        productName: nameMap[sku] || null,
+        found:       !!entry,
+        stockStatus: status,
+        quantity:    entry ? (typeof entry.quantity === 'number' ? entry.quantity : null) : null,
+        location:    loc ? {
+          floor:        loc.floor        || null,
+          aisle:        loc.aisle        || null,
+          section:      loc.section      || null,
+          shelfLetter:  loc.shelfLetter  || null,
+          shelfNumber:  loc.shelfNumber  || null,
+          humanReadable: human           || null,
+          notes:        loc.notes        || null
+        } : null,
+        updatedAt: entry ? (entry.updatedAt || null) : null
+      };
+    });
+
+    const response = { store, requestedAt, resultCount: results.length, results };
+    _lastJson = response;
+
+    renderCards(results, store);
+    renderJson(response);
+    setStatus('ok', `Returned ${results.length} result${results.length !== 1 ? 's' : ''} for store ${store}`);
+  } catch (err) {
+    setStatus('error', 'Error: ' + (err.message || String(err)));
+    document.getElementById('placeholder').style.display = 'block';
+    document.getElementById('placeholder').innerHTML = `<div class="icon">&#x26A0;</div><div>${err.message || String(err)}</div>`;
+  }
+
+  document.getElementById('runBtn').disabled = false;
+}
+
+function renderCards(results, store) {
+  const container = document.getElementById('resultCards');
+  container.innerHTML = '';
+  results.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'result-card' + (r.found ? '' : ' not-found-card');
+
+    let pillClass, pillLabel;
+    if (!r.found)                       { pillClass = 'pill-ns';      pillLabel = '&#x2753; Not Found in Store'; }
+    else if (r.stockStatus === 'Not Stocked') { pillClass = 'pill-ns'; pillLabel = '&#x1F6AB; Not Stocked'; }
+    else if (r.stockStatus === 'Out of Stock'){ pillClass = 'pill-oos'; pillLabel = '&#x26D4; Out of Stock'; }
+    else                                { pillClass = 'pill-instock'; pillLabel = '&#x2705; In Stock'; }
+
+    const qtyStr = r.quantity !== null ? `<span class="loc-tag"><span>Qty</span>${r.quantity} units</span>` : '';
+    const updStr = r.updatedAt ? `<span class="loc-tag"><span>Updated</span>${new Date(r.updatedAt).toLocaleString()}</span>` : '';
+
+    let locHtml = '';
+    if (r.location && r.location.humanReadable) {
+      locHtml += `<div class="loc-human">&#x1F4CD; ${escHtml(r.location.humanReadable)}</div>`;
+      const tags = [];
+      if (r.location.floor)        tags.push(`<span class="loc-tag"><span>Floor</span>${escHtml(r.location.floor)}</span>`);
+      if (r.location.aisle)        tags.push(`<span class="loc-tag"><span>Aisle</span>${escHtml(r.location.aisle)}</span>`);
+      if (r.location.section)      tags.push(`<span class="loc-tag"><span>Section</span>${escHtml(r.location.section)}</span>`);
+      if (r.location.shelfLetter)  tags.push(`<span class="loc-tag"><span>Shelf</span>${escHtml(r.location.shelfLetter)}</span>`);
+      if (r.location.shelfNumber)  tags.push(`<span class="loc-tag"><span>No.</span>${escHtml(r.location.shelfNumber)}</span>`);
+      if (r.location.notes)        tags.push(`<span class="loc-tag"><span>Notes</span>${escHtml(r.location.notes)}</span>`);
+      locHtml += `<div class="loc-details">${tags.join('')}</div>`;
+    } else if (r.found) {
+      locHtml = '<p class="no-location">&#x1F4CD; No location data recorded — set via Retail Admin</p>';
+    }
+
+    card.innerHTML = `
+      <div class="result-card-header">
+        <span class="result-card-sku">${escHtml(r.sku)}</span>
+        ${r.productName ? `<span class="result-card-name">${escHtml(r.productName)}</span>` : ''}
+        <span class="status-pill ${pillClass}">${pillLabel}</span>
+        ${qtyStr}${updStr}
+      </div>
+      ${locHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function syntaxHighlight(json) {
+  return json
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+      let cls = 'json-number';
+      if (/^"/.test(match)) { cls = /:$/.test(match) ? 'json-key' : 'json-string'; }
+      else if (/true|false/.test(match)) { cls = 'json-bool'; }
+      else if (/null/.test(match)) { cls = 'json-null'; }
+      return `<span class="${cls}">${match}</span>`;
+    });
+}
+
+function renderJson(response) {
+  const box = document.getElementById('responseBox');
+  const pre = document.getElementById('jsonOutput');
+  pre.innerHTML = syntaxHighlight(JSON.stringify(response, null, 2));
+  box.style.display = 'block';
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+window.copyJson = function() {
+  if (!_lastJson) return;
+  navigator.clipboard.writeText(JSON.stringify(_lastJson, null, 2))
+    .then(() => { const btn = document.querySelector('.btn-copy'); btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy JSON', 2000); });
+};
+
+window.runQuery = runQuery;
+
+// Auto-run if URL params are present
+const p = new URLSearchParams(window.location.search);
+const initStore = p.get('store') || '';
+const initSkus  = p.get('skus')  || '';
+if (initStore) document.getElementById('inputStore').value = initStore;
+if (initSkus)  document.getElementById('inputSkus').value  = initSkus;
+if (initStore && initSkus) {
+  runQuery();
+}
+</script>
+</body>
+</html>

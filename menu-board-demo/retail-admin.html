@@ -556,6 +556,152 @@
     }
     .csf-btn-all:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
     .csf-btn-none:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    /* ── ITEM DETAIL MODAL ───────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    }
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 20px 24px 0;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .modal-header-info { flex: 1; min-width: 0; }
+    .modal-header h2 { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .modal-header .sku-badge { display: inline-block; font-size: 11px; font-family: monospace; background: var(--surface2); border: 1px solid var(--border2); border-radius: 4px; padding: 2px 7px; color: var(--text2); margin-top: 4px; }
+    .modal-close { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text2); padding: 4px; line-height: 1; flex-shrink: 0; border-radius: 4px; }
+    .modal-close:hover { background: var(--surface2); color: var(--text); }
+    .modal-tabs {
+      display: flex;
+      gap: 2px;
+      padding: 16px 24px 0;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .modal-tab {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      border-radius: 4px 4px 0 0;
+    }
+    .modal-tab:hover { color: var(--text); background: var(--surface2); }
+    .modal-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .modal-tab-pane { display: none; }
+    .modal-tab-pane.active { display: block; }
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Stock summary row inside modal */
+    .stock-summary {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+    }
+    .stock-summary-qty {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .stock-summary-label { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+    /* Add stock section */
+    .add-stock-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-bottom: 20px;
+    }
+    .add-stock-section h4 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+    .add-stock-row { display: flex; gap: 10px; align-items: flex-end; }
+    .add-stock-row .field { flex: 1; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--primary); }
+    .field textarea { resize: vertical; min-height: 72px; }
+
+    /* Stock history table */
+    .history-section h4 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+    .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .history-table th { text-align: left; padding: 7px 10px; background: var(--surface2); color: var(--text2); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); }
+    .history-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table .mono { font-family: monospace; color: var(--text2); }
+    .history-empty { text-align: center; padding: 28px; color: var(--text2); font-size: 13px; }
+
+    /* Location form */
+    .location-preview {
+      background: var(--primary-light);
+      border: 1px solid rgba(22,155,194,0.25);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 20px;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .location-preview.empty { color: var(--text3); font-weight: 400; background: var(--surface2); border-color: var(--border); }
+    .loc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .loc-grid .field-full { grid-column: 1 / -1; }
   </style>
 </head>
 <body>
@@ -605,6 +751,93 @@
     <div class="confirm-actions" id="confirmActions">
       <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
       <button class="btn btn-danger" id="confirmBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ITEM DETAIL MODAL -->
+<div class="modal-overlay" id="itemDetailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <h2 id="itemModalName">Product Name</h2>
+        <span class="sku-badge" id="itemModalSku">SKU</span>
+      </div>
+      <button class="modal-close" onclick="closeItemModal()">&#x2715;</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tabStock" onclick="switchItemTab('stock')">&#x1F4E6; Stock Management</button>
+      <button class="modal-tab" id="tabLocation" onclick="switchItemTab('location')">&#x1F4CD; Location</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- STOCK MANAGEMENT PANE -->
+      <div class="modal-tab-pane active" id="paneStock">
+        <div class="stock-summary" id="stockSummary">
+          <div>
+            <div class="stock-summary-qty" id="stockSummaryQty">—</div>
+            <div class="stock-summary-label">units currently in stock</div>
+          </div>
+          <div id="stockSummaryPill"></div>
+        </div>
+
+        <div class="add-stock-section">
+          <h4>Add Stock</h4>
+          <div class="add-stock-row">
+            <div class="field">
+              <label for="addStockQty">Units to Add</label>
+              <input type="number" id="addStockQty" min="1" step="1" placeholder="e.g. 24">
+            </div>
+            <button class="btn btn-primary" onclick="addStockToItem()" style="flex-shrink:0;">Add Stock</button>
+          </div>
+        </div>
+
+        <div class="history-section">
+          <h4>Stock History</h4>
+          <div id="stockHistoryContainer">
+            <div class="history-empty">No stock additions recorded yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOCATION PANE -->
+      <div class="modal-tab-pane" id="paneLocation">
+        <div class="location-preview empty" id="locationPreview">&#x1F4CD; No location set — fill in the fields below</div>
+        <div class="loc-grid">
+          <div class="field">
+            <label for="locFloor">Floor</label>
+            <input type="text" id="locFloor" placeholder="e.g. Ground Floor" oninput="refreshLocationPreview()">
+          </div>
+          <div class="field">
+            <label for="locAisle">Aisle</label>
+            <input type="text" id="locAisle" placeholder="e.g. A3" oninput="refreshLocationPreview()">
+          </div>
+          <div class="field">
+            <label for="locSection">Section</label>
+            <input type="text" id="locSection" placeholder="e.g. Beverages" oninput="refreshLocationPreview()">
+          </div>
+          <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label for="locShelfLetter">Shelf Letter</label>
+              <input type="text" id="locShelfLetter" placeholder="e.g. C" maxlength="3" oninput="refreshLocationPreview()">
+            </div>
+            <div>
+              <label for="locShelfNumber">Shelf No.</label>
+              <input type="text" id="locShelfNumber" placeholder="e.g. 4" oninput="refreshLocationPreview()">
+            </div>
+          </div>
+          <div class="field field-full">
+            <label for="locNotes">Additional Notes</label>
+            <textarea id="locNotes" placeholder="Any extra details about where to find this product..."></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <div class="modal-footer" id="itemModalFooter" style="display:none;">
+      <button class="btn btn-ghost" onclick="closeItemModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItemLocation()">&#x1F4BE; Save Location</button>
     </div>
   </div>
 </div>
@@ -788,7 +1021,7 @@ function getSettings() { return _settings; }
 function getStock()    { return _stock; }
 function saveStock(s) {
   _stock = s;
-  setDoc(doc(db, STOCK_COLL, STORE_CODE), s)
+  return setDoc(doc(db, STOCK_COLL, STORE_CODE), s)
     .catch(err => toast('\u274C Sync failed: ' + (err.message || err), 'error'));
 }
 
@@ -851,8 +1084,10 @@ function initGrid() {
           const div = document.createElement('div');
           div.style.cssText = 'display:flex;flex-direction:column;justify-content:center;height:100%;gap:2px;width:100%;min-width:0;';
           const nameEl = document.createElement('div');
-          nameEl.style.cssText = 'font-weight:600;color:var(--text);font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;';
+          nameEl.style.cssText = 'font-weight:600;color:var(--primary);font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;';
           nameEl.textContent = item.name;
+          nameEl.title = 'Click to manage stock & location';
+          nameEl.addEventListener('click', () => openItemModal(item.sku));
           div.appendChild(nameEl);
           if (item.ingredients && item.ingredients.length) {
             const ingEl = document.createElement('div');
@@ -948,27 +1183,12 @@ function initGrid() {
           pill.addEventListener('click', () => cycleStockStatus(item.sku, item.name));
           wrap.appendChild(pill);
 
-          // Stock quantity row (shown when In Stock or Out of Stock, not when Not Stocked)
-          if (!ns) {
-            const qtyRow = document.createElement('div');
-            qtyRow.style.cssText = 'display:flex;align-items:center;gap:5px;';
+          // Stock quantity — read-only display (managed via item modal)
+          if (!ns && qty !== null) {
             const qtyLabel = document.createElement('span');
             qtyLabel.style.cssText = 'font-size:11px;color:var(--text2);';
-            qtyLabel.textContent = qty !== null ? 'Stock: ' + qty + ' units' : 'Stock: —';
-            const btnMinus = document.createElement('button');
-            btnMinus.style.cssText = 'width:32px;height:32px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;line-height:1;';
-            btnMinus.textContent = '−';
-            btnMinus.title = 'Subtract 1 (sale)';
-            btnMinus.addEventListener('click', (e) => { e.stopPropagation(); adjustQuantity(item.sku, -1); });
-            const btnPlus = document.createElement('button');
-            btnPlus.style.cssText = 'width:32px;height:32px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--primary);padding:0;line-height:1;';
-            btnPlus.textContent = '+';
-            btnPlus.title = 'Add 1 (return/restock)';
-            btnPlus.addEventListener('click', (e) => { e.stopPropagation(); adjustQuantity(item.sku, +1); });
-            qtyRow.appendChild(btnMinus);
-            qtyRow.appendChild(qtyLabel);
-            qtyRow.appendChild(btnPlus);
-            wrap.appendChild(qtyRow);
+            qtyLabel.textContent = qty + ' units in stock';
+            wrap.appendChild(qtyLabel);
           }
 
           return wrap;
@@ -1161,6 +1381,176 @@ function closeConfirm() {
   _restoreConfirmActions();
 }
 
+// ===== ITEM DETAIL MODAL =====
+let _modalSku = null;
+
+function openItemModal(sku) {
+  _modalSku = sku;
+  const item  = _items.find(i => i.sku === sku) || {};
+  const stock = _stock[sku] || {};
+
+  // Header
+  document.getElementById('itemModalName').textContent = item.name || sku;
+  document.getElementById('itemModalSku').textContent  = sku;
+
+  // Reset to stock tab
+  switchItemTab('stock');
+
+  // Render stock pane
+  _renderStockPane(sku);
+
+  // Pre-fill location pane
+  const loc = stock.location || {};
+  document.getElementById('locFloor').value       = loc.floor       || '';
+  document.getElementById('locAisle').value       = loc.aisle       || '';
+  document.getElementById('locSection').value     = loc.section     || '';
+  document.getElementById('locShelfLetter').value = loc.shelfLetter || '';
+  document.getElementById('locShelfNumber').value = loc.shelfNumber || '';
+  document.getElementById('locNotes').value       = loc.notes       || '';
+  refreshLocationPreview();
+
+  document.getElementById('itemDetailModal').classList.add('open');
+}
+
+function closeItemModal() {
+  document.getElementById('itemDetailModal').classList.remove('open');
+  _modalSku = null;
+}
+
+function switchItemTab(tab) {
+  document.getElementById('tabStock').classList.toggle('active', tab === 'stock');
+  document.getElementById('tabLocation').classList.toggle('active', tab === 'location');
+  document.getElementById('paneStock').classList.toggle('active', tab === 'stock');
+  document.getElementById('paneLocation').classList.toggle('active', tab === 'location');
+  document.getElementById('itemModalFooter').style.display = tab === 'location' ? 'flex' : 'none';
+}
+
+function _renderStockPane(sku) {
+  const stock = _stock[sku] || {};
+  const qty   = typeof stock.quantity === 'number' ? stock.quantity : null;
+  const oos   = isOos(sku);
+  const ns    = isNotStocked(sku);
+
+  // Quantity summary
+  document.getElementById('stockSummaryQty').textContent = qty !== null ? qty : '—';
+
+  // Status pill
+  const pillEl = document.getElementById('stockSummaryPill');
+  if (ns) {
+    pillEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--border2);color:var(--text2);background:var(--surface2);">&#x1F6AB; We don\'t sell/stock this</span>';
+  } else if (oos) {
+    pillEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--danger);color:var(--danger);background:var(--danger-light);">&#x26D4; Out of Stock</span>';
+  } else {
+    pillEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--success);color:var(--success);background:var(--success-light);">&#x2705; In Stock</span>';
+  }
+
+  // History
+  const history = Array.isArray(stock.stockHistory) ? stock.stockHistory : [];
+  const container = document.getElementById('stockHistoryContainer');
+  if (history.length === 0) {
+    container.innerHTML = '<div class="history-empty">No stock additions recorded yet.</div>';
+    return;
+  }
+  const rows = [...history].reverse().map(h => {
+    const dt = new Date(h.addedAt);
+    const dateStr = dt.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' });
+    const timeStr = dt.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+    return `<tr>
+      <td><div>${escHtml(dateStr)}</div><div class="mono">${escHtml(timeStr)}</div></td>
+      <td style="font-weight:700;color:var(--success);">+${h.quantity}</td>
+      <td>${h.runningTotal}</td>
+      <td class="mono">${escHtml(h.addedBy || '—')}</td>
+    </tr>`;
+  }).join('');
+  container.innerHTML = `<table class="history-table">
+    <thead><tr><th>Date / Time</th><th>Units Added</th><th>Running Total</th><th>Added By</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function addStockToItem() {
+  if (!_modalSku) return;
+  const input = document.getElementById('addStockQty');
+  const qty = parseInt(input.value, 10);
+  if (!qty || qty < 1) { toast('Enter a valid quantity (1 or more)', 'error'); return; }
+
+  const stock = { ...getStock() };
+  if (!stock[_modalSku]) stock[_modalSku] = {};
+  const existing = stock[_modalSku];
+  const current  = typeof existing.quantity === 'number' ? existing.quantity : 0;
+  const newTotal = current + qty;
+
+  const entry = {
+    quantity:     qty,
+    runningTotal: newTotal,
+    addedBy:      STAFF_ID || 'unknown',
+    addedAt:      new Date().toISOString()
+  };
+
+  stock[_modalSku] = {
+    ...existing,
+    quantity:     newTotal,
+    outOfStock:   false,
+    updatedBy:    STAFF_ID || null,
+    updatedAt:    new Date().toISOString(),
+    stockHistory: [...(existing.stockHistory || []), entry]
+  };
+
+  saveStock(stock).then(() => {
+    input.value = '';
+    _renderStockPane(_modalSku);
+    toast('Stock updated — ' + newTotal + ' units in stock', 'success');
+  });
+}
+
+function refreshLocationPreview() {
+  const floor  = document.getElementById('locFloor').value.trim();
+  const aisle  = document.getElementById('locAisle').value.trim();
+  const section= document.getElementById('locSection').value.trim();
+  const letter = document.getElementById('locShelfLetter').value.trim();
+  const number = document.getElementById('locShelfNumber').value.trim();
+  const preview= document.getElementById('locationPreview');
+  const parts  = [];
+  if (floor)  parts.push(floor);
+  if (aisle)  parts.push('Aisle ' + aisle);
+  if (section)parts.push(section);
+  if (letter || number) parts.push('Shelf ' + (letter + number));
+  if (parts.length === 0) {
+    preview.textContent = '📍 No location set — fill in the fields below';
+    preview.classList.add('empty');
+  } else {
+    preview.textContent = '📍 ' + parts.join(' → ');
+    preview.classList.remove('empty');
+  }
+}
+
+function saveItemLocation() {
+  if (!_modalSku) return;
+  const floor  = document.getElementById('locFloor').value.trim();
+  const aisle  = document.getElementById('locAisle').value.trim();
+  const section= document.getElementById('locSection').value.trim();
+  const letter = document.getElementById('locShelfLetter').value.trim();
+  const number = document.getElementById('locShelfNumber').value.trim();
+  const notes  = document.getElementById('locNotes').value.trim();
+
+  const parts  = [];
+  if (floor)  parts.push(floor);
+  if (aisle)  parts.push('Aisle ' + aisle);
+  if (section)parts.push(section);
+  if (letter || number) parts.push('Shelf ' + (letter + number));
+
+  const location = { floor, aisle, section, shelfLetter: letter, shelfNumber: number, notes, humanReadable: parts.join(' → ') };
+
+  const stock = { ...getStock() };
+  if (!stock[_modalSku]) stock[_modalSku] = {};
+  stock[_modalSku] = { ...stock[_modalSku], location, updatedBy: STAFF_ID || null, updatedAt: new Date().toISOString() };
+
+  saveStock(stock).then(() => {
+    toast('Location saved', 'success');
+    if (storeItemsGridApi) storeItemsGridApi.refreshCells({ force: true });
+  });
+}
+
 // STOCK QUANTITY ADJUSTMENT
 function adjustQuantity(sku, delta) {
   const stock = { ...getStock() };
@@ -1205,13 +1595,19 @@ function toast(msg, type = 'info') {
 }
 
 // ===== WINDOW EXPORTS (for inline event handlers) =====
-window.renderItems      = renderItems;
-window.cycleStockStatus = cycleStockStatus;
-window.doStockAction    = doStockAction;
-window.doToggleOos      = doToggleOos;
-window.closeConfirm     = closeConfirm;
-window.adjustQuantity   = adjustQuantity;
-window.updateSummaryBar = updateSummaryBar;
+window.renderItems           = renderItems;
+window.cycleStockStatus      = cycleStockStatus;
+window.doStockAction         = doStockAction;
+window.doToggleOos           = doToggleOos;
+window.closeConfirm          = closeConfirm;
+window.adjustQuantity        = adjustQuantity;
+window.updateSummaryBar      = updateSummaryBar;
+window.openItemModal         = openItemModal;
+window.closeItemModal        = closeItemModal;
+window.switchItemTab         = switchItemTab;
+window.addStockToItem        = addStockToItem;
+window.saveItemLocation      = saveItemLocation;
+window.refreshLocationPreview= refreshLocationPreview;
 
 // INIT
 init();
