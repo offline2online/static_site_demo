@@ -1201,10 +1201,24 @@ function initGrid() {
             ingEl.textContent = item.ingredients.join(', ');
             div.appendChild(ingEl);
           }
-          const skuEl = document.createElement('div');
-          skuEl.style.cssText = 'font-size:10px;line-height:1.3;color:var(--text2);font-family:monospace;align-self:flex-end;text-align:right;';
-          skuEl.textContent = item.sku;
-          div.appendChild(skuEl);
+          const stockEntry = _stock[item.sku] || {};
+          const loc = stockEntry.location;
+          const locHuman = loc
+            ? (Array.isArray(loc.tags) && loc.tags.length > 0
+                ? loc.tags.map(t => t.value).filter(Boolean).join(' → ')
+                : loc.useManual && loc.manual ? loc.manual
+                : loc.humanReadable || '')
+            : '';
+          const subEl = document.createElement('div');
+          if (locHuman) {
+            subEl.style.cssText = 'font-size:10px;line-height:1.3;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;';
+            subEl.textContent = '📍 ' + locHuman;
+            subEl.title = locHuman;
+          } else {
+            subEl.style.cssText = 'font-size:10px;line-height:1.3;color:var(--text2);font-family:monospace;align-self:flex-end;text-align:right;';
+            subEl.textContent = item.sku;
+          }
+          div.appendChild(subEl);
           return div;
         }
       },
