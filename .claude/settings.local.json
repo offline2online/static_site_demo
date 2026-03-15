@@ -44,7 +44,9 @@
       "Bash(ls /usr/local/bin/node /usr/bin/node ~/.nvm/versions/node/*/bin/node)",
       "Bash(export PATH=\"$PATH:/usr/local/bin:/opt/homebrew/bin\")",
       "Bash(pkill -f \"python3 serve.py\")",
-      "Bash(grep -E \"Offer Board Settings|brandName: ''''My Brand''''\")"
+      "Bash(grep -E \"Offer Board Settings|brandName: ''''My Brand''''\")",
+      "Bash(/tmp/menuboard_serve.py:*)",
+      "Bash(/tmp/menuboard_proxy.py:*)"
     ]
   }
 }

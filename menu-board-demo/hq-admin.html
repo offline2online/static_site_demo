@@ -751,19 +751,6 @@
         <!-- SETTINGS -->
         <div id="view-settings" class="view">
           <div class="settings-section">
-            <h3>Stock Alerts</h3>
-            <p class="settings-desc">Configure when stores are flagged as running Low on Stock on the HQ Dashboard.</p>
-            <div class="form-row" style="max-width:420px;align-items:flex-end;">
-              <div class="form-group" style="flex:1;">
-                <label>Low Stock Alert Threshold</label>
-                <input type="number" id="lowStockThresholdInput" min="1" max="999" placeholder="5">
-                <p class="form-help">Items with stock at or below this quantity are highlighted in the Low on Stock dashboard tile.</p>
-              </div>
-              <button class="btn btn-primary btn-sm" id="lowStockSaveBtn" onclick="saveLowStockThreshold()" style="margin-bottom:20px;">Save Changes</button>
-            </div>
-          </div>
-
-          <div class="settings-section">
             <h3>Stock API Key</h3>
             <p class="settings-desc">Set a secret key that external platforms must include when calling the Stock API. Used as the <code>X-Stock-Api-Key</code> header in API requests.</p>
             <div class="form-row" style="max-width:520px;align-items:flex-end;">
@@ -878,6 +865,13 @@
             <option value="true">Active &mdash; Visible on menus</option>
             <option value="false">Inactive &mdash; Hidden from menus</option>
           </select>
+        </div>
+      </div>
+      <div class="form-row" style="max-width:320px;">
+        <div class="form-group" style="flex:1;">
+          <label>Low Stock Alert Threshold <span class="opt-tag">Optional</span></label>
+          <input type="number" id="fLowStockThreshold" min="1" max="999" placeholder="Brand default">
+          <p class="form-help">Overrides the brand-level threshold for this item only. Leave blank to use the brand default.</p>
         </div>
       </div>
       <div class="section-divider">Nutrition Information <span class="opt-tag">Optional &mdash; shown on menu boards</span></div>
@@ -1019,6 +1013,15 @@
               <button type="button" onclick="clearBagIcon()" style="font-size:12px;color:var(--danger);text-decoration:underline;background:none;border:none;cursor:pointer;">Remove icon</button>
             </div>
             <p>Click to upload bag icon (PNG recommended, max 200KB)</p>
+          </div>
+        </div>
+
+        <div class="section-divider">Stock Alerts</div>
+        <div class="form-row" style="max-width:340px;">
+          <div class="form-group" style="flex:1;">
+            <label>Default Low Stock Threshold</label>
+            <input type="number" id="bLowStockThreshold" min="1" max="999" placeholder="5">
+            <p class="form-help">Items with stock at or below this quantity trigger a low stock alert on the HQ Dashboard. Can be overridden per item.</p>
           </div>
         </div>
 
@@ -1494,13 +1497,6 @@ function saveStockApiKey() {
     .catch(err => toast('\u274C Failed to save: ' + (err.message || err), 'error'));
 }
 
-function saveLowStockThreshold() {
-  const val = parseInt(document.getElementById('lowStockThresholdInput')?.value) || 5;
-  const updated = { ..._settings, lowStockThreshold: val };
-  setDoc(doc(db, MB, 'settings'), updated)
-    .then(() => toast('\u2705 Low stock threshold saved', 'success'))
-    .catch(err => toast('\u274C Failed to save: ' + (err.message || err), 'error'));
-}
 
 async function savePhApi() {
   const campaignMode = document.getElementById('phCampaignMode')?.value || 'override';
@@ -1714,19 +1710,23 @@ function renderDashboard() {
   // ── LOW STOCK SUMMARY ──────────────────────────────────────────
   const lowStockEl = document.getElementById('lowStockContent');
   const badgeEl = document.getElementById('lowStockThresholdBadge');
-  const threshold = parseInt(_settings.lowStockThreshold) || 5;
-  if (badgeEl) badgeEl.textContent = 'threshold: ≤' + threshold;
+  if (badgeEl) badgeEl.textContent = 'per-brand threshold';
 
   if (!storeStockKeys.length) {
     lowStockEl.innerHTML = `<div style="color:var(--text2);font-size:13px;padding:4px 0;">No store stock data found. Data is populated when stores use the Store Admin interface.</div>`;
   } else {
     const lowReports = storeStockKeys.map(key => {
       const stock = _allStock[key];
-      const lowSkus = Object.keys(stock).filter(sku => {
+      const lowItems = Object.keys(stock).map(sku => {
         const s = stock[sku];
-        return typeof s.quantity === 'number' && s.quantity > 0 && s.quantity <= threshold && !s.outOfStock;
-      });
-      const lowItems = lowSkus.map(sku => ({ item: items.find(i => i.sku === sku), sku, quantity: stock[sku].quantity })).filter(r => r.item);
+        if (typeof s.quantity !== 'number' || s.quantity <= 0 || s.outOfStock) return null;
+        const item = items.find(i => i.sku === sku);
+        if (!item) return null;
+        const brand = getBrands().find(b => b.id === item.brand);
+        const effectiveThreshold = item.lowStockThreshold || (brand && brand.lowStockThreshold) || 5;
+        if (s.quantity > effectiveThreshold) return null;
+        return { item, sku, quantity: s.quantity };
+      }).filter(Boolean);
       return { storeCode: key, lowItems };
     }).filter(r => r.lowItems.length > 0);
 
@@ -2404,6 +2404,7 @@ function openAddModal() {
   document.getElementById('fFat').value    = '';
   document.getElementById('fCarbs').value  = '';
   document.getElementById('fProtein').value = '';
+  document.getElementById('fLowStockThreshold').value = '';
   _manageTypesOpen = false;
   const mpanel = document.getElementById('manageTypesPanel');
   if (mpanel) mpanel.style.display = 'none';
@@ -2442,6 +2443,7 @@ function openEditModal(id) {
   document.getElementById('fFat').value      = item.fat     != null ? item.fat     : '';
   document.getElementById('fCarbs').value    = item.carbs   != null ? item.carbs   : '';
   document.getElementById('fProtein').value  = item.protein != null ? item.protein : '';
+  document.getElementById('fLowStockThreshold').value = item.lowStockThreshold != null ? item.lowStockThreshold : '';
   editingImages = [...(item.images || [])];
   renderImgPreviews();
   // Load ingredients — support both GS1 array of objects and legacy string array
@@ -2509,6 +2511,8 @@ function saveItem() {
   const fat      = fatRaw !== '' ? parseFloat(fatRaw) : null;
   const carbs    = carbRaw !== '' ? parseFloat(carbRaw) : null;
   const protein  = protRaw !== '' ? parseFloat(protRaw) : null;
+  const lstItemRaw = document.getElementById('fLowStockThreshold').value;
+  const lowStockThreshold = lstItemRaw !== '' ? (parseInt(lstItemRaw) || null) : null;
 
   if (!sku || !name || !category || isNaN(price) || !menuTypes.length) {
     toast('\u26A0\uFE0F Please fill all required fields and select at least one type.', 'error');
@@ -2543,7 +2547,7 @@ function saveItem() {
     description: descShort, // legacy alias — kept for backwards compatibility
     price, category, brand, active, menuTypes,
     images: editingImages,
-    calories, fat, carbs, protein,
+    calories, fat, carbs, protein, lowStockThreshold,
     // GS1 structured fields
     'gs1:recipeIngredient': gs1Ingredients,
     'gs1:customizationOptions': gs1CustOpts,
@@ -2716,7 +2720,7 @@ function _makeSaveBtn(btnId) {
   };
 }
 // Initialised once DOM is ready (at end of script)
-let _itemSave, _brandSave, _tplSave, _lowStockSave, _stockApiSave, _phApiSave;
+let _itemSave, _brandSave, _tplSave, _stockApiSave, _phApiSave;
 
 function openAddBrandModal() {
   document.getElementById('brandModalTitle').textContent = 'Add Brand';
@@ -2728,6 +2732,7 @@ function openAddBrandModal() {
   brandEditingBagIcon = '';
   document.getElementById('bBagLabel').value = '';
   document.getElementById('bBagIconPreview').style.display = 'none';
+  document.getElementById('bLowStockThreshold').value = '';
   // Store distribution — default "All Stores"
   window.editingStores = [];
   document.getElementById('bStoreMode').value = 'all';
@@ -2761,6 +2766,7 @@ function openEditBrandModal(id) {
 
   brandEditingBagIcon = brand.bagIcon || '';
   document.getElementById('bBagLabel').value = brand.bagLabel || '';
+  document.getElementById('bLowStockThreshold').value = brand.lowStockThreshold != null ? brand.lowStockThreshold : '';
   if (brandEditingBagIcon) {
     document.getElementById('bBagIconPreview').style.display = 'flex';
     document.getElementById('bBagIconImg').src = brandEditingBagIcon;
@@ -2906,6 +2912,8 @@ function saveBrand() {
 
   const bagLabel     = (document.getElementById('bBagLabel').value || '').trim();
   const stores       = document.getElementById('bStoreMode').value === 'specific' ? [...window.editingStores] : [];
+  const lstRaw       = document.getElementById('bLowStockThreshold').value;
+  const lowStockThreshold = lstRaw !== '' ? (parseInt(lstRaw) || null) : null;
 
   const brands = getBrands();
   const now    = new Date().toISOString();
@@ -2914,10 +2922,10 @@ function saveBrand() {
     const idx = brands.findIndex(b => b.id === id);
     if (idx === -1) return;
     // colors/display/showClock etc. are now managed exclusively via templates; preserve existing brand values via spread
-    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', bagLabel, bagIcon: brandEditingBagIcon, stores, templates: _editingBrandTemplates, updatedAt: now };
+    brands[idx] = { ...brands[idx], name, currency, logo: brandEditingLogoLeft, logoRight: '', bagLabel, bagIcon: brandEditingBagIcon, stores, lowStockThreshold, templates: _editingBrandTemplates, updatedAt: now };
     toast('\u2705 Brand updated', 'success');
   } else {
-    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors: { ...DEFAULT_COLORS }, display: { portrait: { ...DEFAULT_DISPLAY.portrait }, landscape: { ...DEFAULT_DISPLAY.landscape }, hideOutOfStock: false }, showClock: true, timeFormat: 'british', showHeader: true, campaignMode: 'override', bagLabel, bagIcon: brandEditingBagIcon, stores, templates: [], createdAt: now, updatedAt: now });
+    brands.push({ id: genId(), name, currency, logo: brandEditingLogoLeft, logoRight: '', colors: { ...DEFAULT_COLORS }, display: { portrait: { ...DEFAULT_DISPLAY.portrait }, landscape: { ...DEFAULT_DISPLAY.landscape }, hideOutOfStock: false }, showClock: true, timeFormat: 'british', showHeader: true, campaignMode: 'override', bagLabel, bagIcon: brandEditingBagIcon, stores, lowStockThreshold, templates: [], createdAt: now, updatedAt: now });
     toast('\u2705 Brand added', 'success');
   }
 
@@ -3513,6 +3521,17 @@ function importBrandData(event) {
           }
           saveTypes(mergedTypes);
         }
+        // Brand low stock threshold — apply if provided in export
+        if (data.brand && typeof data.brand.lowStockThreshold === 'number') {
+          const brands = getBrands();
+          const bIdx = brands.findIndex(b => b.id === brandId);
+          if (bIdx >= 0) {
+            brands[bIdx] = { ...brands[bIdx], lowStockThreshold: data.brand.lowStockThreshold };
+            saveBrands(brands);
+            const threshEl = document.getElementById('bLowStockThreshold');
+            if (threshEl) threshEl.value = data.brand.lowStockThreshold;
+          }
+        }
         renderDashboard();
         renderItems();
         toast(`\u{1F4E5} Imported: +${added} new, ${updated} updated for this brand`, 'success');
@@ -3673,14 +3692,10 @@ onSnapshot(doc(db, MB, 'settings'), snap => {
   if (legacyEl) legacyEl.style.display = isLegacy ? 'block' : 'none';
   _phEndpoints = isLegacy ? [] : (Array.isArray(phApi.endpoints) ? phApi.endpoints : []);
   renderPhEndpoints();
-  // Low stock threshold
-  const threshEl = document.getElementById('lowStockThresholdInput');
-  if (threshEl) threshEl.value = _settings.lowStockThreshold || 5;
   // Stock API key
   const stockKeyEl = document.getElementById('stockApiKeyInput');
   if (stockKeyEl) stockKeyEl.value = _settings.stockApiKey || '';
   // Reset dirty state for settings save buttons
-  if (_lowStockSave) _lowStockSave.reset();
   if (_stockApiSave) _stockApiSave.reset();
   if (_phApiSave)    _phApiSave.reset();
 });
@@ -3698,7 +3713,6 @@ showView(localStorage.getItem('hqAdminView') || 'dashboard');
 _itemSave     = _makeSaveBtn('itemSaveBtn');
 _brandSave    = _makeSaveBtn('brandSaveBtn');
 _tplSave      = _makeSaveBtn('tplSaveBtn');
-_lowStockSave = _makeSaveBtn('lowStockSaveBtn');
 _stockApiSave = _makeSaveBtn('stockApiSaveBtn');
 _phApiSave    = _makeSaveBtn('phApiSaveBtn');
 
@@ -3715,8 +3729,6 @@ document.getElementById('tplEditorPanel')
   .addEventListener('input',  () => _tplSave.markDirty());
 document.getElementById('tplEditorPanel')
   .addEventListener('change', () => _tplSave.markDirty());
-document.getElementById('lowStockThresholdInput')
-  .addEventListener('input', () => _lowStockSave.markDirty());
 document.getElementById('stockApiKeyInput')
   .addEventListener('input', () => _stockApiSave.markDirty());
 document.getElementById('phCampaignMode')
@@ -3735,7 +3747,6 @@ document.addEventListener('click', (e) => {
 });
 
 // Expose async functions to global scope so HTML onclick attributes can call them
-window.saveLowStockThreshold = saveLowStockThreshold;
 window.saveStockApiKey       = saveStockApiKey;
 window.savePhApi        = savePhApi;
 window.addPhEndpoint    = addPhEndpoint;
