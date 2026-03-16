@@ -4155,8 +4155,9 @@ function copyOfferBoardUrl(tplId) {
   if (!tpl) return;
   const brandId = document.getElementById('bEditId').value;
   if (!brandId) { toast('Save the brand first to generate a URL.', 'error'); return; }
+  const brandName = (document.getElementById('bName').value || '').trim();
   const base = window.location.origin + window.location.pathname.replace('hq-admin.html', 'menu-board.html');
-  const params = new URLSearchParams({ brand: brandId });
+  const params = new URLSearchParams({ brand: brandName || brandId });
   if (tpl.templateType) params.set('template', tpl.templateType);
   const url = base + '?' + params.toString();
   navigator.clipboard.writeText(url).then(() => {
