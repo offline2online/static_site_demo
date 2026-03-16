@@ -2679,14 +2679,24 @@ function _renderActiveOfferBoards(items) {
     return;
   }
 
-  if (countEl) countEl.textContent = `${activeBoards.length} active`;
-
   const types  = getTypes();
   const brands = getBrands();
 
-  el.innerHTML = activeBoards.map(a => {
-    const isLive      = (now - new Date(a.lastSeen).getTime()) < LIVE_WINDOW_MS;
-    const timeSince   = _timeSinceStr(a.lastSeen);
+  // ── GROUP by brand + menuType + templateType ─────────────────────────────
+  const groups = new Map();
+  for (const a of activeBoards) {
+    const key = `${(a.brandName || '').toLowerCase()}|${a.menuType || ''}|${a.templateType || ''}`;
+    if (!groups.has(key)) groups.set(key, { rep: a, stores: [] });
+    groups.get(key).stores.push(a);
+  }
+
+  if (countEl) countEl.textContent = `${groups.size} active`;
+
+  el.innerHTML = [...groups.values()].map(({ rep: a, stores }) => {
+    // Live if ANY store in group seen within LIVE_WINDOW_MS
+    const latestSeen = Math.max(...stores.map(s => new Date(s.lastSeen).getTime()));
+    const isLive     = (now - latestSeen) < LIVE_WINDOW_MS;
+    const timeSince  = _timeSinceStr(new Date(latestSeen).toISOString());
 
     // Resolve brand
     const brand = brands.find(b => b.name && b.name.toLowerCase() === (a.brandName || '').toLowerCase());
@@ -2694,23 +2704,23 @@ function _renderActiveOfferBoards(items) {
     // Parse menu types
     const menuTypeIds = (a.menuType || '').split(',').map(s => s.trim()).filter(Boolean);
 
-    // Count items this board shows (active items matching menu types)
+    // Count items this board shows
     const boardItems = menuTypeIds.length
       ? items.filter(i => i.active && menuTypeIds.some(mt => (i.menuTypes || []).includes(mt)))
       : items.filter(i => i.active);
-    const itemCount  = boardItems.length;
-    const screens    = Math.ceil(itemCount / PAGE_SIZE) || 1;
+    const itemCount = boardItems.length;
+    const screens   = Math.ceil(itemCount / PAGE_SIZE) || 1;
 
-    // Unique categories on this board
+    // Unique categories
     const cats = [...new Set(boardItems.map(i => i.category).filter(Boolean))];
 
-    // Template type label (from library or raw)
+    // Template label
     const tplLabel = a.templateType
-      ? (a.templateType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
+      ? a.templateType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
       : 'Standard';
 
-    // Brand logo — prefer stored brand logo, fallback to pinging logo from activity
-    const logoUrl = (brand && brand.logo) || a.brandLogo || '';
+    // Brand logo
+    const logoUrl  = (brand && brand.logo) || a.brandLogo || '';
     const logoHtml = logoUrl
       ? `<img src="${escHtml(logoUrl)}" style="height:32px;width:auto;max-width:80px;object-fit:contain;border-radius:4px;background:var(--surface2);padding:2px 4px;" onerror="this.style.display='none'">`
       : `<div style="width:36px;height:36px;background:var(--primary-light);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--primary);">📋</div>`;
@@ -2725,17 +2735,36 @@ function _renderActiveOfferBoards(items) {
       return `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;border:1.5px solid ${color};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:${color};background:transparent;">${emoji} ${escHtml(label)}</span>`;
     }).join('');
 
-    // Store & orientation pills
-    const storePill    = a.storeCode ? `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text2);">🏪 ${escHtml(a.storeCode)}</span>` : '';
-    const orientPill   = a.orientation ? `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text2);">${a.orientation === 'landscape' ? '⬛' : '▯'} ${escHtml(a.orientation)}</span>` : '';
-    const devicePill   = a.deviceUdid  ? `<span title="${escHtml(a.deviceUdid)}" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text2);">📱 PWA</span>` : '';
+    // Store count pill with hover tooltip listing each store + orientation
+    const orientIcon = o => o === 'landscape' ? '⬛' : '▯';
+    const storeLines = stores.map(s => {
+      const label = s.storeCode || (s.deviceUdid ? 'PWA' : 'Unknown');
+      const orIcon = orientIcon(s.orientation || 'portrait');
+      const orText = s.orientation || 'portrait';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px 0;">
+        <span style="font-weight:500;">${escHtml(label)}${s.deviceUdid ? ' <span style="opacity:.6;font-size:10px;">PWA</span>' : ''}</span>
+        <span style="display:inline-flex;align-items:center;gap:3px;color:#94a3b8;">${orIcon} ${escHtml(orText)}</span>
+      </div>`;
+    }).join('');
 
-    // Live / last-seen indicator
+    const storeCount = stores.length;
+    const storePill = `
+      <span class="store-count-pill" style="position:relative;display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--text2);cursor:default;"
+        onmouseenter="this.querySelector('.store-tooltip').style.display='block'"
+        onmouseleave="this.querySelector('.store-tooltip').style.display='none'">
+        🏪 ${storeCount} store${storeCount !== 1 ? 's' : ''}
+        <span class="store-tooltip" style="display:none;position:absolute;top:100%;left:0;margin-top:4px;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.12);padding:8px 10px;font-size:11px;color:var(--text);z-index:100;white-space:nowrap;">
+          <div style="font-weight:600;color:var(--text2);margin-bottom:4px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">Stores playing this board</div>
+          ${storeLines}
+        </span>
+      </span>`;
+
+    // Live / last-seen badge
     const liveBadge = isLive
       ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;border:1px solid rgba(5,150,105,0.3);color:#15803d;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;"><span style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block;"></span>Live</span>`
       : `<span style="font-size:11px;color:var(--text2);">Last seen ${escHtml(timeSince)}</span>`;
 
-    const brandName = escHtml((brand && brand.name) || a.brandName || 'Unknown Brand');
+    const brandName   = escHtml((brand && brand.name) || a.brandName || 'Unknown Brand');
     const catsSummary = cats.length ? `<span style="color:var(--text2);font-size:11px;">${cats.map(escHtml).join(', ')}</span>` : '';
 
     return `
@@ -2759,7 +2788,7 @@ function _renderActiveOfferBoards(items) {
             ${catsSummary ? `<span style="color:var(--border);">|</span>${catsSummary}` : ''}
           </div>
           <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-            ${storePill}${orientPill}${devicePill}
+            ${storePill}
             <span style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text2);">🎨 ${escHtml(tplLabel)}</span>
           </div>
         </div>
