@@ -4163,7 +4163,7 @@ function copyOfferBoardUrl(tplId) {
   const menuTypes = Array.isArray(tpl.menuTypes) && tpl.menuTypes.length > 0 ? tpl.menuTypes.join(',') : '${MenuType}';
   params.set('menu',        menuTypes);
   params.set('device',      '${DeviceUDID}');
-  params.set('orientation', '${Orientation}');
+  params.set('orientation', 'landscape');
   const url = decodeURIComponent(base + '?' + params.toString());
   navigator.clipboard.writeText(url).then(() => {
     toast('✅ Offer Board URL copied to clipboard.', 'success');
