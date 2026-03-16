@@ -3570,7 +3570,7 @@ function renderBrands() {
   const brands = getBrands();
 
   // Compute max number of offer boards across all brands
-  const maxBoards = brands.reduce((m, b) => Math.max(m, (_ensureTemplates(b) || []).length), 1);
+  const maxBoards = Math.max(brands.reduce((m, b) => Math.max(m, (b.templates || []).length), 0), 1);
 
   // Dynamic offer board columns
   const offerBoardCols = Array.from({ length: maxBoards }, (_, i) => ({
@@ -3579,7 +3579,7 @@ function renderBrands() {
     filter: false, sortable: false,
     cellRenderer: (params) => {
       const b = params.data;
-      const tpl = (_ensureTemplates(b) || [])[i];
+      const tpl = (b.templates || [])[i];
       const wrap = document.createElement('div');
       wrap.style.cssText = 'display:flex;align-items:center;height:100%;';
       if (!tpl) return wrap;
@@ -3771,7 +3771,7 @@ function openEditBrandModal(id) {
   renderPaletteSwatches();
   window._bGuidelines = brand.brandGuidelines || null;
   renderGuidelinesPreview();
-  _editingBrandTemplates = _ensureTemplates(brand).map(t => Object.assign({}, t));
+  _editingBrandTemplates = (Array.isArray(brand.templates) ? brand.templates : []).map(t => Object.assign({}, t));
   switchBrandTab('settings');
   closeTplEditor();
   document.getElementById('brandDataSection').style.display = 'block';
