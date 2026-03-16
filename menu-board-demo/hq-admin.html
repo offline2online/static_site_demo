@@ -4160,8 +4160,8 @@ function copyOfferBoardUrl(tplId) {
   const params = new URLSearchParams({ brand: brandName || brandId });
   if (tpl.templateType) params.set('template', tpl.templateType);
   params.set('store',       '${StoreCode}');
-  params.set('menu',        '${MenuType}');
-  params.set('category',    '${MenuCategory}');
+  const menuTypes = Array.isArray(tpl.menuTypes) && tpl.menuTypes.length > 0 ? tpl.menuTypes.join(',') : '${MenuType}';
+  params.set('menu',        menuTypes);
   params.set('device',      '${DeviceUDID}');
   params.set('orientation', '${Orientation}');
   const url = decodeURIComponent(base + '?' + params.toString());
