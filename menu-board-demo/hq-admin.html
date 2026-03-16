@@ -3851,7 +3851,6 @@ function switchBrandTab(tabName) {
   document.getElementById('brandTab-' + tabName).classList.add('active');
   document.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('brandPane-' + tabName).classList.add('active');
-  document.getElementById('brandSaveBtn').style.display = tabName === 'settings' ? '' : 'none';
   if (tabName === 'boards') renderTemplateList();
 }
 
@@ -3892,6 +3891,7 @@ function renderTemplateList() {
       <div class="tpl-row-name">${escHtml(tpl.name)}${tpl.templateType ? `<span style="font-size:10px;color:var(--text2);font-weight:500;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-left:6px;">${TEMPLATE_LIBRARY.find(x=>x.id===tpl.templateType)?.name||tpl.templateType}</span>` : ''}</div>
       ${tpl.isDefault ? '<span class="tpl-default-badge">Default</span>' : ''}
       <div class="tpl-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copyOfferBoardUrl('${tpl.id}')" title="Copy the full URL for this Offer Board">&#x1F4CB; Copy URL</button>
         <button class="btn btn-ghost btn-sm" onclick="openEditTemplateEditor('${tpl.id}')">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteTemplate('${tpl.id}')" ${canDelete ? '' : 'disabled title="Cannot delete the only template"'}>Delete</button>
       </div>`;
@@ -4148,6 +4148,22 @@ function saveTemplate() {
   toast('✅ Template saved. Click Save Changes to persist.', 'success');
   if (_brandSave) _brandSave.markDirty();
   closeTplEditor();
+}
+
+function copyOfferBoardUrl(tplId) {
+  const tpl = _editingBrandTemplates.find(t => t.id === tplId);
+  if (!tpl) return;
+  const brandId = document.getElementById('bEditId').value;
+  if (!brandId) { toast('Save the brand first to generate a URL.', 'error'); return; }
+  const base = window.location.origin + window.location.pathname.replace('hq-admin.html', 'menu-board.html');
+  const params = new URLSearchParams({ brand: brandId });
+  if (tpl.templateType) params.set('template', tpl.templateType);
+  const url = base + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(() => {
+    toast('✅ Offer Board URL copied to clipboard.', 'success');
+  }).catch(() => {
+    prompt('Copy this URL:', url);
+  });
 }
 
 function confirmDeleteTemplate(tplId) {
@@ -4582,6 +4598,7 @@ window.openEditTemplateEditor = openEditTemplateEditor;
 window.closeTplEditor         = closeTplEditor;
 window.saveTemplate           = saveTemplate;
 window.confirmDeleteTemplate  = confirmDeleteTemplate;
+window.copyOfferBoardUrl      = copyOfferBoardUrl;
 window.setTplCat              = setTplCat;
 window.renderTemplateLibrary  = renderTemplateLibrary;
 window.openTplDetailFromLib   = openTplDetailFromLib;
