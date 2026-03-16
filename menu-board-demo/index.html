@@ -162,12 +162,12 @@
 
   <!-- PH TOKEN GUIDE -->
   <div class="token-guide">
-    <div class="token-guide-title">📌 Personalisation Hub Platform Tokens — Auto-injected by PH into all Board URLs</div>
+    <div class="token-guide-title">📌 Personalisation Hub Platform Tokens</div>
     <div class="token-grid">
-      <div class="token-pill"><code>${StoreCode}</code><span>→ Store Code (e.g. O2O-001)</span></div>
-      <div class="token-pill"><code>${UniqueDeviceID}</code><span>→ Device UDID (triggers campaign polling)</span></div>
-      <div class="token-pill"><code>${FirstName}</code><span>→ Customer first name (personalised greeting)</span></div>
-      <div class="token-pill"><code>${StoreName}</code><span>→ Store display name</span></div>
+      <div class="token-pill"><code>${StoreCode}</code><span>→ URL param — Store Code (e.g. O2O-001)</span></div>
+      <div class="token-pill"><code>${UniqueDeviceID}</code><span>→ URL param — Device UDID (triggers campaign polling)</span></div>
+      <div class="token-pill" style="opacity:.7;"><code>${FirstName}</code><span>→ PH API — resolved from visitor data, not a URL param</span></div>
+      <div class="token-pill" style="opacity:.7;"><code>${StoreName}</code><span>→ PH API — resolved from store credentials, not a URL param</span></div>
     </div>
   </div>
 
@@ -244,16 +244,6 @@
       <div class="url-field hidden" id="field-type">
         <label>Item Type Filter <span class="opt">optional</span></label>
         <input type="text" id="urlType" placeholder="e.g. food, beverage…" oninput="updateUrl()">
-      </div>
-
-      <div class="url-field hidden" id="field-firstName">
-        <label>First Name <span class="ph-token">${FirstName}</span> <span class="opt">if known</span></label>
-        <input type="text" id="urlFirstName" placeholder="${FirstName}" value="${FirstName}" oninput="updateUrl()">
-      </div>
-
-      <div class="url-field hidden" id="field-storeName">
-        <label>Store Name <span class="ph-token">${StoreName}</span></label>
-        <input type="text" id="urlStoreName" placeholder="${StoreName}" value="${StoreName}" oninput="updateUrl()">
       </div>
 
     </div>
@@ -435,7 +425,7 @@ const TEMPLATES = [
     id:'personalised-welcome', name:'Personalised Welcome Screen',
     description:'Greets customers by first name with relevant offers. Used in-queue or at reception.',
     category:'In-Store Experience', useCases:['Telco','Banking','Healthcare','Retail','Queue'],
-    params:['store','device','brand','orientation','type','category','firstName','storeName'],
+    params:['store','device','orientation','type','category'],
     settings:{ showHeader:true, colorScheme:true, itemTypeFilter:true, categoryFilter:true, portrait:true, landscape:true, showClock:true, personalGreeting:true, showStoreName:true, campaignFilter:true },
     pSVG:(W,H)=>{const hh=14,greetH=28;return `<rect width="${W}" height="${H}" fill="#f0f9ff"/><rect width="${W}" height="${hh}" fill="${C.header}"/><rect x="${W/2-14}" y="3.5" width="28" height="7" rx="1.5" fill="rgba(255,255,255,.3)"/><rect y="${hh}" width="${W}" height="${greetH}" fill="rgba(22,155,194,.08)"/><circle cx="${W/2}" cy="${hh+11}" r="7" fill="rgba(22,155,194,.2)" stroke="${C.header}" stroke-width=".8"/><rect x="${W/2-14}" y="${hh+greetH-7}" width="28" height="4" rx="2" fill="${C.header}"/>` + gridCells(0,hh+greetH,W,H-hh-greetH-4,2,3,3);},
     lSVG:(W,H)=>{const hh=11,greetW=Math.round(W*.32);return `<rect width="${W}" height="${H}" fill="#f0f9ff"/><rect width="${W}" height="${hh}" fill="${C.header}"/><rect y="${hh}" width="${greetW}" height="${H-hh}" fill="rgba(22,155,194,.08)" stroke="${C.border}" stroke-width=".5"/><circle cx="${greetW/2}" cy="${hh+(H-hh)*.3}" r="8" fill="rgba(22,155,194,.2)" stroke="${C.header}" stroke-width=".8"/><rect x="${greetW*.15}" y="${hh+(H-hh)*.55}" width="${greetW*.7}" height="4" rx="2" fill="${C.header}"/>` + gridCells(greetW+2,hh,W-greetW-2,H-hh,3,2,2);},
@@ -444,7 +434,7 @@ const TEMPLATES = [
     id:'queue-status-board', name:'Queue Status Board',
     description:'Shows live queue wait times and visitor count from the PH API. Keeps customers informed.',
     category:'In-Store Experience', useCases:['Queue Management','Banking','Telco','Healthcare','Government'],
-    params:['store','device','brand','orientation','storeName'],
+    params:['store','device','orientation'],
     settings:{ showHeader:true, colorScheme:true, portrait:true, landscape:true, showClock:true, showStoreName:true },
     pSVG:(W,H)=>{const hh=14;return `<rect width="${W}" height="${H}" fill="#f0f9ff"/><rect width="${W}" height="${hh}" fill="${C.header}"/><rect x="${W/2-14}" y="3.5" width="28" height="7" rx="1.5" fill="rgba(255,255,255,.25)"/><rect x="4" y="${hh+8}" width="${W-8}" height="28" rx="4" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="${W/2-8}" y="${hh+16}" width="16" height="4" rx="2" fill="${C.header}"/><rect x="8" y="${hh+40}" width="${(W-16)*.45}" height="22" rx="4" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="${(W-16)*.55+8+4}" y="${hh+40}" width="${(W-16)*.45}" height="22" rx="4" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="12" y="${hh+49}" width="20" height="6" rx="2" fill="#52c41a" opacity=".8"/><rect x="${(W-16)*.55+12}" y="${hh+49}" width="20" height="6" rx="2" fill="#faad14" opacity=".8"/>`;},
     lSVG:(W,H)=>{const hh=11;return `<rect width="${W}" height="${H}" fill="#f0f9ff"/><rect width="${W}" height="${hh}" fill="${C.header}"/><rect x="4" y="${hh+5}" width="${W/2-6}" height="${H-hh-9}" rx="4" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="${W/2+2}" y="${hh+5}" width="${W/2-6}" height="${H-hh-9}" rx="4" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="${W*.1}" y="${hh+H*.3}" width="${W*.3}" height="6" rx="3" fill="${C.header}"/><rect x="${W*.6}" y="${hh+H*.3}" width="${W*.3}" height="6" rx="3" fill="#52c41a" opacity=".8"/>`;},
@@ -498,7 +488,7 @@ const TEMPLATES = [
     id:'store-info-hours', name:'Store Info & Opening Hours',
     description:'Displays store name, opening hours, and contact details. Used at store entrance or lobby.',
     category:'Store Operations', useCases:['Entrance','Lobby','Reception','Clinic','Appointment'],
-    params:['store','device','orientation','storeName'],
+    params:['store','device','orientation'],
     settings:{ showHeader:true, colorScheme:true, portrait:true, landscape:true, showClock:true, showStoreName:true },
     pSVG:(W,H)=>{const hh=14;return `<rect width="${W}" height="${H}" fill="#f0f9ff"/><rect width="${W}" height="${hh}" fill="${C.header}"/><rect x="${W/2-14}" y="3.5" width="28" height="7" rx="1.5" fill="rgba(255,255,255,.3)"/><rect x="4" y="${hh+8}" width="${W-8}" height="16" rx="3" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="${W/2-20}" y="${hh+13}" width="40" height="6" rx="2" fill="${C.header}" opacity=".8"/>` + [0,1,2,3,4,5,6].map(i=>`<rect x="6" y="${hh+30+i*10}" width="${W-12}" height="7" rx="2" fill="${C.card}" stroke="${C.border}" stroke-width=".5"/>`).join('');},
     lSVG:(W,H)=>{const hh=11,infoW=Math.round(W*.42);return `<rect width="${W}" height="${H}" fill="#f0f9ff"/><rect width="${W}" height="${hh}" fill="${C.header}"/><rect y="${hh}" width="${infoW}" height="${H-hh}" fill="rgba(22,155,194,.04)" stroke="${C.border}" stroke-width=".5"/><rect x="4" y="${hh+6}" width="${infoW-8}" height="10" rx="2" fill="${C.header}" opacity=".8"/>` + [0,1,2,3].map(i=>`<rect x="4" y="${hh+20+i*9}" width="${infoW-8}" height="6" rx="2" fill="${C.card}" stroke="${C.border}" stroke-width=".5"/>`).join('') + gridCells(infoW+3,hh,W-infoW-3,H-hh,2,2,2);},
@@ -535,7 +525,7 @@ const TEMPLATES = [
     id:'loyalty-rewards', name:'Loyalty & Rewards Showcase',
     description:'Promotes the loyalty programme with stamp card visual and personalised greeting when customer name is known.',
     category:'In-Store Experience', useCases:['Retail','Café','Hospitality','Beauty','Gym'],
-    params:['store','device','storeName','firstName'],
+    params:['store','device'],
     settings:{ showHeader:true, colorScheme:true, portrait:true, landscape:true, personalGreeting:true, showStoreName:true, campaignFilter:true },
     pSVG:(W,H)=>{const hh=14,cardH=Math.round((H-hh)*.38),cardY=hh+8;return `<rect width="${W}" height="${H}" fill="#f5f3ff"/><rect width="${W}" height="${hh}" fill="#7c3aed"/><rect x="${W/2-14}" y="3.5" width="28" height="7" rx="1.5" fill="rgba(255,255,255,.25)"/><rect x="4" y="${cardY}" width="${W-8}" height="${cardH}" rx="6" fill="#7c3aed" opacity=".12" stroke="#7c3aed" stroke-width=".8"/><rect x="${W/2-20}" y="${cardY+7}" width="40" height="5" rx="2" fill="#7c3aed" opacity=".7"/>` + [0,1,2,3,4,5,6].map(i=>`<circle cx="${W/2-18+i*6}" cy="${cardY+cardH-10}" r="4" fill="${i<4?'#7c3aed':'rgba(124,58,237,.2)'}" stroke="#7c3aed" stroke-width=".6"/>`).join('') + [0,1,2].map(i=>`<rect x="4" y="${cardY+cardH+12+i*18}" width="${W-8}" height="14" rx="4" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="${W-22}" y="${cardY+cardH+14+i*18}" width="14" height="8" rx="4" fill="#7c3aed"/>`).join('');},
     lSVG:(W,H)=>{const hh=11,cardW=Math.round(W*.44);return `<rect width="${W}" height="${H}" fill="#f5f3ff"/><rect width="${W}" height="${hh}" fill="#7c3aed"/><rect x="3" y="3" width="18" height="5" rx="1" fill="rgba(255,255,255,.25)"/><rect x="4" y="${hh+5}" width="${cardW-8}" height="${H-hh-9}" rx="6" fill="#7c3aed" opacity=".1" stroke="#7c3aed" stroke-width=".8"/><rect x="${cardW*.1}" y="${hh+12}" width="${cardW*.8}" height="4" rx="2" fill="#7c3aed" opacity=".7"/>` + [0,1,2,3,4,5].map(i=>`<circle cx="${cardW*.12+i*(cardW*.14)}" cy="${hh+(H-hh)*.65}" r="3.5" fill="${i<4?'#7c3aed':'rgba(124,58,237,.25)'}" stroke="#7c3aed" stroke-width=".5"/>`).join('') + gridCells(cardW+3,hh,W-cardW-3,H-hh,2,2,2);},
@@ -553,7 +543,7 @@ const TEMPLATES = [
     id:'digital-wayfinding', name:'Digital Wayfinding',
     description:'Directional signage showing store zones and facilities. Ideal for malls, hospitals, and campuses.',
     category:'Store Operations', useCases:['Mall','Hospital','Campus','Department Store','Airport'],
-    params:['store','device','orientation','storeName'],
+    params:['store','device','orientation'],
     settings:{ showHeader:true, colorScheme:true, portrait:true, landscape:true, showClock:true, showStoreName:true },
     pSVG:(W,H)=>{const hh=14,snH=12,fh=8,rowH=(H-hh-snH-fh)/4;return `<rect width="${W}" height="${H}" fill="#f0f9ff"/><rect width="${W}" height="${hh}" fill="#0369a1"/><rect x="${W/2-14}" y="3.5" width="28" height="7" rx="1.5" fill="rgba(255,255,255,.3)"/><rect x="4" y="${hh+4}" width="${W-8}" height="${snH}" rx="3" fill="#0369a1" opacity=".15"/><rect x="${W/2-18}" y="${hh+7}" width="36" height="3.5" rx="2" fill="#0369a1" opacity=".6"/>` + [0,1,2,3].map(i=>`<rect x="4" y="${hh+snH+8+i*(rowH+2)}" width="${W-8}" height="${rowH}" rx="4" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="12" y="${hh+snH+12+i*(rowH+2)}" width="6" height="6" rx="1" fill="#0369a1" opacity=".7"/><rect x="24" y="${hh+snH+13+i*(rowH+2)}" width="${(W-34)*.6}" height="2.5" rx="1" fill="${C.muted}"/>`).join('') + `<rect y="${H-fh}" width="${W}" height="${fh}" fill="#075985"/>`;},
     lSVG:(W,H)=>{const hh=11,mapW=Math.round(W*.38);return `<rect width="${W}" height="${H}" fill="#f0f9ff"/><rect width="${W}" height="${hh}" fill="#0369a1"/><rect x="3" y="3" width="18" height="5" rx="1" fill="rgba(255,255,255,.25)"/><rect y="${hh}" width="${mapW}" height="${H-hh}" fill="rgba(3,105,161,.06)" stroke="${C.border}" stroke-width=".5"/>` + [0,1,2].map(r=>[0,1,2].map(c=>`<rect x="${4+c*((mapW-8)/3)}" y="${hh+4+r*((H-hh-8)/3)}" width="${(mapW-8)/3-2}" height="${(H-hh-8)/3-2}" rx="2" fill="rgba(3,105,161,.1)"/>`).join('')).join('') + [0,1,2].map(i=>`<rect x="${mapW+4}" y="${hh+5+i*((H-hh-10)/3)}" width="${W-mapW-8}" height="${(H-hh-10)/3}" rx="4" fill="${C.card}" stroke="${C.border}" stroke-width=".7"/><rect x="${mapW+10}" y="${hh+9+i*((H-hh-10)/3)}" width="5" height="5" rx="1" fill="#0369a1" opacity=".7"/><rect x="${mapW+20}" y="${hh+10+i*((H-hh-10)/3)}" width="${(W-mapW-28)*.55}" height="2" rx="1" fill="${C.muted}"/>`).join('');},
@@ -630,8 +620,6 @@ function openDetail(id) {
     orientation: '?orientation= · portrait or landscape',
     category: '?category= · Filter by product category',
     type: '?type= · Filter by item type',
-    firstName: '?firstName= · PH token: ${FirstName}',
-    storeName: '?storeName= · PH token: ${StoreName}',
   };
   const paramsHtml = t.params.map(p => `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;"><code style="font-family:monospace;color:var(--primary);font-weight:600;">${paramDescs[p]||p}</code></div>`).join('');
 
@@ -669,14 +657,15 @@ function openDetail(id) {
 function closeDetail() { document.getElementById('detailOverlay').classList.remove('open'); }
 
 // ── URL BUILDER ────────────────────────────────────────────────────────────
-// Which fields are shown per template (subset of: store, device, brand, orientation, category, type, firstName, storeName)
+// Which fields are shown per template (subset of: store, device, brand, orientation, category, type)
+// Note: firstName and storeName are resolved via the PH API — not URL parameters
 const TEMPLATE_PARAMS = {};
 TEMPLATES.forEach(t => { TEMPLATE_PARAMS[t.id] = t.params; });
 
 function onTemplateChange() {
   const id = document.getElementById('urlTemplate').value;
   const params = TEMPLATE_PARAMS[id] || [];
-  const allFields = ['store','device','brand','orientation','category','type','firstName','storeName'];
+  const allFields = ['store','device','brand','orientation','category','type'];
   allFields.forEach(f => {
     const el = document.getElementById('field-' + f);
     if (el) el.classList.toggle('hidden', !params.includes(f));
@@ -707,8 +696,6 @@ function updateUrl() {
   if (fields.includes('brand')) { const v = getVal('brand'); if (v) params.set('brand', v); }
   if (fields.includes('category')) { const v = getVal('category'); if (v) params.set('category', v); }
   if (fields.includes('type')) { const v = getVal('type'); if (v) params.set('type', v); }
-  if (fields.includes('firstName')) { const v = getVal('firstName'); if (v) params.set('firstName', v); }
-  if (fields.includes('storeName')) { const v = getVal('storeName'); if (v) params.set('storeName', v); }
 
   const url = base + '?' + params.toString();
   // Highlight PH tokens in the output
