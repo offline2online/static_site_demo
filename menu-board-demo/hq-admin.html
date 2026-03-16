@@ -4159,7 +4159,12 @@ function copyOfferBoardUrl(tplId) {
   const base = window.location.origin + window.location.pathname.replace('hq-admin.html', 'menu-board.html');
   const params = new URLSearchParams({ brand: brandName || brandId });
   if (tpl.templateType) params.set('template', tpl.templateType);
-  const url = base + '?' + params.toString();
+  params.set('store',       '${StoreCode}');
+  params.set('menu',        '${MenuType}');
+  params.set('category',    '${MenuCategory}');
+  params.set('device',      '${DeviceUDID}');
+  params.set('orientation', '${Orientation}');
+  const url = decodeURIComponent(base + '?' + params.toString());
   navigator.clipboard.writeText(url).then(() => {
     toast('✅ Offer Board URL copied to clipboard.', 'success');
   }).catch(() => {
