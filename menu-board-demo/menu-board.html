@@ -267,7 +267,7 @@
     .board.portrait .item-thumb {
       width: 100%;
       flex: 0 0 45%;
-      min-height: 80px;
+      min-height: 0;      /* allow flex % to govern — no fixed floor that swamps small cells */
       max-height: 220px;
     }
     .board.landscape .item-thumb {
