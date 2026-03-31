@@ -614,9 +614,24 @@ function _updateDebugPanel() {
     const safe   = e.baseUrl.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     return `<button class="env-btn${active ? ' active' : ''}" onclick="window._switchEndpoint('${safe}')">${active ? '✓ ' : ''}${esc(host)}</button>`;
   }).join('') : '';
+  // ── Cart state ──
+  let cartHtml;
+  if (!_cart) {
+    cartHtml = `<span class="warn">⚠ no document received yet</span>`;
+  } else {
+    const itemCount = (_cart.items || []).length;
+    const status    = _cart.status || '(no status)';
+    cartHtml = `<span class="ok">✓ doc exists — ${itemCount} item(s), status="${status}"</span>`;
+  }
+  const timedOutHtml = _cartTimedOut
+    ? `<span class="warn">⚠ YES — board showing idle</span>`
+    : `<span class="ok">no</span>`;
+
   el.innerHTML =
-    `<div><b>🛠 PH API</b></div>` +
+    `<div><b>🛠 Order Summary Debug</b></div>` +
     `<div>Device UDID : ${deviceHtml}</div>` +
+    `<div>Firestore   : ${cartHtml}</div>` +
+    `<div>Timed out   : ${timedOutHtml}</div>` +
     `<div>Active API  : ${apiHtml}</div>` +
     (envBtns ? `<div>Environment : ${envBtns}</div>` : '') +
     `<div>Store name  : ${_storeName ? `<span class="ok">"${esc(_storeName)}"</span>` : '<span class="warn">none</span>'}</div>`;
@@ -888,6 +903,7 @@ if (!DEVICE_UDID) {
     }
 
     render();
+    _updateDebugPanel();
   });
 
   // Listen to brand and settings
