@@ -525,7 +525,7 @@
           <div class="upload-zone" id="prodJsonZone" onclick="document.getElementById('prodJsonFile').click()">
             <div class="uz-icon">📦</div>
             <div class="uz-title">Click or drag &amp; drop a product JSON file</div>
-            <div class="uz-sub">Must be a JSON array of product objects · max 10MB</div>
+            <div class="uz-sub">GS1 VOC export (.json) · Flat product array · PH export format</div>
             <input type="file" id="prodJsonFile" accept=".json" onchange="handleProdJson(event)">
           </div>
           <div id="prodJsonPreview" style="display:none;" class="json-preview"></div>
@@ -1216,19 +1216,48 @@ function handleGuideUpload(event) {
   event.target.value = '';
 }
 
+function detectProdJson(data) {
+  if (data && !Array.isArray(data) && Array.isArray(data.items) && data.items.length > 0)
+    return { items: data.items, meta: data };
+  if (Array.isArray(data) && data.length > 0)
+    return { items: data, meta: null };
+  for (const key of ['products','menu','catalog','data','results','entries'])
+    if (data[key] && Array.isArray(data[key]) && data[key].length > 0)
+      return { items: data[key], meta: data };
+  throw new Error('Could not find a product array. Expected a JSON array or GS1 VOC format ({ "items": [...] }).');
+}
+
 function handleProdJson(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     try {
-      const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error('Expected JSON array');
-      const cols = data.length ? Object.keys(data[0]).join(', ') : 'none';
+      const raw = JSON.parse(e.target.result);
+      const { items, meta } = detectProdJson(raw);
+
+      // Resolve brand name
+      let brandName = 'Imported';
+      if (meta) {
+        if (meta.brand && typeof meta.brand === 'object' && meta.brand.name) brandName = meta.brand.name;
+        else if (Array.isArray(meta.brands) && meta.brands[0]) brandName = meta.brands[0].name || brandName;
+        else if (meta.settings && meta.settings.brandName) brandName = meta.settings.brandName;
+      }
+
+      const sample = items[0] || {};
+      const cols = Object.keys(sample).slice(0, 8).join(', ');
+      const formatLabel = (meta && meta.items) ? 'GS1 VOC' : 'Flat array';
+
       const preview = document.getElementById('prodJsonPreview');
-      preview.innerHTML = `<strong>✓ ${data.length} products detected</strong><br><span style="color:var(--text2);">Fields: ${escHtml(cols)}</span>`;
+      preview.innerHTML = `
+        <strong style="color:var(--success);">✓ ${items.length} product${items.length !== 1 ? 's' : ''} detected</strong>
+        <div style="margin-top:4px;font-size:12px;color:var(--text2);">
+          Format: ${escHtml(formatLabel)} &nbsp;·&nbsp; Brand: ${escHtml(brandName)}<br>
+          Sample SKU: <code style="color:var(--primary);">${escHtml(sample.sku || sample.id || '—')}</code>
+          &nbsp;·&nbsp; Fields: ${escHtml(cols)}
+        </div>`;
       preview.style.display = 'block';
-      showToast(`JSON parsed: ${data.length} products`, 'info');
+      showToast(`JSON parsed: ${items.length} products`, 'info');
     } catch(err) {
       showToast('Invalid JSON: ' + err.message, 'error');
     }
