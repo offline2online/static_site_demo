@@ -242,7 +242,7 @@
         <div class="upload-zone" id="jsonUploadZone" onclick="document.getElementById('jsonFileInput').click()">
           <div class="uz-icon">📦</div>
           <div class="uz-title">Click or drag &amp; drop your product JSON file</div>
-          <div class="uz-sub">Must be a JSON array of product objects</div>
+          <div class="uz-sub">GS1 VOC export (.json) · Flat product array · PH export format</div>
           <input type="file" id="jsonFileInput" accept=".json" onchange="handleJsonFile(event)">
         </div>
         <div id="jsonPreviewBox" style="display:none;" class="json-preview"></div>
@@ -1136,21 +1136,227 @@ function openJsonModal(){
 }
 function closeJsonModal(){ document.getElementById('jsonModal').classList.remove('open'); }
 
+/* ============================================================
+   JSON IMPORT — Multi-format parser
+   Supports:
+     1. GS1 VOC wrapper  { items:[...], brands/brand/settings, categories, types }
+        — Best&Less, Micronutrition, Starbucks exports
+     2. Flat product array  [ { name, sku, ... }, ... ]
+     3. Nested array under common keys  { products:[...] }
+============================================================ */
+
+function detectAndParseJson(data) {
+  // GS1 VOC wrapper — { items: [...] }
+  if (data && !Array.isArray(data) && Array.isArray(data.items) && data.items.length > 0) {
+    return { format: 'gs1-voc', items: data.items, meta: data };
+  }
+  // Flat array
+  if (Array.isArray(data) && data.length > 0) {
+    return { format: 'flat-array', items: data, meta: null };
+  }
+  // Nested under common keys
+  for (const key of ['products','menu','catalog','data','results','entries']) {
+    if (data[key] && Array.isArray(data[key]) && data[key].length > 0) {
+      return { format: `nested.${key}`, items: data[key], meta: data };
+    }
+  }
+  throw new Error('Could not find a product array. Expected a JSON array or an object with an "items" array (GS1 VOC format).');
+}
+
+function resolveBrandName(item, meta) {
+  if (!meta) return item.brand || item.brandName || 'Imported';
+  // Starbucks: meta.brand is an object with .name
+  if (meta.brand && typeof meta.brand === 'object' && meta.brand.name) return meta.brand.name;
+  // Micronutrition / Best&Less: meta.brands is an array, item.brand is an ID
+  if (Array.isArray(meta.brands)) {
+    const found = meta.brands.find(b => b.id === item.brand);
+    if (found) return found.name;
+  }
+  // Micronutrition settings.brandName
+  if (meta.settings && meta.settings.brandName) return meta.settings.brandName;
+  // Fallback: use item.brand string (if not an id-like value)
+  if (typeof item.brand === 'string' && item.brand && !item.brand.match(/^[a-z]+-brand-/)) return item.brand;
+  return 'Imported';
+}
+
+function mapGs1VocItem(item, meta) {
+  const brandName = resolveBrandName(item, meta);
+
+  // Nutrition — only include non-null values
+  const nutrition = {};
+  if (item.calories != null) nutrition.calories = item.calories;
+  if (item.fat      != null) nutrition.fat      = item.fat;
+  if (item.carbs    != null) nutrition.carbs    = item.carbs;
+  if (item.protein  != null) nutrition.protein  = item.protein;
+
+  // Sizing data from customization.sizes
+  const sizes = (item.customization && item.customization.sizes) || [];
+  const sizing = sizes.map(s => {
+    const adj = s.priceAdj
+      ? (s.priceAdj > 0 ? ` (+£${s.priceAdj.toFixed(2)})` : ` (£${s.priceAdj.toFixed(2)})`)
+      : '';
+    return `${s.label}${adj}`;
+  }).join('\n');
+
+  // Ingredients from defaultIngredients
+  const ingredients = ((item.customization && item.customization.defaultIngredients) || [])
+    .map(i => i.label || i.name || String(i)).filter(Boolean);
+
+  // Customisations: additions (Add type) + milkOptions (Swap type)
+  const customisations = [
+    ...((item.customization && item.customization.additions) || []).map(a => ({
+      name: a.label || a.id, type: 'Add',
+      priceImpact: a.priceAdj ? `+£${parseFloat(a.priceAdj).toFixed(2)}` : ''
+    })),
+    ...((item.customization && item.customization.milkOptions) || []).map(m => ({
+      name: m.label || m.id, type: 'Swap',
+      priceImpact: m.priceAdj ? `+£${parseFloat(m.priceAdj).toFixed(2)}` : ''
+    }))
+  ];
+
+  // Images — map URL strings to PH image objects
+  const images = ((item.images) || [])
+    .filter(src => typeof src === 'string' && src.length < 500) // skip giant base64 strings
+    .map((src, idx) => ({
+      id: 'img-imp-' + Date.now() + '-' + idx,
+      src,
+      label: idx === 0 ? 'Product Image' : `Image ${idx + 1}`,
+      tags: idx === 0 ? ['primary', 'imported'] : ['imported'],
+      isPrimary: idx === 0
+    }));
+
+  const thumbnail = images.length ? images[0].src
+    : `https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent((item.name||'?').charAt(0).toUpperCase())}`;
+
+  // Long description: use longDescription, or description. Append productUrl if present.
+  let longDesc = item.longDescription || item.description || '';
+  if (item.productUrl) longDesc += (longDesc ? '\n\n' : '') + 'Product URL: ' + item.productUrl;
+
+  return {
+    id: 'p-imp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6),
+    brandId:  'brand-import',
+    brandName,
+    sku:             item.sku || item.id || '',
+    name:            item.name || '',
+    category:        item.category || (item.menuTypes && item.menuTypes[0]) || 'Other',
+    subCategory:     (item.menuTypes && item.menuTypes[0] !== item.category) ? (item.menuTypes[0] || '') : '',
+    rrp:             parseFloat(item.price || 0),
+    offerPrice:      null,
+    offerActive:     false,
+    offerScheduledAt:null,
+    shortDescription:item.shortDescription || (item.description || '').slice(0, 120),
+    longDescription: longDesc,
+    features:        [],
+    targetAudiences: [],
+    thumbnail,
+    enabled:         item.active !== false,
+    images,
+    colours:         [],
+    nutrition,
+    ingredients,
+    customisations,
+    sizing,
+    priceLog:        []
+  };
+}
+
+function mapFlatItem(item) {
+  return {
+    id: 'p-imp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6),
+    brandId: 'brand-import',
+    brandName:        item.brand || item.brandName || item.supplier || 'Unknown',
+    sku:              item.sku  || item.productCode || item.barcode || '',
+    name:             item.name || item.title || item.productName || '',
+    category:         item.category || item.dept || 'Other',
+    subCategory:      item.subCategory || item.sub_category || '',
+    rrp:              parseFloat(item.rrp || item.price || item.retail_price || 0),
+    offerPrice:       item.offerPrice ? parseFloat(item.offerPrice) : null,
+    offerActive:      !!(item.offerPrice || item.offer_price),
+    offerScheduledAt: null,
+    shortDescription: item.shortDescription || item.short_description || (item.description||'').slice(0,120),
+    longDescription:  item.longDescription  || item.long_description  || item.description || '',
+    features:         item.features || [],
+    targetAudiences:  item.targetAudiences || [],
+    thumbnail:        item.thumbnail || item.image || item.imageUrl || item.image_url
+      || `https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent(((item.name||'?').charAt(0)).toUpperCase())}`,
+    enabled:  item.active !== false && item.enabled !== false,
+    images:   [],
+    colours:  [],
+    nutrition:{},
+    ingredients:    [],
+    customisations: [],
+    sizing:         '',
+    priceLog:       []
+  };
+}
+
 function handleJsonFile(event){
   const file = event.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     try {
-      const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error('Must be a JSON array');
-      pendingJsonProducts = data;
-      const cols = data.length ? Object.keys(data[0]).join(', ') : 'none';
+      const raw = JSON.parse(e.target.result);
+      const { format, items, meta } = detectAndParseJson(raw);
+
+      // Resolve brand name for preview
+      const brandName = meta ? resolveBrandName(items[0] || {}, meta) : '—';
+
+      // Build a mapped sample to show what fields will be used
+      const sample = format === 'gs1-voc'
+        ? mapGs1VocItem(items[0], meta)
+        : mapFlatItem(items[0]);
+
+      const hasNutrition  = Object.keys(sample.nutrition || {}).length > 0;
+      const hasSizing     = !!sample.sizing;
+      const hasIngredients= (sample.ingredients||[]).length > 0;
+      const hasCustomise  = (sample.customisations||[]).length > 0;
+      const hasImages     = (sample.images||[]).length > 0;
+      const skipped       = items.filter(i => !i.name && !i.sku).length;
+
+      const formatLabel = {
+        'gs1-voc':    'GS1 VOC (.json export)',
+        'flat-array': 'Flat product array',
+      }[format] || `Nested object (${format})`;
+
+      const flags = [
+        hasNutrition   && '🧪 Nutrition',
+        hasSizing      && '📐 Sizing',
+        hasIngredients && '🥗 Ingredients',
+        hasCustomise   && '⚙️ Customisation options',
+        hasImages      && '🖼️ Product images',
+      ].filter(Boolean).join(' &nbsp;·&nbsp; ') || 'Basic fields only';
+
       const preview = document.getElementById('jsonPreviewBox');
-      preview.innerHTML = `<strong style="color:var(--text);">✓ ${data.length} products detected</strong><br><span>Fields: ${escHtml(cols)}</span>`;
+      preview.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="color:var(--success);font-size:15px;">✓</span>
+          <strong style="color:var(--text);font-size:14px;">${items.length} product${items.length!==1?'s':''} detected</strong>
+          ${skipped ? `<span style="color:var(--warning);font-size:11px;">⚠ ${skipped} items missing name/SKU will be skipped</span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;">
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Format</span>
+          <span style="color:var(--text);">${escHtml(formatLabel)}</span>
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Brand</span>
+          <span style="color:var(--text);">${escHtml(brandName)}</span>
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Sample SKU</span>
+          <code style="color:var(--primary);">${escHtml(sample.sku||'—')}</code>
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Sample RRP</span>
+          <span>£${parseFloat(sample.rrp||0).toFixed(2)}</span>
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Extra data</span>
+          <span style="color:var(--text2);">${flags}</span>
+        </div>
+      `;
       preview.style.display = 'block';
+
+      // Store for import
+      pendingJsonProducts = { format, items, meta };
+
       document.getElementById('jsonImportBtnWrap').style.display = 'block';
-      document.getElementById('jsonImportBtn').textContent = `Import ${data.length} Products`;
-    } catch(err) { showToast('Invalid JSON: ' + err.message, 'error'); }
+      document.getElementById('jsonImportBtn').textContent = `Import ${items.length - skipped} Products`;
+    } catch(err) {
+      showToast('JSON parse error: ' + err.message, 'error');
+      console.error(err);
+    }
   };
   reader.readAsText(file);
   event.target.value = '';
@@ -1158,27 +1364,23 @@ function handleJsonFile(event){
 
 function importJsonProducts(){
   if (!pendingJsonProducts) return;
-  let added = 0;
-  pendingJsonProducts.forEach(p => {
-    if (!p.name || !p.sku) return;
-    PRODUCTS.push({
-      id:'p-import-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
-      brandId:'brand-001', brandName: p.brand || p.brandName || 'Unknown',
-      sku: p.sku, name: p.name,
-      category: p.category || 'Other', subCategory: p.subCategory || '',
-      rrp: parseFloat(p.rrp||p.price||0), offerPrice: null,
-      offerActive: false, offerScheduledAt: null,
-      shortDescription: p.shortDescription || p.description || '',
-      longDescription: p.longDescription || '',
-      features:[], targetAudiences:[],
-      thumbnail:`https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent((p.name||'?').charAt(0))}`,
-      enabled: true, images:[], colours:[], priceLog:[]
-    });
+  const { format, items, meta } = pendingJsonProducts;
+  let added = 0, skipped = 0;
+
+  items.forEach(item => {
+    const mapped = format === 'gs1-voc' ? mapGs1VocItem(item, meta) : mapFlatItem(item);
+    if (!mapped.name && !mapped.sku) { skipped++; return; }
+    // Ensure a usable name and SKU
+    if (!mapped.name) mapped.name = mapped.sku;
+    if (!mapped.sku)  mapped.sku  = 'IMP-' + Date.now() + '-' + added;
+    PRODUCTS.push(mapped);
     added++;
   });
+
   productsGridApi.setGridOption('rowData', PRODUCTS);
   closeJsonModal();
-  showToast(`${added} products imported successfully`);
+  pendingJsonProducts = null;
+  showToast(`${added} product${added!==1?'s':''} imported${skipped ? ` (${skipped} skipped)` : ''}`);
 }
 
 // Drag & drop for JSON zone
