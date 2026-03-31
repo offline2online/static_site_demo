@@ -440,11 +440,8 @@
       <div class="inner-nav">
         <div class="nav-label">Products</div>
         <div class="nav-item active" id="nav-products" onclick="showView('products')"><span class="icon">📦</span> Products &amp; Pricing</div>
-        <div class="nav-item" id="nav-log" onclick="showView('pricelog')"><span class="icon">📋</span> Price Change Log</div>
-        <div class="nav-item" id="nav-import" onclick="openJsonModal()"><span class="icon">⬆️</span> Import / Upload</div>
-        <div class="nav-label" style="margin-top:6px;">Navigate</div>
+        <div class="nav-label" style="margin-top:6px;">Admin Settings</div>
         <div class="nav-item" onclick="window.location.href='hq-brands-suppliers.html'"><span class="icon">🏷️</span> Brands &amp; Suppliers</div>
-        <div class="nav-item" onclick="window.location.href='retail-product-catalogue.html?store=STORE-003'"><span class="icon">🏪</span> Retail Catalogue</div>
       </div>
       <div class="sidebar-foot"><a class="nav-back" href="index.html">← Back to Hub</a></div>
     </div>
@@ -452,7 +449,10 @@
     <div class="main">
       <div class="topbar">
         <span class="topbar-title">Products, Pricing &amp; Assets</span>
-        <div class="topbar-right"><span class="hq-badge">HQ Admin</span></div>
+        <div class="topbar-right">
+          <button class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.3);font-size:12px;padding:5px 12px;" onclick="showView('pricelog')">📋 Price Change Log</button>
+          <span class="hq-badge">HQ Admin</span>
+        </div>
       </div>
       <div class="content">
 
