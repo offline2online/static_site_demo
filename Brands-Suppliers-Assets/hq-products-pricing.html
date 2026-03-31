@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products, Pricing &amp; Assets — HQ Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-theme-alpine.css">
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/dist/ag-grid-community.min.noStyle.js"></script>
+  <style>
+    :root {
+      --bg:#f5f5f5; --inner-sb:#fff; --surface:#fff; --surface2:#f5f5f5; --surface3:#f0f0f0;
+      --border:#E2E8F0; --border2:#CBD5E1;
+      --text:rgba(0,0,0,.88); --text2:rgba(0,0,0,.65); --text3:rgba(0,0,0,.45);
+      --primary:#169bc2; --primary-light:rgba(22,155,194,.10);
+      --success:#52c41a; --success-light:rgba(82,196,26,.10);
+      --toggle-on:#169bc2; --warning:#D97706; --warning-light:rgba(217,119,6,.10);
+      --danger:#ff4d4f; --danger-light:rgba(255,77,79,.10);
+      --radius:8px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{height:auto;overflow:auto;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+    .ph-main{flex:1;display:flex;flex-direction:column;}
+    .ph-inner{flex:1;display:flex;background:var(--bg);}
+
+    /* SIDEBAR */
+    .sidebar{width:196px;min-width:196px;background:var(--inner-sb);display:flex;flex-direction:column;border-right:1px solid var(--border);position:sticky;top:0;height:100vh;align-self:flex-start;overflow-y:auto;}
+    .sidebar-brand{padding:14px 14px 10px;border-bottom:1px solid var(--border);}
+    .brand-row{display:flex;align-items:center;gap:8px;}
+    .brand-icon{width:28px;height:28px;background:linear-gradient(135deg,#169bc2,#38b0cf);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
+    .brand-name{font-size:13px;font-weight:700;color:var(--text);}
+    .brand-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+    .inner-nav{padding:10px 8px;flex:1;}
+    .nav-label{font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;padding:8px 8px 4px;}
+    .nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--text2);font-size:12.5px;font-weight:500;transition:all .14s;user-select:none;margin-bottom:1px;}
+    .nav-item:hover{background:var(--surface3);color:var(--text);}
+    .nav-item.active{background:transparent;color:var(--primary);font-weight:600;}
+    .nav-item .icon{font-size:13px;width:17px;text-align:center;}
+    .sidebar-foot{padding:10px 12px 14px;border-top:1px solid var(--border);font-size:10px;color:var(--text2);}
+    .nav-back{display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:11px;color:var(--text3);text-decoration:none;transition:color .14s;}
+    .nav-back:hover{color:var(--primary);}
+
+    /* MAIN */
+    .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+    .topbar{background:#000;height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:100;color:#fff;}
+    .topbar-title{font-size:15px;font-weight:600;color:#fff;letter-spacing:-.1px;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .hq-badge{background:transparent;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.35);}
+    .content{padding:22px;}
+    .view{display:none;} .view.active{display:block;}
+    .page-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+    .page-sub{font-size:13px;color:var(--text2);margin-bottom:20px;}
+
+    /* TOOLBAR */
+    .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+    .search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;flex:1;min-width:220px;}
+    .search-box input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:100%;}
+    .search-box input::placeholder{color:var(--text2);}
+    .filter-select{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px;outline:none;cursor:pointer;}
+
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .14s;white-space:nowrap;text-decoration:none;}
+    .btn-primary{background:var(--primary);color:#fff;} .btn-primary:hover{background:#38b0cf;}
+    .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);} .btn-ghost:hover{background:var(--surface3);}
+    .btn-danger{background:var(--danger);color:#fff;} .btn-danger:hover{background:#e53535;}
+    .btn-sm{padding:5px 10px;font-size:12px;}
+    .btn-icon{padding:6px;}
+
+    /* TOGGLE */
+    .toggle{position:relative;width:44px;height:24px;cursor:pointer;display:inline-block;}
+    .toggle input{opacity:0;width:0;height:0;position:absolute;}
+    .toggle-slider{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.25);border-radius:100px;transition:background .2s;}
+    .toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:2px;top:2px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,.2);}
+    .toggle input:checked + .toggle-slider{background:var(--toggle-on);}
+    .toggle input:checked + .toggle-slider::before{transform:translateX(20px);}
+
+    /* MODALS */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:200;align-items:center;justify-content:center;padding:20px;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:900px;max-width:calc(100vw - 40px);max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.18);}
+    .modal-sm{width:560px;}
+    .modal-header{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;}
+    .modal-header h2{font-size:17px;font-weight:700;}
+    .modal-close{width:32px;height:32px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .14s;flex-shrink:0;}
+    .modal-close:hover{background:var(--surface3);}
+    .modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 24px;margin-top:16px;flex-shrink:0;overflow-x:auto;}
+    .modal-tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .14s;white-space:nowrap;}
+    .modal-tab:hover{color:var(--text);}
+    .modal-tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+    .modal-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+    .modal-tab-pane{display:none;flex:1;overflow-y:auto;padding:22px 24px;}
+    .modal-tab-pane.active{display:block;}
+    .modal-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;}
+
+    /* FORMS */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-row.cols-3{grid-template-columns:1fr 1fr 1fr;}
+    .form-row.cols-1{grid-template-columns:1fr;}
+    .form-group{margin-bottom:14px;}
+    .form-group label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+    .form-group label .req{color:var(--danger);}
+    .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s;font-family:inherit;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(22,155,194,.2);}
+    .form-group textarea{resize:vertical;min-height:80px;}
+    .price-wrap{position:relative;}
+    .price-sym{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:13px;font-weight:600;}
+    .price-wrap input{padding-left:24px;}
+    .section-divider{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;padding:14px 0 8px;border-top:1px solid var(--border);margin-top:8px;}
+
+    /* TAG CHIPS */
+    .tag-chip-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;min-height:38px;cursor:text;}
+    .tag-chip-wrap:focus-within{border-color:var(--primary);box-shadow:0 0 0 2px rgba(22,155,194,.2);}
+    .tag-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:var(--primary-light);border:1px solid rgba(22,155,194,.25);border-radius:20px;font-size:12px;font-weight:600;color:var(--primary);}
+    .tag-chip .rm{cursor:pointer;color:rgba(22,155,194,.7);font-size:13px;line-height:1;}
+    .tag-chip .rm:hover{color:var(--primary);}
+    .tag-chip-input{border:none;background:none;outline:none;font-size:13px;color:var(--text);min-width:80px;flex:1;}
+
+    /* ACCORDION */
+    .accordion-item{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;}
+    .accordion-header{padding:12px 14px;background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;user-select:none;}
+    .accordion-header:hover{background:var(--surface3);}
+    .accordion-arrow{font-size:10px;transition:transform .2s;color:var(--text2);}
+    .accordion-item.open .accordion-arrow{transform:rotate(180deg);}
+    .accordion-body{max-height:0;overflow:hidden;transition:max-height .28s ease;}
+    .accordion-item.open .accordion-body{max-height:800px;}
+    .accordion-content{padding:14px;}
+
+    /* IMAGE GALLERY */
+    .img-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px;}
+    .img-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+    .img-card-thumb{width:100%;height:100px;object-fit:cover;display:block;background:var(--surface3);}
+    .img-card-body{padding:8px;}
+    .img-card-label{font-size:11px;color:var(--text2);margin-bottom:4px;}
+    .img-card-input{width:100%;background:none;border:none;border-bottom:1px solid var(--border);outline:none;font-size:12px;color:var(--text);padding:2px 0;margin-bottom:6px;}
+    .img-card-input:focus{border-bottom-color:var(--primary);}
+    .img-card-actions{display:flex;align-items:center;gap:5px;}
+    .img-primary-btn{font-size:11px;cursor:pointer;background:none;border:none;padding:2px 4px;border-radius:4px;transition:all .14s;}
+    .img-primary-btn.active{color:#f59e0b;}
+    .img-primary-btn:not(.active){color:var(--text3);}
+    .img-del-btn{font-size:12px;cursor:pointer;background:none;border:none;color:var(--text3);padding:2px 4px;margin-left:auto;}
+    .img-del-btn:hover{color:var(--danger);}
+    .img-card.primary-img{border-color:var(--primary);border-width:2px;}
+
+    /* UPLOAD ZONE */
+    .upload-zone{border:2px dashed var(--border2);border-radius:8px;padding:22px;text-align:center;cursor:pointer;transition:all .18s;background:var(--surface2);}
+    .upload-zone:hover,.upload-zone.drag-over{border-color:var(--primary);background:var(--primary-light);}
+    .upload-zone input[type=file]{display:none;}
+    .uz-icon{font-size:26px;margin-bottom:8px;}
+    .uz-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+    .uz-sub{font-size:11px;color:var(--text2);}
+
+    /* PRICE LOG TABLE */
+    .price-log-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .price-log-table th{text-align:left;padding:9px 12px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;background:var(--surface2);border-bottom:1px solid var(--border);}
+    .price-log-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+    .price-log-table tr:last-child td{border-bottom:none;}
+    .price-log-table tr:hover td{background:var(--surface2);}
+    .change-positive{color:var(--danger);font-weight:600;}
+    .change-negative{color:var(--success);font-weight:600;}
+
+    /* COLOUR SWATCHES */
+    .colour-swatches{display:flex;flex-wrap:wrap;gap:8px;}
+    .colour-swatch{width:28px;height:28px;border-radius:5px;border:2px solid rgba(0,0,0,.12);cursor:pointer;position:relative;}
+    .colour-swatch::after{content:attr(data-label);position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:10px;padding:3px 6px;border-radius:4px;white-space:nowrap;display:none;pointer-events:none;}
+    .colour-swatch:hover::after{display:block;}
+
+    /* NUTRITION GRID */
+    .nutrition-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+    .nutrition-cell{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center;}
+    .nutrition-cell input{width:100%;background:none;border:none;outline:none;text-align:center;font-size:14px;font-weight:700;color:var(--text);}
+    .nutrition-cell label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;}
+
+    /* CUSTOMISATION TABLE */
+    .custom-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .custom-table th{padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;border-bottom:1px solid var(--border);}
+    .custom-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+    .custom-table tr:last-child td{border-bottom:none;}
+    .custom-table input,.custom-table select{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;color:var(--text);outline:none;width:100%;}
+    .custom-table input:focus,.custom-table select:focus{border-color:var(--primary);}
+
+    /* OFFER BADGE */
+    .offer-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;}
+    .offer-live{background:var(--success-light);color:var(--success);}
+    .offer-scheduled{background:var(--warning-light);color:var(--warning);}
+
+    /* CONFIRM */
+    .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;}
+    .confirm-overlay.open{display:flex;}
+    .confirm-box{background:var(--surface);border-radius:10px;padding:28px 30px;width:380px;max-width:calc(100vw - 40px);box-shadow:0 20px 60px rgba(0,0,0,.18);text-align:center;}
+    .confirm-icon{font-size:34px;margin-bottom:12px;}
+    .confirm-title{font-size:16px;font-weight:700;margin-bottom:8px;}
+    .confirm-msg{font-size:13px;color:var(--text2);margin-bottom:22px;line-height:1.5;}
+    .confirm-btns{display:flex;gap:10px;justify-content:center;}
+
+    /* TOAST */
+    .toast-container{position:fixed;bottom:24px;right:24px;z-index:400;display:flex;flex-direction:column;gap:8px;}
+    .toast{padding:11px 18px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:220px;animation:slideIn .22s ease;}
+    .toast-success{background:#1a3a1a;color:#7bcf5a;border:1px solid rgba(82,196,26,.3);}
+    .toast-error{background:#3a1a1a;color:#f98080;border:1px solid rgba(255,77,79,.3);}
+    .toast-info{background:#1a2e3a;color:#60c5e6;border:1px solid rgba(22,155,194,.3);}
+    @keyframes slideIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+
+    /* AG GRID */
+    .ag-theme-alpine{--ag-header-background-color:var(--surface2);--ag-header-foreground-color:var(--text2);--ag-border-color:var(--border);--ag-row-hover-color:var(--surface2);--ag-selected-row-background-color:var(--primary-light);--ag-font-size:13px;--ag-font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--ag-cell-horizontal-padding:14px;}
+    .ag-theme-alpine .ag-header-cell-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+    .ag-theme-alpine .ag-cell{overflow:visible !important;}
+    .ag-theme-alpine .ag-row{overflow:visible !important;}
+    .grid-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:visible;}
+
+    /* JSON PREVIEW */
+    .json-preview{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px;margin-top:10px;font-size:12px;color:var(--text2);}
+  </style>
+</head>
+<body>
+
+<div id="globalTooltip" style="display:none;position:fixed;background:#1e293b;color:#fff;font-size:11.5px;border-radius:7px;padding:8px 12px;z-index:9999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:pre-line;max-width:240px;line-height:1.6;"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Delete Product?</div>
+    <div class="confirm-msg" id="confirmMsg">This cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirmBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- JSON UPLOAD MODAL -->
+<div class="modal-overlay" id="jsonModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>Import Products via JSON</h2>
+      <button class="modal-close" onclick="closeJsonModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tab-pane active" style="padding:22px 24px;">
+        <div class="upload-zone" id="jsonUploadZone" onclick="document.getElementById('jsonFileInput').click()">
+          <div class="uz-icon">📦</div>
+          <div class="uz-title">Click or drag &amp; drop your product JSON file</div>
+          <div class="uz-sub">Must be a JSON array of product objects</div>
+          <input type="file" id="jsonFileInput" accept=".json" onchange="handleJsonFile(event)">
+        </div>
+        <div id="jsonPreviewBox" style="display:none;" class="json-preview"></div>
+        <div id="jsonImportBtnWrap" style="display:none;margin-top:14px;">
+          <button class="btn btn-primary" id="jsonImportBtn" onclick="importJsonProducts()">Import Products</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeJsonModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="productModalTitle">Add Product</h2>
+      <button class="modal-close" onclick="closeProductModal()">&#x2715;</button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="pmTab-1" onclick="switchProductTab('1')">Product Details</div>
+      <div class="modal-tab" id="pmTab-2" onclick="switchProductTab('2')">Product Assets</div>
+      <div class="modal-tab" id="pmTab-3" onclick="switchProductTab('3')">Price Change Log</div>
+    </div>
+    <div class="modal-body">
+
+      <!-- TAB 1: Details -->
+      <div class="modal-tab-pane active" id="pmPane-1">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Brand / Supplier <span class="req">*</span></label>
+            <select id="pm-brand"></select>
+          </div>
+          <div class="form-group">
+            <label>SKU <span class="req">*</span></label>
+            <input type="text" id="pm-sku" placeholder="e.g. NK-RN-001" style="font-family:monospace;">
+          </div>
+        </div>
+        <div class="form-row cols-3">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="pm-category">
+              <option value="Footwear">Footwear</option>
+              <option value="Apparel">Apparel</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Accessories">Accessories</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sub-Category</label>
+            <input type="text" id="pm-subcategory" placeholder="e.g. Running Shoes">
+          </div>
+          <div class="form-group">
+            <label>Enable Product</label>
+            <div style="margin-top:4px;">
+              <label class="toggle"><input type="checkbox" id="pm-enabled" checked><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Product Name <span class="req">*</span></label>
+          <input type="text" id="pm-name" placeholder="Full product name">
+        </div>
+        <div class="form-group">
+          <label>Short Description</label>
+          <input type="text" id="pm-shortdesc" placeholder="One line summary for listings">
+        </div>
+        <div class="form-group">
+          <label>Long Description</label>
+          <textarea id="pm-longdesc" rows="3" placeholder="Full product description…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>RRP <span class="req">*</span></label>
+            <div class="price-wrap"><span class="price-sym">£</span><input type="number" id="pm-rrp" placeholder="0.00" step="0.01" min="0"></div>
+          </div>
+          <div class="form-group">
+            <label>Offer Price <span style="font-size:10px;font-weight:400;text-transform:none;">(leave blank if none)</span></label>
+            <div class="price-wrap"><span class="price-sym">£</span><input type="number" id="pm-offerprice" placeholder="0.00" step="0.01" min="0"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Schedule Offer From <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
+            <input type="datetime-local" id="pm-scheduledfrom">
+          </div>
+          <div class="form-group">
+            <label>Schedule Offer Until <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
+            <input type="datetime-local" id="pm-scheduleduntil">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Target Audiences</label>
+          <div class="tag-chip-wrap" id="audiencesWrap" onclick="document.getElementById('audiencesInput').focus()">
+            <input type="text" class="tag-chip-input" id="audiencesInput" placeholder="Type and press Enter…" onkeydown="handleTagInput(event,'audiences')">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Features</label>
+          <div class="tag-chip-wrap" id="featuresWrap" onclick="document.getElementById('featuresInput').focus()">
+            <input type="text" class="tag-chip-input" id="featuresInput" placeholder="Type and press Enter…" onkeydown="handleTagInput(event,'features')">
+          </div>
+        </div>
+        <!-- ACCORDIONS -->
+        <div class="section-divider">Additional Attributes</div>
+        <div id="accordionsContainer"></div>
+      </div>
+
+      <!-- TAB 2: Assets -->
+      <div class="modal-tab-pane" id="pmPane-2">
+        <div id="imgGallery" class="img-gallery"></div>
+        <div class="upload-zone" id="assetUploadZone" onclick="document.getElementById('assetFileInput').click()">
+          <div class="uz-icon">🖼️</div>
+          <div class="uz-title">Add product image or asset</div>
+          <div class="uz-sub">JPG, PNG, WebP · max 2MB per image</div>
+          <input type="file" id="assetFileInput" accept="image/*" multiple onchange="handleAssetUpload(event)">
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px;">Click ⭐ to set as the primary campaign image. Images can be labelled and tagged.</div>
+        <div style="margin-top:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;margin-bottom:8px;">Available Tags</div>
+          <div id="globalTagsWrap" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Price Change Log -->
+      <div class="modal-tab-pane" id="pmPane-3">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:600;">Price Change History</div>
+          <button class="btn btn-ghost btn-sm" onclick="toggleLogEntryForm()">+ Add Manual Entry</button>
+        </div>
+        <div id="logEntryForm" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;">
+          <div class="form-row cols-3">
+            <div class="form-group" style="margin-bottom:8px;">
+              <label>Old Price (£)</label>
+              <div class="price-wrap"><span class="price-sym">£</span><input type="number" id="log-old" step="0.01" placeholder="0.00"></div>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+              <label>New Price (£)</label>
+              <div class="price-wrap"><span class="price-sym">£</span><input type="number" id="log-new" step="0.01" placeholder="0.00"></div>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+              <label>Changed By</label>
+              <input type="text" id="log-by" placeholder="Name or system">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label>Reason</label>
+            <input type="text" id="log-reason" placeholder="e.g. Summer sale, PIM sync">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addLogEntry()">Add Entry</button>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+          <table class="price-log-table" id="priceLogTable">
+            <thead><tr><th>Date / Time</th><th>Changed By</th><th>Old Price</th><th>New Price</th><th>Change</th><th>Reason</th></tr></thead>
+            <tbody id="priceLogBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeProductModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="ph-main">
+  <div class="ph-inner">
+    <div class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-row">
+          <div class="brand-icon">PH</div>
+          <div><div class="brand-name">PersonalisationHub</div><div class="brand-sub">HQ Admin</div></div>
+        </div>
+      </div>
+      <div class="inner-nav">
+        <div class="nav-label">Products</div>
+        <div class="nav-item active" id="nav-products" onclick="showView('products')"><span class="icon">📦</span> Products &amp; Pricing</div>
+        <div class="nav-item" id="nav-log" onclick="showView('pricelog')"><span class="icon">📋</span> Price Change Log</div>
+        <div class="nav-item" id="nav-import" onclick="openJsonModal()"><span class="icon">⬆️</span> Import / Upload</div>
+        <div class="nav-label" style="margin-top:6px;">Navigate</div>
+        <div class="nav-item" onclick="window.location.href='hq-brands-suppliers.html'"><span class="icon">🏷️</span> Brands &amp; Suppliers</div>
+        <div class="nav-item" onclick="window.location.href='retail-product-catalogue.html?store=STORE-003'"><span class="icon">🏪</span> Retail Catalogue</div>
+      </div>
+      <div class="sidebar-foot"><a class="nav-back" href="index.html">← Back to Hub</a></div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <span class="topbar-title">Products, Pricing &amp; Assets</span>
+        <div class="topbar-right"><span class="hq-badge">HQ Admin</span></div>
+      </div>
+      <div class="content">
+
+        <!-- PRODUCTS VIEW -->
+        <div class="view active" id="view-products">
+          <div class="page-title">Product Catalogue</div>
+          <div class="page-sub">Manage all products, pricing, offer scheduling and enable/disable per product.</div>
+          <div class="toolbar">
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input type="text" id="productSearch" placeholder="Search products, SKU, brand…" oninput="productsGridApi.setGridOption('quickFilterText', this.value)">
+            </div>
+            <select class="filter-select" id="filterBrand" onchange="applyFilters()"><option value="">All Brands</option></select>
+            <select class="filter-select" id="filterCategory" onchange="applyFilters()">
+              <option value="">All Categories</option>
+              <option>Footwear</option><option>Apparel</option><option>Electronics</option><option>Accessories</option>
+            </select>
+            <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+              <option value="">All Status</option>
+              <option value="enabled">Enabled</option>
+              <option value="disabled">Disabled</option>
+            </select>
+            <button class="btn btn-ghost" onclick="openJsonModal()">⬆️ Import JSON</button>
+            <button class="btn btn-primary" onclick="openAddProductModal()">+ Add Product</button>
+          </div>
+          <div class="grid-wrap">
+            <div id="productsGrid" class="ag-theme-alpine" style="width:100%;"></div>
+          </div>
+        </div>
+
+        <!-- PRICE LOG VIEW -->
+        <div class="view" id="view-pricelog">
+          <div class="page-title">Price Change Log</div>
+          <div class="page-sub">All price changes across all products, sorted by most recent.</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+            <table class="price-log-table" id="globalPriceLogTable">
+              <thead><tr><th>Date / Time</th><th>Product</th><th>Brand</th><th>SKU</th><th>Old Price</th><th>New Price</th><th>Changed By</th><th>Reason</th></tr></thead>
+              <tbody id="globalPriceLogBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================ DATA */
+const BRANDS_LIST = [
+  {id:'brand-001',name:'Nike'},{id:'brand-002',name:'Adidas'},
+  {id:'brand-003',name:'Samsung'},{id:'brand-004',name:'Apple'},
+  {id:'brand-005',name:"Levi's"},{id:'brand-006',name:'Sony'}
+];
+
+let PRODUCTS = [
+  // NIKE
+  {id:'p-001',brandId:'brand-001',brandName:'Nike',sku:'NK-RN-001',name:'Air Max 270',category:'Footwear',subCategory:'Running Shoes',rrp:149.99,offerPrice:119.99,offerActive:true,offerScheduledAt:null,shortDescription:'Iconic Air Max cushioning for all-day comfort.',longDescription:'The Nike Air Max 270 features the biggest Air unit yet for a lifestyle shoe, delivering unparalleled, all-day cushioning.',features:['Air Max unit','Foam midsole','Mesh upper','Rubber outsole'],targetAudiences:['Men','Women','Runners'],thumbnail:'https://placehold.co/60x60/111/fff?text=AM270',enabled:true,images:[{id:'img-001',src:'https://placehold.co/300x200/111/fff?text=AM270+Main',label:'Hero Shot',tags:['primary','hero'],isPrimary:true},{id:'img-002',src:'https://placehold.co/300x200/333/fff?text=AM270+Side',label:'Side Profile',tags:['side'],isPrimary:false}],colours:[{hex:'#111111',label:'Black'},{hex:'#FFFFFF',label:'White'},{hex:'#FF6B35',label:'Orange'}],priceLog:[{date:'2026-03-15 10:22',changedBy:'Sarah Chen',oldPrice:149.99,newPrice:119.99,reason:'Spring sale'},{date:'2026-01-10 09:00',changedBy:'PIM Sync',oldPrice:159.99,newPrice:149.99,reason:'New season pricing'}]},
+  {id:'p-002',brandId:'brand-001',brandName:'Nike',sku:'NK-JK-022',name:'Tech Fleece Hoodie',category:'Apparel',subCategory:'Hoodies',rrp:89.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-04-15T09:00',shortDescription:'Engineered fleece for warmth without the bulk.',longDescription:'Nike Tech Fleece combines innovative fabric with a modern silhouette.',features:['Tech Fleece fabric','Kangaroo pocket','Full zip','Tapered fit'],targetAudiences:['Men'],thumbnail:'https://placehold.co/60x60/222/fff?text=TF+Hood',enabled:true,images:[{id:'img-003',src:'https://placehold.co/300x200/222/fff?text=TechFleece',label:'Front View',tags:['front','primary'],isPrimary:true}],colours:[{hex:'#111111',label:'Black'},{hex:'#404040',label:'Dark Grey'}],priceLog:[{date:'2026-02-01 08:00',changedBy:'Emma Davies',oldPrice:99.99,newPrice:89.99,reason:'Price reduction Q1'}]},
+  {id:'p-003',brandId:'brand-001',brandName:'Nike',sku:'NK-BT-055',name:'Dri-FIT Training Tee',category:'Apparel',subCategory:'T-Shirts',rrp:34.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Sweat-wicking fabric for intense training.',longDescription:'Standard Dri-FIT training tee with moisture management technology.',features:['Dri-FIT technology','Crew neck','Regular fit'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/555/fff?text=DriFIT',enabled:true,images:[],colours:[{hex:'#111111',label:'Black'},{hex:'#FFFFFF',label:'White'},{hex:'#1428A0',label:'Blue'}],priceLog:[]},
+  {id:'p-004',brandId:'brand-001',brandName:'Nike',sku:'NK-BG-011',name:'Heritage Backpack',category:'Accessories',subCategory:'Bags',rrp:54.99,offerPrice:44.99,offerActive:true,offerScheduledAt:null,shortDescription:'Versatile backpack with multiple compartments.',longDescription:'The Nike Heritage backpack offers iconic style with a practical compartment layout.',features:['Laptop sleeve','Two zip compartments','Padded straps'],targetAudiences:['All'],thumbnail:'https://placehold.co/60x60/888/fff?text=Bag',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-01 12:00',changedBy:'Tom Hughes',oldPrice:54.99,newPrice:44.99,reason:'Clearance'}]},
+  // ADIDAS
+  {id:'p-005',brandId:'brand-002',brandName:'Adidas',sku:'AD-UB-001',name:'Ultraboost 23',category:'Footwear',subCategory:'Running Shoes',rrp:179.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Responsive Boost midsole for high-performance running.',longDescription:'Every step in the Ultraboost 23 returns energy with Boost midsole technology.',features:['Boost midsole','Primeknit+ upper','Continental rubber outsole','Torsion system'],targetAudiences:['Runners','Athletes'],thumbnail:'https://placehold.co/60x60/000/fff?text=UB23',enabled:true,images:[],colours:[{hex:'#000000',label:'Core Black'},{hex:'#FFFFFF',label:'White'}],priceLog:[]},
+  {id:'p-006',brandId:'brand-002',brandName:'Adidas',sku:'AD-TF-099',name:'Tiro 23 Tracksuit',category:'Apparel',subCategory:'Tracksuits',rrp:74.99,offerPrice:59.99,offerActive:true,offerScheduledAt:null,shortDescription:'Football-inspired training tracksuit.',longDescription:'Tiro 23 combines football heritage with everyday wearability.',features:['Recycled polyester','Aeroready technology','Tapered leg','Zip pockets'],targetAudiences:['Men','Football fans'],thumbnail:'https://placehold.co/60x60/0057A0/fff?text=Tiro23',enabled:true,images:[],colours:[{hex:'#000000',label:'Black'},{hex:'#FFFFFF',label:'White'}],priceLog:[{date:'2026-03-10 14:00',changedBy:'Admin',oldPrice:74.99,newPrice:59.99,reason:'Weekend offer'}]},
+  {id:'p-007',brandId:'brand-002',brandName:'Adidas',sku:'AD-SN-044',name:'Stan Smith Lux',category:'Footwear',subCategory:'Lifestyle Shoes',rrp:129.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-05-01T08:00',shortDescription:'Premium leather Stan Smith with gold accents.',longDescription:'The Stan Smith Lux elevates the classic with premium full-grain leather.',features:['Full-grain leather upper','Gold foil details','Rubber outsole'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/f5f5f5/333?text=StanLux',enabled:true,images:[],colours:[{hex:'#FFFFFF',label:'White'},{hex:'#FFD700',label:'Gold'}],priceLog:[]},
+  {id:'p-008',brandId:'brand-002',brandName:'Adidas',sku:'AD-CP-012',name:'Adicolor Cap',category:'Accessories',subCategory:'Headwear',rrp:24.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Classic 5-panel cap with embroidered trefoil.',longDescription:'Adicolor cap with heritage styling.',features:['5-panel','Embroidered trefoil','Adjustable strap'],targetAudiences:['All'],thumbnail:'https://placehold.co/60x60/ff3300/fff?text=Cap',enabled:false,images:[],colours:[],priceLog:[]},
+  // SAMSUNG
+  {id:'p-009',brandId:'brand-003',brandName:'Samsung',sku:'SS-TV-065',name:'Galaxy Neo QLED 65"',category:'Electronics',subCategory:'TVs',rrp:1799.99,offerPrice:1499.99,offerActive:true,offerScheduledAt:null,shortDescription:'Neo QLED with 4K upscaling and Quantum Matrix Technology.',longDescription:'Experience next-level picture quality with the Samsung Galaxy Neo QLED 65 inch television.',features:['Neo QLED','4K AI upscaling','Object Tracking Sound','SmartThings hub'],targetAudiences:['Homeowners','Tech enthusiasts'],thumbnail:'https://placehold.co/60x60/1428A0/fff?text=QLED',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-20 09:00',changedBy:'PIM Sync',oldPrice:1799.99,newPrice:1499.99,reason:'Spring sale event'}]},
+  {id:'p-010',brandId:'brand-003',brandName:'Samsung',sku:'SS-WM-029',name:'EcoBubble Washing Machine 9kg',category:'Electronics',subCategory:'Appliances',rrp:699.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'EcoBubble technology cleans effectively at low temperatures.',longDescription:'Samsung EcoBubble 9kg washing machine with AI energy control.',features:['EcoBubble','AI Energy','9kg capacity','B energy rating'],targetAudiences:['Homeowners'],thumbnail:'https://placehold.co/60x60/2D2D2D/fff?text=WashM',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-011',brandId:'brand-003',brandName:'Samsung',sku:'SS-FG-077',name:'French Door Fridge 600L',category:'Electronics',subCategory:'Appliances',rrp:1299.99,offerPrice:999.99,offerActive:true,offerScheduledAt:null,shortDescription:'Smart French door refrigerator with food management AI.',longDescription:'Samsung French Door 600L with AI Smart Inverter and food tracking.',features:['AI Smart Inverter','SpaceMax','Twin Cooling Plus','600L capacity'],targetAudiences:['Homeowners'],thumbnail:'https://placehold.co/60x60/1428A0/fff?text=Fridge',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-012',brandId:'brand-003',brandName:'Samsung',sku:'SS-TAB-S9',name:'Galaxy Tab S9',category:'Electronics',subCategory:'Tablets',rrp:799.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-04-20T09:00',shortDescription:'Flagship Android tablet with Dynamic AMOLED 2X display.',longDescription:'The Samsung Galaxy Tab S9 delivers a premium tablet experience.',features:['Dynamic AMOLED 2X','Snapdragon 8 Gen 2','S Pen included','IP68'],targetAudiences:['Professionals','Creatives'],thumbnail:'https://placehold.co/60x60/555/fff?text=TabS9',enabled:true,images:[],colours:[],priceLog:[]},
+  // APPLE
+  {id:'p-013',brandId:'brand-004',brandName:'Apple',sku:'AP-IPH-15',name:'iPhone 15 Pro',category:'Electronics',subCategory:'Smartphones',rrp:1099.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Titanium design with A17 Pro chip.',longDescription:'iPhone 15 Pro. Forged in titanium and featuring the groundbreaking A17 Pro chip.',features:['A17 Pro chip','Titanium design','USB-C','48MP ProCamera'],targetAudiences:['Professionals','Tech enthusiasts'],thumbnail:'https://placehold.co/60x60/1D1D1F/fff?text=iPhone',enabled:true,images:[],colours:[{hex:'#1D1D1F',label:'Black Titanium'},{hex:'#FFFFFF',label:'White Titanium'}],priceLog:[]},
+  {id:'p-014',brandId:'brand-004',brandName:'Apple',sku:'AP-IPD-13',name:'iPad Pro 13"',category:'Electronics',subCategory:'Tablets',rrp:1299.99,offerPrice:1099.99,offerActive:true,offerScheduledAt:null,shortDescription:'The ultimate iPad experience with M2 chip.',longDescription:'iPad Pro 13 inch with the Apple M2 chip, Liquid Retina XDR display, and ProRes video.',features:['Apple M2','Liquid Retina XDR','ProRes video','USB-C Thunderbolt 4'],targetAudiences:['Creatives','Professionals'],thumbnail:'https://placehold.co/60x60/F5F5F7/333?text=iPadPro',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-25 11:00',changedBy:'Admin',oldPrice:1299.99,newPrice:1099.99,reason:'Trade-in promotion'}]},
+  {id:'p-015',brandId:'brand-004',brandName:'Apple',sku:'AP-AW-S9',name:'Apple Watch Series 9',category:'Electronics',subCategory:'Wearables',rrp:449.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Advanced health monitoring and Double Tap gesture.',longDescription:'Apple Watch Series 9 with the S9 chip and new Double Tap gesture.',features:['S9 chip','Double Tap','Always-On display','Blood oxygen sensor'],targetAudiences:['Health-conscious','Tech enthusiasts'],thumbnail:'https://placehold.co/60x60/0071E3/fff?text=Watch',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-016',brandId:'brand-004',brandName:'Apple',sku:'AP-AC-MGSF',name:'MagSafe Charger',category:'Accessories',subCategory:'Charging',rrp:45.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Wireless MagSafe charging for iPhone.',longDescription:'Apple MagSafe Charger for fast wireless charging aligned magnetically.',features:['15W fast charge','USB-C connector','Magnetic alignment'],targetAudiences:['iPhone users'],thumbnail:'https://placehold.co/60x60/999/fff?text=MagSafe',enabled:true,images:[],colours:[],priceLog:[]},
+  // LEVIS
+  {id:'p-017',brandId:'brand-005',brandName:"Levi's",sku:'LV-501-W32',name:"501 Original Jeans W32",category:'Apparel',subCategory:'Denim',rrp:89.99,offerPrice:71.99,offerActive:true,offerScheduledAt:null,shortDescription:'The original blue jean. Since 1873.',longDescription:"Levi's 501 Original Jeans — the blueprint for all denim that followed.",features:['Button fly','Straight fit','100% cotton denim','Shrink-to-fit option'],targetAudiences:['Men'],thumbnail:'https://placehold.co/60x60/1A5276/fff?text=501',enabled:true,images:[],colours:[{hex:'#1A5276',label:'Medium Stonewash'},{hex:'#1B2631',label:'Dark Indigo'}],priceLog:[{date:'2026-03-18 08:00',changedBy:'Mark Reed',oldPrice:89.99,newPrice:71.99,reason:'20% off denim week'}]},
+  {id:'p-018',brandId:'brand-005',brandName:"Levi's",sku:'LV-STF-W28',name:'Strauss Trucker Jacket W28',category:'Apparel',subCategory:'Jackets',rrp:119.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Iconic trucker jacket in classic denim.',longDescription:"The Levi's Trucker Jacket has been a classic since its debut in 1962.",features:['100% cotton denim','Button closure','Chest pockets','Adjustable waistband'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/2E4057/fff?text=Trucker',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-019',brandId:'brand-005',brandName:"Levi's",sku:'LV-TEE-S',name:'Logo Tee S',category:'Apparel',subCategory:'T-Shirts',rrp:29.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Classic Levi\'s logo tee in relaxed fit.',longDescription:'Clean and classic Levi\'s t-shirt with batwing logo.',features:['100% cotton','Crew neck','Batwing logo','Relaxed fit'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/C41230/fff?text=Tee',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-020',brandId:'brand-005',brandName:"Levi's",sku:'LV-BLT-001',name:'Leather Belt',category:'Accessories',subCategory:'Belts',rrp:34.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Classic leather belt with debossed logo.',longDescription:"Genuine leather belt with Levi's logo on the buckle.",features:['Genuine leather','Metal buckle','Debossed logo'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/8B4513/fff?text=Belt',enabled:false,images:[],colours:[],priceLog:[]},
+  // SONY
+  {id:'p-021',brandId:'brand-006',brandName:'Sony',sku:'SN-WH-1000XM5',name:'WH-1000XM5 Headphones',category:'Electronics',subCategory:'Headphones',rrp:349.99,offerPrice:279.99,offerActive:true,offerScheduledAt:null,shortDescription:'Industry-leading noise cancelling with 30hr battery.',longDescription:'Sony WH-1000XM5 wireless headphones with Auto NC Optimizer and Multipoint connection.',features:['Auto NC Optimizer','30hr battery','Multipoint connection','Speak-to-Chat'],targetAudiences:['Music lovers','Commuters','Professionals'],thumbnail:'https://placehold.co/60x60/003087/fff?text=WH5',enabled:true,images:[],colours:[{hex:'#000000',label:'Black'},{hex:'#E8D5B0',label:'Silver'}],priceLog:[{date:'2026-03-22 10:00',changedBy:'PIM Sync',oldPrice:349.99,newPrice:279.99,reason:'Spring promotion'}]},
+  {id:'p-022',brandId:'brand-006',brandName:'Sony',sku:'SN-PS5-CL',name:'PlayStation 5 Console',category:'Electronics',subCategory:'Gaming',rrp:479.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Next-gen gaming with ultra-high speed SSD.',longDescription:'The PS5 console unleashes new gaming possibilities with ultra-high speed SSD, haptic feedback and 4K gaming.',features:['Ultra-HD Blu-ray','825GB SSD','Haptic feedback','3D Audio'],targetAudiences:['Gamers'],thumbnail:'https://placehold.co/60x60/006FCD/fff?text=PS5',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-023',brandId:'brand-006',brandName:'Sony',sku:'SN-CAM-A7M4',name:'Alpha 7 IV Camera Body',category:'Electronics',subCategory:'Cameras',rrp:2499.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-06-01T09:00',shortDescription:'33MP full-frame mirrorless camera with 4K 60p video.',longDescription:'The Sony Alpha 7 IV is a versatile full-frame mirrorless camera for both stills and video.',features:['33MP BSI sensor','4K 60p 10-bit','759-point AF','5-axis IBIS'],targetAudiences:['Photographers','Videographers'],thumbnail:'https://placehold.co/60x60/1a1a1a/fff?text=A7IV',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-024',brandId:'brand-006',brandName:'Sony',sku:'SN-SPK-XB33',name:'XB33 Extra Bass Speaker',category:'Electronics',subCategory:'Speakers',rrp:149.99,offerPrice:119.99,offerActive:true,offerScheduledAt:null,shortDescription:'Waterproof portable speaker with Extra Bass.',longDescription:'Sony SRS-XB33 with EXTRA BASS, IP67 water resistance and 24hr battery.',features:['EXTRA BASS','IP67 waterproof','24hr battery','Party Connect'],targetAudiences:['Music lovers','Outdoor enthusiasts'],thumbnail:'https://placehold.co/60x60/FF0000/fff?text=XB33',enabled:true,images:[],colours:[],priceLog:[]}
+];
+
+let productsGridApi = null;
+let editingProductId = null;
+let currentProductImages = [];
+let currentAudienceTags  = [];
+let currentFeatureTags   = [];
+let pendingJsonProducts  = null;
+const GLOBAL_TAGS = ['primary','hero','side','front','back','detail','lifestyle','campaign'];
+
+/* ============================================================ UTILITIES */
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtPrice(v){ return v != null ? '£' + parseFloat(v).toFixed(2) : '—'; }
+function getOfferStatus(p){
+  if (!p.offerPrice) return 'none';
+  if (p.offerScheduledAt && new Date(p.offerScheduledAt) > new Date()) return 'scheduled';
+  if (p.offerActive) return 'live';
+  return 'none';
+}
+
+/* ============================================================ TOAST */
+function showToast(msg, type='success'){
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`; t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+/* ============================================================ VIEWS */
+function showView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  const ni = document.getElementById('nav-' + name);
+  if (ni) ni.classList.add('active');
+  if (name === 'pricelog') buildGlobalPriceLog();
+}
+
+/* ============================================================ FILTERS */
+function applyFilters(){
+  const brand  = document.getElementById('filterBrand').value;
+  const cat    = document.getElementById('filterCategory').value;
+  const status = document.getElementById('filterStatus').value;
+  productsGridApi.setGridOption('rowData', PRODUCTS.filter(p => {
+    if (brand  && p.brandId !== brand) return false;
+    if (cat    && p.category !== cat) return false;
+    if (status === 'enabled'  && !p.enabled) return false;
+    if (status === 'disabled' &&  p.enabled) return false;
+    return true;
+  }));
+}
+
+/* ============================================================ PRODUCTS GRID */
+function initProductsGrid(){
+  // Populate brand filter
+  const sel = document.getElementById('filterBrand');
+  BRANDS_LIST.forEach(b => {
+    const o = document.createElement('option');
+    o.value = b.id; o.textContent = b.name;
+    sel.appendChild(o);
+  });
+
+  productsGridApi = agGrid.createGrid(document.getElementById('productsGrid'), {
+    domLayout: 'autoHeight',
+    rowHeight: 72,
+    suppressCellFocus: true,
+    suppressMovableColumns: true,
+    defaultColDef: { resizable:true, sortable:true, suppressMenu:true },
+    columnDefs: [
+      {
+        headerName:'', field:'thumbnail', width:72, sortable:false,
+        cellRenderer: p => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;height:100%;';
+          const img = document.createElement('img');
+          img.src = p.value;
+          img.style.cssText = 'width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border);';
+          img.onerror = () => { img.src = `https://placehold.co/48x48/e2e8f0/94a3b8?text=${encodeURIComponent((p.data.name||'?').charAt(0))}`; };
+          wrap.appendChild(img);
+          return wrap;
+        }
+      },
+      {
+        headerName:'Product Name', field:'name', flex:2.5,
+        cellRenderer: p => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;flex-direction:column;justify-content:center;height:100%;';
+          const nm = document.createElement('div');
+          nm.style.cssText = 'font-weight:700;font-size:13px;color:var(--primary);cursor:pointer;';
+          nm.textContent = p.value;
+          nm.onclick = () => openEditProductModal(p.data.id);
+          const sub = document.createElement('div');
+          sub.style.cssText = 'font-size:11px;color:var(--text2);font-family:monospace;margin-top:2px;';
+          sub.textContent = p.data.sku;
+          wrap.appendChild(nm); wrap.appendChild(sub);
+          return wrap;
+        }
+      },
+      { headerName:'Brand', field:'brandName', flex:1.4 },
+      {
+        headerName:'SKU', field:'sku', flex:1.1,
+        cellRenderer: p => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;gap:6px;height:100%;';
+          const code = document.createElement('code');
+          code.style.cssText = 'font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;cursor:pointer;user-select:none;';
+          code.textContent = p.value;
+          code.title = 'Click to copy';
+          code.onclick = () => {
+            navigator.clipboard.writeText(p.value).catch(() => {
+              const ta = document.createElement('textarea');
+              ta.value = p.value; document.body.appendChild(ta);
+              ta.select(); document.execCommand('copy');
+              document.body.removeChild(ta);
+            });
+            showToast('SKU copied: ' + p.value, 'info');
+          };
+          wrap.appendChild(code);
+          return wrap;
+        }
+      },
+      { headerName:'Category', field:'category', flex:1 },
+      { headerName:'Sub-Category', field:'subCategory', flex:1.2 },
+      {
+        headerName:'RRP', field:'rrp', flex:0.9,
+        valueFormatter: p => fmtPrice(p.value),
+        cellStyle: { fontWeight:'600' }
+      },
+      {
+        headerName:'Offer / Price', field:'offerPrice', flex:1.2,
+        cellRenderer: p => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;height:100%;';
+          const status = getOfferStatus(p.data);
+          if (status === 'none') {
+            const dash = document.createElement('span');
+            dash.style.cssText = 'color:var(--text3);font-size:13px;';
+            dash.textContent = '—';
+            wrap.appendChild(dash);
+          } else if (status === 'live') {
+            const badge = document.createElement('span');
+            badge.className = 'offer-badge offer-live';
+            badge.innerHTML = `🟢 ${fmtPrice(p.value)}`;
+            wrap.appendChild(badge);
+          } else {
+            const badge = document.createElement('span');
+            badge.className = 'offer-badge offer-scheduled';
+            badge.innerHTML = `🕐 ${fmtPrice(p.value)}`;
+            badge.title = 'Scheduled: ' + p.data.offerScheduledAt;
+            wrap.appendChild(badge);
+          }
+          return wrap;
+        }
+      },
+      {
+        headerName:'Status', field:'enabled', flex:0.8, sortable:false,
+        cellRenderer: p => {
+          const label = document.createElement('label');
+          label.className = 'toggle';
+          const inp = document.createElement('input');
+          inp.type = 'checkbox'; inp.checked = p.value;
+          inp.onchange = () => {
+            const prod = PRODUCTS.find(pr => pr.id === p.data.id);
+            if (prod) { prod.enabled = inp.checked; showToast(prod.name + (inp.checked ? ' enabled' : ' disabled'), 'info'); }
+          };
+          const slider = document.createElement('span');
+          slider.className = 'toggle-slider';
+          label.appendChild(inp); label.appendChild(slider);
+          return label;
+        }
+      },
+      {
+        headerName:'', sortable:false, flex:0.8,
+        cellRenderer: p => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;gap:5px;height:100%;';
+          const edit = document.createElement('button');
+          edit.className = 'btn btn-ghost btn-sm'; edit.textContent = 'Edit';
+          edit.onclick = () => openEditProductModal(p.data.id);
+          const del = document.createElement('button');
+          del.className = 'btn btn-ghost btn-sm'; del.style.color = 'var(--danger)'; del.textContent = '✕';
+          del.onclick = () => confirmDelete(p.data.id, p.data.name);
+          wrap.appendChild(edit); wrap.appendChild(del);
+          return wrap;
+        }
+      }
+    ],
+    rowData: PRODUCTS
+  });
+}
+
+/* ============================================================ MODAL HELPERS */
+function switchProductTab(num){
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pmTab-' + num).classList.add('active');
+  document.getElementById('pmPane-' + num).classList.add('active');
+}
+
+function openAddProductModal(){
+  editingProductId = null;
+  document.getElementById('productModalTitle').textContent = 'Add Product';
+  clearProductForm();
+  switchProductTab('1');
+  document.getElementById('productModal').classList.add('open');
+}
+
+function openEditProductModal(id){
+  const prod = PRODUCTS.find(p => p.id === id);
+  if (!prod) return;
+  editingProductId = id;
+  document.getElementById('productModalTitle').textContent = 'Edit — ' + prod.name;
+  populateProductForm(prod);
+  switchProductTab('1');
+  document.getElementById('productModal').classList.add('open');
+}
+
+function closeProductModal(){ document.getElementById('productModal').classList.remove('open'); }
+
+function clearProductForm(){
+  ['pm-brand','pm-sku','pm-name','pm-shortdesc','pm-longdesc','pm-rrp','pm-offerprice','pm-scheduledfrom','pm-scheduleduntil','pm-subcategory'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('pm-category').value = 'Footwear';
+  document.getElementById('pm-enabled').checked = true;
+  currentAudienceTags = []; currentFeatureTags = [];
+  renderTagChips('audiences'); renderTagChips('features');
+  currentProductImages = [];
+  buildAccordions([],[],[],[],[]);
+  renderImgGallery();
+  document.getElementById('priceLogBody').innerHTML = '';
+}
+
+function populateProductForm(p){
+  // brand select
+  const brandSel = document.getElementById('pm-brand');
+  brandSel.value = p.brandId;
+  document.getElementById('pm-sku').value         = p.sku || '';
+  document.getElementById('pm-name').value        = p.name || '';
+  document.getElementById('pm-shortdesc').value   = p.shortDescription || '';
+  document.getElementById('pm-longdesc').value    = p.longDescription || '';
+  document.getElementById('pm-rrp').value         = p.rrp || '';
+  document.getElementById('pm-offerprice').value  = p.offerPrice || '';
+  document.getElementById('pm-category').value    = p.category || 'Footwear';
+  document.getElementById('pm-subcategory').value = p.subCategory || '';
+  document.getElementById('pm-enabled').checked   = p.enabled;
+  if (p.offerScheduledAt) {
+    const local = new Date(new Date(p.offerScheduledAt) - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+    document.getElementById('pm-scheduledfrom').value = local;
+  }
+  currentAudienceTags = [...(p.targetAudiences || [])];
+  currentFeatureTags  = [...(p.features || [])];
+  renderTagChips('audiences');
+  renderTagChips('features');
+  currentProductImages = (p.images || []).map(img => ({...img}));
+  renderImgGallery();
+  buildAccordions(p.colours||[], p.ingredients||[], p.customisations||[], p.nutrition||{}, p.sizing||'');
+  renderPriceLog(p.priceLog || []);
+}
+
+/* ============================================================ SAVE PRODUCT */
+function saveProduct(){
+  const name = document.getElementById('pm-name').value.trim();
+  const sku  = document.getElementById('pm-sku').value.trim();
+  const rrp  = parseFloat(document.getElementById('pm-rrp').value);
+  if (!name) { showToast('Product name is required','error'); switchProductTab('1'); return; }
+  if (!sku)  { showToast('SKU is required','error'); switchProductTab('1'); return; }
+  if (isNaN(rrp) || rrp <= 0) { showToast('Valid RRP is required','error'); switchProductTab('1'); return; }
+
+  const brandId = document.getElementById('pm-brand').value;
+  const brand   = BRANDS_LIST.find(b => b.id === brandId);
+  const offerPriceRaw = document.getElementById('pm-offerprice').value;
+  const offerPrice = offerPriceRaw ? parseFloat(offerPriceRaw) : null;
+  const schedFrom  = document.getElementById('pm-scheduledfrom').value;
+
+  const payload = {
+    id: editingProductId || 'p-' + Date.now(),
+    brandId, brandName: brand?.name || '',
+    sku, name,
+    category:    document.getElementById('pm-category').value,
+    subCategory: document.getElementById('pm-subcategory').value,
+    rrp,
+    offerPrice,
+    offerActive:    !!(offerPrice && !schedFrom),
+    offerScheduledAt: schedFrom ? new Date(schedFrom).toISOString() : null,
+    shortDescription: document.getElementById('pm-shortdesc').value,
+    longDescription:  document.getElementById('pm-longdesc').value,
+    targetAudiences: [...currentAudienceTags],
+    features:        [...currentFeatureTags],
+    thumbnail: `https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent(sku)}`,
+    enabled: document.getElementById('pm-enabled').checked,
+    images: currentProductImages,
+    colours: [],
+    priceLog: editingProductId ? (PRODUCTS.find(p => p.id === editingProductId)?.priceLog || []) : []
+  };
+
+  if (editingProductId) {
+    const idx = PRODUCTS.findIndex(p => p.id === editingProductId);
+    if (idx !== -1) PRODUCTS[idx] = payload;
+    showToast(`"${name}" updated`);
+  } else {
+    PRODUCTS.push(payload);
+    showToast(`"${name}" added`);
+  }
+  productsGridApi.setGridOption('rowData', PRODUCTS);
+  closeProductModal();
+}
+
+/* ============================================================ DELETE */
+function confirmDelete(id, name){
+  document.getElementById('confirmTitle').textContent = 'Delete Product?';
+  document.getElementById('confirmMsg').textContent = `"${name}" will be permanently removed.`;
+  document.getElementById('confirmBtn').onclick = () => {
+    const idx = PRODUCTS.findIndex(p => p.id === id);
+    if (idx !== -1) PRODUCTS.splice(idx,1);
+    productsGridApi.setGridOption('rowData', PRODUCTS);
+    closeConfirm();
+    showToast(`"${name}" deleted`,'info');
+  };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); }
+
+/* ============================================================ TAG CHIPS */
+function renderTagChips(type){
+  const arr  = type === 'audiences' ? currentAudienceTags : currentFeatureTags;
+  const wrap = document.getElementById(type + 'Wrap');
+  const inp  = document.getElementById(type + 'Input');
+  const chips = arr.map((tag,i) => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${escHtml(tag)} <span class="rm" onclick="removeTag('${type}',${i})">×</span>`;
+    return chip;
+  });
+  // clear all chips then re-add
+  while (wrap.firstChild && wrap.firstChild !== inp) wrap.removeChild(wrap.firstChild);
+  chips.forEach(c => wrap.insertBefore(c, inp));
+}
+
+function handleTagInput(e, type){
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const v = e.target.value.replace(',','').trim();
+    if (!v) return;
+    (type === 'audiences' ? currentAudienceTags : currentFeatureTags).push(v);
+    e.target.value = '';
+    renderTagChips(type);
+  }
+}
+
+function removeTag(type, idx){
+  (type === 'audiences' ? currentAudienceTags : currentFeatureTags).splice(idx,1);
+  renderTagChips(type);
+}
+
+/* ============================================================ ACCORDIONS */
+function buildAccordions(colours, ingredients, customisations, nutrition, sizing){
+  document.getElementById('accordionsContainer').innerHTML = `
+    ${makeAccordion('acc-colours','Available Colours', renderColoursContent(colours))}
+    ${makeAccordion('acc-ingredients','Ingredients', renderIngredientsContent(ingredients))}
+    ${makeAccordion('acc-custom','Customisation Options', renderCustomisationsContent(customisations))}
+    ${makeAccordion('acc-nutrition','Nutrition Information', renderNutritionContent(nutrition))}
+    ${makeAccordion('acc-sizing','Sizing Data', renderSizingContent(sizing))}
+  `;
+}
+
+function makeAccordion(id, title, content){
+  return `
+    <div class="accordion-item" id="${id}">
+      <div class="accordion-header" onclick="toggleAccordion('${id}')">
+        <span>${title}</span>
+        <span class="accordion-arrow">▼</span>
+      </div>
+      <div class="accordion-body">
+        <div class="accordion-content">${content}</div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleAccordion(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+function renderColoursContent(colours){
+  const swatches = (colours||[]).map((c,i) =>
+    `<div class="colour-swatch" style="background:${escHtml(c.hex)};" data-label="${escHtml(c.label)}" title="${escHtml(c.label)} ${escHtml(c.hex)}"></div>`
+  ).join('');
+  return `
+    <div class="colour-swatches" style="margin-bottom:12px;">${swatches || '<span style="font-size:12px;color:var(--text3);">No colours defined yet</span>'}</div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input type="color" id="newColourPicker" value="#169bc2" style="width:34px;height:34px;padding:2px;border:1px solid var(--border);border-radius:6px;cursor:pointer;">
+      <input type="text" id="newColourLabel" placeholder="Colour name" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--text);outline:none;flex:1;">
+      <button class="btn btn-ghost btn-sm" onclick="addProductColour()">+ Add</button>
+    </div>
+  `;
+}
+
+function addProductColour(){
+  const hex   = document.getElementById('newColourPicker').value;
+  const label = document.getElementById('newColourLabel').value.trim() || hex;
+  const swatches = document.querySelector('#acc-colours .colour-swatches');
+  const div = document.createElement('div');
+  div.className = 'colour-swatch';
+  div.style.background = hex;
+  div.title = label + ' ' + hex;
+  div.setAttribute('data-label', label);
+  swatches.appendChild(div);
+  document.getElementById('newColourLabel').value = '';
+}
+
+function renderIngredientsContent(ingredients){
+  const tags = (ingredients||[]).map((t,i) =>
+    `<span class="tag-chip" style="background:var(--success-light);border-color:rgba(82,196,26,.3);color:var(--success);">${escHtml(t)}</span>`
+  ).join('');
+  return `
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">${tags || '<span style="font-size:12px;color:var(--text3);">No ingredients defined</span>'}</div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="ingredientInput" placeholder="Add ingredient…" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text);outline:none;flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();}">
+      <button class="btn btn-ghost btn-sm" onclick="addIngredient()">+ Add</button>
+    </div>
+  `;
+}
+
+function addIngredient(){
+  const inp = document.getElementById('ingredientInput');
+  const v = inp.value.trim(); if (!v) return;
+  const wrap = document.querySelector('#acc-ingredients .accordion-content div:first-child');
+  const chip = document.createElement('span');
+  chip.className = 'tag-chip';
+  chip.style.cssText = 'background:var(--success-light);border-color:rgba(82,196,26,.3);color:var(--success);';
+  chip.textContent = v;
+  wrap.appendChild(chip);
+  inp.value = '';
+}
+
+function renderCustomisationsContent(customisations){
+  const rows = (customisations||[]).map(c =>
+    `<tr><td><input value="${escHtml(c.name)}"></td><td><select><option ${c.type==='Add'?'selected':''}>Add</option><option ${c.type==='Swap'?'selected':''}>Swap</option><option ${c.type==='Remove'?'selected':''}>Remove</option></select></td><td><input value="${escHtml(c.priceImpact||'')}" placeholder="e.g. +£2.00"></td><td><button class="btn btn-ghost btn-sm" onclick="this.closest('tr').remove()">✕</button></td></tr>`
+  ).join('');
+  return `
+    <table class="custom-table"><thead><tr><th>Option Name</th><th>Type</th><th>Price Impact</th><th></th></tr></thead>
+    <tbody id="customTableBody">${rows}</tbody></table>
+    <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="addCustomisationRow()">+ Add Option</button>
+  `;
+}
+
+function addCustomisationRow(){
+  const tbody = document.getElementById('customTableBody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input placeholder="Option name"></td><td><select><option>Add</option><option>Swap</option><option>Remove</option></select></td><td><input placeholder="+£0.00"></td><td><button class="btn btn-ghost btn-sm" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function renderNutritionContent(n){
+  const fields = [
+    {key:'calories',label:'Calories (kcal'},
+    {key:'fat',label:'Fat (g)'},
+    {key:'carbs',label:'Carbs (g)'},
+    {key:'protein',label:'Protein (g)'},
+    {key:'fibre',label:'Fibre (g)'},
+    {key:'sugar',label:'Sugar (g)'},
+    {key:'salt',label:'Salt (g)'},
+    {key:'serving',label:'Serving Size'}
+  ];
+  const cells = fields.map(f =>
+    `<div class="nutrition-cell"><input id="nutr-${f.key}" value="${escHtml((n||{})[f.key]||'')}"><label>${f.label}</label></div>`
+  ).join('');
+  return `<div class="nutrition-grid">${cells}</div>`;
+}
+
+function renderSizingContent(sizing){
+  return `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Enter size chart data (e.g. UK sizes and EU/US equivalents for footwear or S/M/L/XL for clothing).</div>
+    <textarea id="sizingData" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font-family:monospace;font-size:12px;color:var(--text);outline:none;resize:vertical;min-height:120px;" placeholder="UK 6 = EU 39 = US 7&#10;UK 7 = EU 40 = US 8&#10;…">${escHtml(sizing||'')}</textarea>
+  `;
+}
+
+/* ============================================================ IMAGE GALLERY */
+function renderImgGallery(){
+  const gallery = document.getElementById('imgGallery');
+  gallery.innerHTML = '';
+  currentProductImages.forEach((img, i) => {
+    const card = document.createElement('div');
+    card.className = 'img-card' + (img.isPrimary ? ' primary-img' : '');
+    card.id = 'imgCard-' + i;
+    card.innerHTML = `
+      <img class="img-card-thumb" src="${escHtml(img.src)}" alt="${escHtml(img.label||'Product image')}">
+      <div class="img-card-body">
+        <div class="img-card-label">Label</div>
+        <input class="img-card-input" value="${escHtml(img.label||'')}" placeholder="e.g. Hero Shot" onchange="currentProductImages[${i}].label=this.value">
+        <div class="img-card-actions">
+          <button class="img-primary-btn ${img.isPrimary?'active':''}" title="Set as primary" onclick="setPrimaryImage(${i})">⭐</button>
+          ${img.isPrimary ? '<span style="font-size:10px;font-weight:700;color:var(--warning);background:rgba(245,158,11,.1);border-radius:4px;padding:2px 5px;">PRIMARY</span>' : ''}
+          <button class="img-del-btn" onclick="deleteProductImage(${i})">🗑️</button>
+        </div>
+        <div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px;">
+          ${(img.tags||[]).map((t,ti) => `<span style="font-size:10px;background:var(--primary-light);color:var(--primary);border-radius:10px;padding:2px 6px;">${escHtml(t)}</span>`).join('')}
+        </div>
+      </div>
+    `;
+    gallery.appendChild(card);
+  });
+
+  // Global tags
+  document.getElementById('globalTagsWrap').innerHTML = GLOBAL_TAGS.map(t =>
+    `<span style="font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px 9px;cursor:pointer;color:var(--text2);" onclick="addTagToNewAsset('${t}')">${t}</span>`
+  ).join('');
+}
+
+function setPrimaryImage(idx){
+  currentProductImages.forEach((img,i) => { img.isPrimary = (i === idx); });
+  renderImgGallery();
+}
+
+function deleteProductImage(idx){
+  currentProductImages.splice(idx,1);
+  renderImgGallery();
+}
+
+function addTagToNewAsset(tag){ showToast('Tag "' + tag + '" ready — upload an image to apply it','info'); }
+
+function handleAssetUpload(event){
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    if (file.size > 2*1024*1024) { showToast(file.name + ' is too large (max 2MB)','error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      currentProductImages.push({ id:'img-'+Date.now(), src:e.target.result, label:file.name.split('.')[0], tags:[], isPrimary:currentProductImages.length===0 });
+      renderImgGallery();
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+
+/* ============================================================ PRICE LOG */
+function renderPriceLog(log){
+  document.getElementById('priceLogBody').innerHTML = (log||[]).slice().reverse().map(entry => {
+    const change = (entry.newPrice - entry.oldPrice).toFixed(2);
+    const cls = change > 0 ? 'change-positive' : 'change-negative';
+    const sign = change > 0 ? '+' : '';
+    return `<tr>
+      <td style="white-space:nowrap;">${escHtml(entry.date)}</td>
+      <td>${escHtml(entry.changedBy)}</td>
+      <td>${fmtPrice(entry.oldPrice)}</td>
+      <td><strong>${fmtPrice(entry.newPrice)}</strong></td>
+      <td class="${cls}">${sign}£${change}</td>
+      <td style="color:var(--text2);">${escHtml(entry.reason)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);">No price changes recorded</td></tr>';
+}
+
+function toggleLogEntryForm(){
+  const f = document.getElementById('logEntryForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+function addLogEntry(){
+  const oldP  = parseFloat(document.getElementById('log-old').value);
+  const newP  = parseFloat(document.getElementById('log-new').value);
+  const by    = document.getElementById('log-by').value.trim() || 'Manual';
+  const rsn   = document.getElementById('log-reason').value.trim() || '';
+  if (isNaN(oldP) || isNaN(newP)) { showToast('Both prices are required','error'); return; }
+  if (!editingProductId) { showToast('Save the product first','error'); return; }
+  const prod = PRODUCTS.find(p => p.id === editingProductId);
+  if (!prod) return;
+  const now = new Date();
+  const entry = {
+    date: now.toISOString().slice(0,16).replace('T',' '),
+    changedBy: by, oldPrice: oldP, newPrice: newP, reason: rsn
+  };
+  prod.priceLog.push(entry);
+  renderPriceLog(prod.priceLog);
+  ['log-old','log-new','log-by','log-reason'].forEach(id => { document.getElementById(id).value = ''; });
+  toggleLogEntryForm();
+  showToast('Price log entry added');
+}
+
+/* ============================================================ GLOBAL PRICE LOG */
+function buildGlobalPriceLog(){
+  const allEntries = [];
+  PRODUCTS.forEach(p => {
+    (p.priceLog||[]).forEach(entry => allEntries.push({...entry, productName:p.name, brandName:p.brandName, sku:p.sku}));
+  });
+  allEntries.sort((a,b) => b.date.localeCompare(a.date));
+  document.getElementById('globalPriceLogBody').innerHTML = allEntries.map(e => {
+    const change = (e.newPrice - e.oldPrice).toFixed(2);
+    const cls = change > 0 ? 'change-positive' : 'change-negative';
+    const sign = change > 0 ? '+' : '';
+    return `<tr>
+      <td style="white-space:nowrap;">${escHtml(e.date)}</td>
+      <td style="font-weight:600;cursor:pointer;color:var(--primary);">${escHtml(e.productName)}</td>
+      <td>${escHtml(e.brandName)}</td>
+      <td><code style="font-size:11px;">${escHtml(e.sku)}</code></td>
+      <td>${fmtPrice(e.oldPrice)}</td>
+      <td><strong>${fmtPrice(e.newPrice)}</strong></td>
+      <td>${escHtml(e.changedBy)}</td>
+      <td style="color:var(--text2);">${escHtml(e.reason)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text3);">No price changes recorded</td></tr>';
+}
+
+/* ============================================================ JSON IMPORT */
+function openJsonModal(){
+  document.getElementById('jsonModal').classList.add('open');
+  document.getElementById('jsonPreviewBox').style.display = 'none';
+  document.getElementById('jsonImportBtnWrap').style.display = 'none';
+  pendingJsonProducts = null;
+}
+function closeJsonModal(){ document.getElementById('jsonModal').classList.remove('open'); }
+
+function handleJsonFile(event){
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('Must be a JSON array');
+      pendingJsonProducts = data;
+      const cols = data.length ? Object.keys(data[0]).join(', ') : 'none';
+      const preview = document.getElementById('jsonPreviewBox');
+      preview.innerHTML = `<strong style="color:var(--text);">✓ ${data.length} products detected</strong><br><span>Fields: ${escHtml(cols)}</span>`;
+      preview.style.display = 'block';
+      document.getElementById('jsonImportBtnWrap').style.display = 'block';
+      document.getElementById('jsonImportBtn').textContent = `Import ${data.length} Products`;
+    } catch(err) { showToast('Invalid JSON: ' + err.message, 'error'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function importJsonProducts(){
+  if (!pendingJsonProducts) return;
+  let added = 0;
+  pendingJsonProducts.forEach(p => {
+    if (!p.name || !p.sku) return;
+    PRODUCTS.push({
+      id:'p-import-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
+      brandId:'brand-001', brandName: p.brand || p.brandName || 'Unknown',
+      sku: p.sku, name: p.name,
+      category: p.category || 'Other', subCategory: p.subCategory || '',
+      rrp: parseFloat(p.rrp||p.price||0), offerPrice: null,
+      offerActive: false, offerScheduledAt: null,
+      shortDescription: p.shortDescription || p.description || '',
+      longDescription: p.longDescription || '',
+      features:[], targetAudiences:[],
+      thumbnail:`https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent((p.name||'?').charAt(0))}`,
+      enabled: true, images:[], colours:[], priceLog:[]
+    });
+    added++;
+  });
+  productsGridApi.setGridOption('rowData', PRODUCTS);
+  closeJsonModal();
+  showToast(`${added} products imported successfully`);
+}
+
+// Drag & drop for JSON zone
+const jZone = document.getElementById('jsonUploadZone');
+jZone.addEventListener('dragover', e => { e.preventDefault(); jZone.classList.add('drag-over'); });
+jZone.addEventListener('dragleave', () => jZone.classList.remove('drag-over'));
+jZone.addEventListener('drop', e => {
+  e.preventDefault(); jZone.classList.remove('drag-over');
+  const inp = document.getElementById('jsonFileInput');
+  if (!e.dataTransfer.files.length) return;
+  const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+  inp.files = dt.files; inp.dispatchEvent(new Event('change'));
+});
+
+/* ============================================================ BRAND SELECT IN MODAL */
+function populateBrandSelect(){
+  const sel = document.getElementById('pm-brand');
+  sel.innerHTML = BRANDS_LIST.map(b => `<option value="${b.id}">${escHtml(b.name)}</option>`).join('');
+}
+
+/* ============================================================ INIT */
+document.addEventListener('DOMContentLoaded', () => {
+  populateBrandSelect();
+  initProductsGrid();
+});
+</script>
+</body>
+</html>

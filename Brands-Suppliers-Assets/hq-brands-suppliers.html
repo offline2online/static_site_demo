@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brands &amp; Suppliers — HQ Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-theme-alpine.css">
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/dist/ag-grid-community.min.noStyle.js"></script>
+  <style>
+    /* ============================================================ CSS VARS */
+    :root {
+      --bg:             #f5f5f5;
+      --inner-sb:       #FFFFFF;
+      --surface:        #FFFFFF;
+      --surface2:       #f5f5f5;
+      --surface3:       #f0f0f0;
+      --border:         #E2E8F0;
+      --border2:        #CBD5E1;
+      --text:           rgba(0,0,0,0.88);
+      --text2:          rgba(0,0,0,0.65);
+      --text3:          rgba(0,0,0,0.45);
+      --primary:        #169bc2;
+      --primary-light:  rgba(22,155,194,0.10);
+      --success:        #52c41a;
+      --success-light:  rgba(82,196,26,0.10);
+      --toggle-on:      #169bc2;
+      --warning:        #D97706;
+      --warning-light:  rgba(217,119,6,0.10);
+      --danger:         #ff4d4f;
+      --danger-light:   rgba(255,77,79,0.10);
+      --radius:         8px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { height:auto; overflow:auto; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ============================================================ LAYOUT */
+    .ph-main { flex:1; display:flex; flex-direction:column; }
+    .ph-inner { flex:1; display:flex; background:var(--bg); }
+
+    /* ============================================================ SIDEBAR */
+    .sidebar {
+      width: 196px; min-width:196px;
+      background: var(--inner-sb);
+      display: flex; flex-direction:column;
+      border-right: 1px solid var(--border);
+      position: sticky; top:0; height:100vh;
+      align-self: flex-start;
+      overflow-y: auto;
+    }
+    .sidebar-brand { padding:14px 14px 10px; border-bottom:1px solid var(--border); }
+    .brand-row { display:flex; align-items:center; gap:8px; }
+    .brand-icon {
+      width:28px; height:28px;
+      background: linear-gradient(135deg,#169bc2,#38b0cf);
+      border-radius:7px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:800; color:#fff; flex-shrink:0;
+    }
+    .brand-name { font-size:13px; font-weight:700; color:var(--text); }
+    .brand-sub  { font-size:10px; color:var(--text3); margin-top:1px; }
+    .inner-nav  { padding:10px 8px; flex:1; }
+    .nav-label  {
+      font-size:12px; font-weight:700; color:var(--text3);
+      letter-spacing:.05em; text-transform:uppercase;
+      padding:8px 8px 4px;
+    }
+    .nav-item {
+      display:flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:6px;
+      cursor:pointer; color:var(--text2);
+      font-size:12.5px; font-weight:500;
+      transition:all .14s; user-select:none; margin-bottom:1px;
+    }
+    .nav-item:hover { background:var(--surface3); color:var(--text); }
+    .nav-item.active { background:transparent; color:var(--primary); font-weight:600; }
+    .nav-item .icon { font-size:13px; width:17px; text-align:center; }
+    .nav-back {
+      display:flex; align-items:center; gap:6px;
+      padding:7px 10px; font-size:11px; color:var(--text3);
+      text-decoration:none; transition:color .14s;
+    }
+    .nav-back:hover { color:var(--primary); }
+    .sidebar-foot { padding:10px 12px 14px; border-top:1px solid var(--border); font-size:10px; color:var(--text2); }
+
+    /* ============================================================ MAIN */
+    .main { flex:1; display:flex; flex-direction:column; min-width:0; }
+    .topbar {
+      background:#000; height:50px;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 22px;
+      position:sticky; top:0; z-index:100; color:#fff;
+    }
+    .topbar-title { font-size:15px; font-weight:600; color:#fff; letter-spacing:-.1px; }
+    .topbar-right { display:flex; align-items:center; gap:10px; }
+    .hq-badge {
+      background:transparent; color:#fff;
+      font-size:11px; font-weight:700;
+      padding:3px 10px; border-radius:20px;
+      border:1px solid rgba(255,255,255,.35);
+    }
+    .content { padding:22px; }
+
+    /* ============================================================ VIEWS */
+    .view { display:none; }
+    .view.active { display:block; }
+
+    /* ============================================================ STATS */
+    .stats-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:14px; margin-bottom:22px;
+    }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; }
+    .stat-label { font-size:12px; font-weight:500; color:var(--text3); margin-bottom:8px; }
+    .stat-value { font-size:32px; font-weight:800; color:var(--text); line-height:1; }
+    .stat-sub   { font-size:11px; color:var(--text2); margin-top:5px; }
+    .stat-dot   { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:4px; }
+
+    /* ============================================================ TOOLBAR */
+    .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+    .search-box {
+      display:flex; align-items:center; gap:8px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; padding:7px 12px; flex:1; min-width:220px;
+    }
+    .search-box input { background:none; border:none; outline:none; color:var(--text); font-size:13px; width:100%; }
+    .search-box input::placeholder { color:var(--text2); }
+
+    /* ============================================================ BUTTONS */
+    .btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:8px 14px; border-radius:6px;
+      font-size:13px; font-weight:600; cursor:pointer; border:none;
+      transition:all .14s; white-space:nowrap; text-decoration:none;
+    }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { background:#38b0cf; }
+    .btn-danger  { background:var(--danger);  color:#fff; }
+    .btn-danger:hover  { background:#e53535; }
+    .btn-ghost   { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+    .btn-ghost:hover   { background:var(--surface3); }
+    .btn-sm      { padding:5px 10px; font-size:12px; }
+    .btn-icon    { padding:6px; }
+
+    /* ============================================================ TOGGLE */
+    .toggle { position:relative; width:44px; height:24px; cursor:pointer; display:inline-block; }
+    .toggle input { opacity:0; width:0; height:0; position:absolute; }
+    .toggle-slider {
+      position:absolute; top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,.25); border-radius:100px; transition:background .2s;
+    }
+    .toggle-slider::before {
+      content:''; position:absolute;
+      width:20px; height:20px; left:2px; top:2px;
+      background:#fff; border-radius:50%;
+      transition:transform .2s; box-shadow:0 2px 4px rgba(0,0,0,.2);
+    }
+    .toggle input:checked + .toggle-slider { background:var(--toggle-on); }
+    .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
+
+    /* ============================================================ MODAL */
+    .modal-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.42); z-index:200;
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; width:780px;
+      max-width:calc(100vw - 40px);
+      max-height:92vh; display:flex; flex-direction:column;
+      box-shadow:0 24px 64px rgba(0,0,0,.18);
+    }
+    .modal-header {
+      padding:20px 24px 0; display:flex;
+      align-items:center; justify-content:space-between;
+    }
+    .modal-header h2 { font-size:17px; font-weight:700; }
+    .modal-close {
+      width:32px; height:32px; background:var(--surface2);
+      border:1px solid var(--border); border-radius:7px;
+      cursor:pointer; color:var(--text2); font-size:18px;
+      display:flex; align-items:center; justify-content:center;
+      transition:all .14s; flex-shrink:0;
+    }
+    .modal-close:hover { background:var(--surface3); }
+    .modal-tabs {
+      display:flex; gap:0; border-bottom:1px solid var(--border);
+      padding:0 24px; margin-top:16px; flex-shrink:0;
+    }
+    .modal-tab {
+      padding:10px 16px; font-size:13px; font-weight:500;
+      color:var(--text2); cursor:pointer; border-bottom:2px solid transparent;
+      margin-bottom:-1px; transition:all .14s; white-space:nowrap;
+    }
+    .modal-tab:hover { color:var(--text); }
+    .modal-tab.active { color:var(--primary); border-bottom-color:var(--primary); font-weight:600; }
+    .modal-body {
+      flex:1; overflow:hidden; display:flex; flex-direction:column;
+    }
+    .modal-tab-pane { display:none; flex:1; overflow-y:auto; padding:22px 24px; }
+    .modal-tab-pane.active { display:block; }
+    .modal-footer {
+      padding:14px 24px; border-top:1px solid var(--border);
+      display:flex; gap:8px; justify-content:flex-end; flex-shrink:0;
+    }
+
+    /* ============================================================ FORMS */
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-row.cols-1 { grid-template-columns:1fr; }
+    .section-divider {
+      font-size:11px; font-weight:700; color:var(--text2);
+      text-transform:uppercase; letter-spacing:.8px;
+      padding:14px 0 8px; border-top:1px solid var(--border);
+      margin-top:8px; display:flex; align-items:center; gap:8px;
+    }
+    .form-group { margin-bottom:14px; }
+    .form-group label {
+      display:block; font-size:11px; font-weight:700;
+      color:var(--text2); text-transform:uppercase;
+      letter-spacing:.5px; margin-bottom:6px;
+    }
+    .form-group label .req { color:var(--danger); }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width:100%; background:var(--surface2);
+      border:1px solid var(--border); border-radius:6px;
+      padding:9px 11px; color:var(--text); font-size:13px;
+      outline:none; transition:border-color .15s;
+      font-family:inherit;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color:var(--primary);
+      box-shadow:0 0 0 2px rgba(22,155,194,.2);
+    }
+    .form-group textarea { resize:vertical; min-height:88px; }
+
+    /* ============================================================ UPLOAD ZONE */
+    .upload-zone {
+      border:2px dashed var(--border2);
+      border-radius:8px; padding:22px;
+      text-align:center; cursor:pointer;
+      transition:all .18s; background:var(--surface2);
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color:var(--primary);
+      background:var(--primary-light);
+    }
+    .upload-zone .uz-icon { font-size:26px; margin-bottom:8px; }
+    .upload-zone .uz-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px; }
+    .upload-zone .uz-sub   { font-size:11px; color:var(--text2); }
+    .upload-zone input[type=file] { display:none; }
+    .img-preview {
+      display:flex; align-items:center; gap:12px;
+      margin-top:10px;
+    }
+    .img-preview img {
+      width:52px; height:52px; border-radius:8px;
+      object-fit:cover; border:1px solid var(--border);
+    }
+    .img-preview-info { font-size:12px; color:var(--text2); }
+    .img-preview-name { font-weight:600; color:var(--text); font-size:13px; }
+
+    /* ============================================================ COLOUR PALETTE */
+    .palette-list { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; min-height:36px; }
+    .palette-swatch {
+      display:flex; align-items:center; gap:6px;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:6px; padding:5px 8px; font-size:12px;
+    }
+    .swatch-dot { width:18px; height:18px; border-radius:4px; flex-shrink:0; border:1px solid rgba(0,0,0,.1); }
+    .swatch-label { font-weight:500; color:var(--text); max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .swatch-hex   { font-family:monospace; font-size:11px; color:var(--text2); }
+    .swatch-rm    { background:none; border:none; cursor:pointer; color:var(--text3); font-size:14px; padding:0 2px; line-height:1; }
+    .swatch-rm:hover { color:var(--danger); }
+    .palette-add-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .palette-add-row input[type=color] {
+      width:36px; height:36px; padding:2px; border-radius:6px;
+      border:1px solid var(--border); cursor:pointer; background:none;
+    }
+    .palette-add-row input[type=text] {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:6px; padding:7px 10px; color:var(--text);
+      font-size:13px; outline:none;
+      transition:border-color .15s; font-family:monospace;
+    }
+    .palette-add-row input[type=text].label-in { font-family:inherit; width:130px; }
+    .palette-add-row input:focus { border-color:var(--primary); box-shadow:0 0 0 2px rgba(22,155,194,.2); }
+
+    /* ============================================================ STORE CHIPS */
+    .store-chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+    .store-chip {
+      display:flex; align-items:center; gap:5px;
+      padding:5px 10px; border-radius:20px;
+      font-size:11.5px; font-weight:600; cursor:pointer;
+      border:1.5px solid var(--border);
+      background:var(--surface2); color:var(--text2);
+      transition:all .14s; user-select:none;
+    }
+    .store-chip.selected {
+      background:var(--primary-light);
+      border-color:var(--primary);
+      color:var(--primary);
+    }
+
+    /* ============================================================ OFFER STICKERS */
+    .sticker-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:8px; }
+    .sticker-card {
+      border:2px solid var(--border); border-radius:8px;
+      padding:14px 10px; text-align:center; cursor:pointer;
+      transition:all .14s; background:var(--surface2);
+    }
+    .sticker-card:hover { border-color:var(--primary); background:var(--primary-light); }
+    .sticker-card.selected { border-color:var(--primary); background:var(--primary-light); }
+    .sticker-preview {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:4px 10px; border-radius:4px;
+      font-size:12px; font-weight:800; margin-bottom:8px;
+      min-width:56px;
+    }
+    .sticker-name { font-size:11px; color:var(--text2); font-weight:500; }
+
+    /* ============================================================ JSON PREVIEW */
+    .json-preview {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:6px; padding:14px; margin-top:10px;
+      font-size:12px; color:var(--text2);
+    }
+    .json-preview strong { color:var(--text); }
+
+    /* ============================================================ CONFIRM */
+    .confirm-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.45); z-index:300;
+      align-items:center; justify-content:center;
+    }
+    .confirm-overlay.open { display:flex; }
+    .confirm-box {
+      background:var(--surface); border-radius:10px;
+      padding:28px 30px; width:380px; max-width:calc(100vw - 40px);
+      box-shadow:0 20px 60px rgba(0,0,0,.18);
+      text-align:center;
+    }
+    .confirm-icon  { font-size:34px; margin-bottom:12px; }
+    .confirm-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+    .confirm-msg   { font-size:13px; color:var(--text2); margin-bottom:22px; line-height:1.5; }
+    .confirm-btns  { display:flex; gap:10px; justify-content:center; }
+
+    /* ============================================================ TOAST */
+    .toast-container { position:fixed; bottom:24px; right:24px; z-index:400; display:flex; flex-direction:column; gap:8px; }
+    .toast {
+      padding:11px 18px; border-radius:8px; font-size:13px; font-weight:500;
+      box-shadow:0 4px 16px rgba(0,0,0,.15); min-width:220px;
+      animation:slideIn .22s ease;
+    }
+    .toast-success { background:#1a3a1a; color:#7bcf5a; border:1px solid rgba(82,196,26,.3); }
+    .toast-error   { background:#3a1a1a; color:#f98080; border:1px solid rgba(255,77,79,.3); }
+    .toast-info    { background:#1a2e3a; color:#60c5e6; border:1px solid rgba(22,155,194,.3); }
+    @keyframes slideIn { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
+
+    /* ============================================================ AG GRID OVERRIDES */
+    .ag-theme-alpine {
+      --ag-header-background-color: var(--surface2);
+      --ag-header-foreground-color: var(--text2);
+      --ag-border-color: var(--border);
+      --ag-row-hover-color: var(--surface2);
+      --ag-selected-row-background-color: var(--primary-light);
+      --ag-font-size: 13px;
+      --ag-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --ag-cell-horizontal-padding: 14px;
+    }
+    .ag-theme-alpine .ag-header-cell-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+    .ag-theme-alpine .ag-cell { overflow:visible !important; }
+    .ag-theme-alpine .ag-row { overflow:visible !important; }
+
+    /* ============================================================ MISC */
+    .page-title { font-size:20px; font-weight:800; color:var(--text); margin-bottom:4px; }
+    .page-sub   { font-size:13px; color:var(--text2); margin-bottom:20px; }
+    .empty-state { text-align:center; padding:52px 28px; color:var(--text2); }
+    .empty-state .ei { font-size:40px; margin-bottom:12px; opacity:.4; }
+    .empty-state h3  { font-size:16px; font-weight:600; color:var(--text); margin-bottom:6px; }
+    .grid-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:visible; }
+
+    /* pim test btn feedback */
+    .pim-status { font-size:12px; margin-top:6px; }
+  </style>
+</head>
+<body>
+
+<!-- ===================== GLOBAL TOOLTIP ===================== -->
+<div id="globalTooltip" style="display:none;position:fixed;background:#1e293b;color:#fff;font-size:11.5px;border-radius:7px;padding:8px 12px;z-index:9999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:pre-line;max-width:240px;line-height:1.6;"></div>
+
+<!-- ===================== TOAST ===================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===================== CONFIRM OVERLAY ===================== -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Delete Brand?</div>
+    <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirmBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== BRAND MODAL ===================== -->
+<div class="modal-overlay" id="brandModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="brandModalTitle">Add Brand / Supplier</h2>
+      <button class="modal-close" onclick="closeBrandModal()">&#x2715;</button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="bmTab-1" onclick="switchBrandTab('1')">Brand Details</div>
+      <div class="modal-tab" id="bmTab-2" onclick="switchBrandTab('2')">Guidelines &amp; Colours</div>
+      <div class="modal-tab" id="bmTab-3" onclick="switchBrandTab('3')">Products &amp; Stock</div>
+      <div class="modal-tab" id="bmTab-4" onclick="switchBrandTab('4')">Pricing Strategy</div>
+    </div>
+    <div class="modal-body">
+
+      <!-- TAB 1: Brand Details -->
+      <div class="modal-tab-pane active" id="bmPane-1">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Brand / Supplier Name <span class="req">*</span></label>
+            <input type="text" id="bm-name" placeholder="e.g. Nike, Samsung…">
+          </div>
+          <div class="form-group">
+            <label>Website URL</label>
+            <input type="url" id="bm-website" placeholder="https://brand.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="bm-desc" rows="3" placeholder="Short description of this brand or supplier…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Primary Contact Name</label>
+            <input type="text" id="bm-contact" placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label>Contact Email</label>
+            <input type="email" id="bm-email" placeholder="contact@brand.com">
+          </div>
+        </div>
+        <div class="section-divider">Brand Icon &amp; Logo</div>
+        <div class="form-row">
+          <div>
+            <div class="form-group"><label>Brand Icon <span style="font-size:10px;font-weight:400;text-transform:none;">(40×40 recommended)</span></label></div>
+            <div class="upload-zone" id="iconZone" onclick="document.getElementById('iconFile').click()">
+              <div class="uz-icon">🖼️</div>
+              <div class="uz-title">Click to upload icon</div>
+              <div class="uz-sub">PNG, SVG, JPG · max 200KB</div>
+              <input type="file" id="iconFile" accept="image/*" onchange="handleImgUpload('icon', event)">
+            </div>
+            <div class="img-preview" id="iconPreview" style="display:none;">
+              <img id="iconPreviewImg" src="" alt="icon">
+              <div><div class="img-preview-name" id="iconPreviewName"></div><div class="img-preview-info" id="iconPreviewInfo"></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="form-group"><label>Brand Logo <span style="font-size:10px;font-weight:400;text-transform:none;">(full lockup)</span></label></div>
+            <div class="upload-zone" id="logoZone" onclick="document.getElementById('logoFile').click()">
+              <div class="uz-icon">🖼️</div>
+              <div class="uz-title">Click to upload logo</div>
+              <div class="uz-sub">PNG, SVG, JPG · max 1MB</div>
+              <input type="file" id="logoFile" accept="image/*" onchange="handleImgUpload('logo', event)">
+            </div>
+            <div class="img-preview" id="logoPreview" style="display:none;">
+              <img id="logoPreviewImg" src="" alt="logo" style="width:80px;height:40px;object-fit:contain;">
+              <div><div class="img-preview-name" id="logoPreviewName"></div><div class="img-preview-info" id="logoPreviewInfo"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Guidelines & Colours -->
+      <div class="modal-tab-pane" id="bmPane-2">
+        <div class="section-divider" style="border-top:none;padding-top:0;">Brand Guidelines</div>
+        <div class="form-group">
+          <label>Guidelines Text / Markdown</label>
+          <textarea id="bm-guidelines" rows="8" placeholder="Paste brand guidelines, usage rules, tone of voice, do's and don'ts…&#10;&#10;Supports Markdown formatting."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Upload Guidelines File <span style="font-size:10px;font-weight:400;text-transform:none;">(.md, .txt, .pdf)</span></label>
+          <div class="upload-zone" id="guideZone" onclick="document.getElementById('guideFile').click()">
+            <div class="uz-icon">📄</div>
+            <div class="uz-title">Click to upload guidelines file</div>
+            <div class="uz-sub">.md, .txt, .pdf · max 5MB</div>
+            <input type="file" id="guideFile" accept=".md,.txt,.pdf" onchange="handleGuideUpload(event)">
+          </div>
+          <div id="guideFileInfo" style="display:none;margin-top:8px;font-size:12px;color:var(--text2);"></div>
+        </div>
+
+        <div class="section-divider">Colour Palette</div>
+        <div class="palette-list" id="paletteList"></div>
+        <div class="palette-add-row">
+          <input type="color" id="paletteColorPicker" value="#169bc2">
+          <input type="text" id="paletteHexInput" placeholder="#169bc2" maxlength="7" style="width:96px;">
+          <input type="text" id="paletteLabelInput" class="label-in" placeholder="Colour name (e.g. Primary Blue)">
+          <button class="btn btn-ghost btn-sm" onclick="addPaletteColour()">+ Add</button>
+        </div>
+      </div>
+
+      <!-- TAB 3: Products & Stock -->
+      <div class="modal-tab-pane" id="bmPane-3">
+        <div class="section-divider" style="border-top:none;padding-top:0;">Product Data Source</div>
+        <div class="form-group">
+          <label>Upload Product JSON</label>
+          <div class="upload-zone" id="prodJsonZone" onclick="document.getElementById('prodJsonFile').click()">
+            <div class="uz-icon">📦</div>
+            <div class="uz-title">Click or drag &amp; drop a product JSON file</div>
+            <div class="uz-sub">Must be a JSON array of product objects · max 10MB</div>
+            <input type="file" id="prodJsonFile" accept=".json" onchange="handleProdJson(event)">
+          </div>
+          <div id="prodJsonPreview" style="display:none;" class="json-preview"></div>
+        </div>
+        <div class="form-group">
+          <label>Live Product Feed URL <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
+          <input type="url" id="bm-feedurl" placeholder="https://api.brand.com/products.json">
+        </div>
+
+        <div class="section-divider">PIM / Stock System Connection</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>PIM System URL</label>
+            <input type="url" id="bm-pimurl" placeholder="https://pim.brand.com/api">
+          </div>
+          <div class="form-group">
+            <label>API Key</label>
+            <input type="password" id="bm-pimkey" placeholder="••••••••••••">
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="testPimConnection()">🔗 Test Connection</button>
+        <div class="pim-status" id="pimStatus"></div>
+
+        <div class="section-divider">Store Assignment</div>
+        <div style="display:flex;gap:16px;margin-bottom:10px;">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:500;">
+            <input type="radio" name="storeAssign" id="storeAll" value="all" checked onchange="toggleStoreSelect()">
+            All Stores (default)
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:500;">
+            <input type="radio" name="storeAssign" id="storeSpecific" value="specific" onchange="toggleStoreSelect()">
+            Specific Stores
+          </label>
+        </div>
+        <div id="storeChipWrap" style="display:none;">
+          <div class="store-chips" id="storeChips"></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Click stores to toggle selection</div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Pricing Strategy -->
+      <div class="modal-tab-pane" id="bmPane-4">
+        <div class="section-divider" style="border-top:none;padding-top:0;">Pricing Model</div>
+        <div class="form-group">
+          <label>Pricing Strategy</label>
+          <select id="bm-pricingstrategy">
+            <option value="centralised">Centralised — HQ controls all pricing</option>
+            <option value="decentralised">Decentralised — Each store sets their own price</option>
+            <option value="group">Group — Pricing by store group/region</option>
+            <option value="individual">Individual Store — Per-store overrides allowed</option>
+          </select>
+          <div style="font-size:11px;color:var(--text2);margin-top:6px;" id="strategyDesc">HQ Headquarters sets and maintains all product prices. Stores cannot override pricing.</div>
+        </div>
+        <div class="form-group">
+          <label>Default Pricing Source</label>
+          <div style="display:flex;gap:16px;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:500;">
+              <input type="radio" name="priceSource" value="rrp" checked> Use Brand's RRP as default price
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:500;">
+              <input type="radio" name="priceSource" value="manual"> Manually set own pricing
+            </label>
+          </div>
+        </div>
+
+        <div class="section-divider">Offer Appearance</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Choose how offer pricing is displayed in campaigns for this brand.</div>
+        <div class="sticker-grid" id="stickerGrid">
+          <div class="sticker-card selected" data-sticker="SALE" onclick="selectSticker(this)">
+            <div class="sticker-preview" style="background:#ff4d4f;color:#fff;">SALE</div>
+            <div class="sticker-name">Sale Badge</div>
+          </div>
+          <div class="sticker-card" data-sticker="PCT_OFF" onclick="selectSticker(this)">
+            <div class="sticker-preview" style="background:#D97706;color:#fff;">% OFF</div>
+            <div class="sticker-name">% Off Tag</div>
+          </div>
+          <div class="sticker-card" data-sticker="NEW_PRICE" onclick="selectSticker(this)">
+            <div class="sticker-preview" style="background:#169bc2;color:#fff;">NEW PRICE</div>
+            <div class="sticker-name">New Price</div>
+          </div>
+          <div class="sticker-card" data-sticker="SPECIAL" onclick="selectSticker(this)">
+            <div class="sticker-preview" style="background:#52c41a;color:#fff;">SPECIAL</div>
+            <div class="sticker-name">Special Offer</div>
+          </div>
+        </div>
+
+        <div class="section-divider">Offer Banner Preview</div>
+        <div id="offerBannerPreview" style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:8px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-top:4px;">
+          <div style="background:#ff4d4f;color:#fff;font-size:12px;font-weight:800;padding:5px 12px;border-radius:4px;">SALE</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1e293b;">Example Product Name</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px;"><s>£49.99 RRP</s> &nbsp;<span style="color:#ff4d4f;font-weight:700;font-size:15px;">£34.99</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeBrandModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBrand()">Save Brand</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LAYOUT ===================== -->
+<div class="ph-main">
+  <div class="ph-inner">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-row">
+          <div class="brand-icon">PH</div>
+          <div>
+            <div class="brand-name">PersonalisationHub</div>
+            <div class="brand-sub">HQ Admin</div>
+          </div>
+        </div>
+      </div>
+      <div class="inner-nav">
+        <div class="nav-label">Overview</div>
+        <div class="nav-item" id="nav-dashboard" onclick="showView('dashboard')">
+          <span class="icon">📊</span> Dashboard
+        </div>
+        <div class="nav-label" style="margin-top:6px;">Brands</div>
+        <div class="nav-item active" id="nav-brands" onclick="showView('brands')">
+          <span class="icon">🏷️</span> Brands &amp; Suppliers
+        </div>
+        <div class="nav-label" style="margin-top:6px;">Navigate</div>
+        <div class="nav-item" onclick="window.location.href='hq-products-pricing.html'">
+          <span class="icon">📦</span> Products &amp; Pricing
+        </div>
+        <div class="nav-item" onclick="window.location.href='retail-product-catalogue.html?store=STORE-003'">
+          <span class="icon">🏪</span> Retail Catalogue
+        </div>
+      </div>
+      <div class="sidebar-foot">
+        <a class="nav-back" href="index.html">← Back to Hub</a>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <span class="topbar-title">Brands &amp; Suppliers</span>
+        <div class="topbar-right">
+          <span class="hq-badge">HQ Admin</span>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- DASHBOARD VIEW -->
+        <div class="view" id="view-dashboard">
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">Overview of brands, products and stock health across all stores.</div>
+          <div class="stats-grid" id="dashStats"></div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;">
+            <div style="font-size:14px;font-weight:700;margin-bottom:16px;">Stock Health by Brand</div>
+            <div id="dashBrandRows"></div>
+          </div>
+        </div>
+
+        <!-- BRANDS VIEW -->
+        <div class="view active" id="view-brands">
+          <div class="page-title">Brands &amp; Suppliers</div>
+          <div class="page-sub">Manage brand relationships, logos, guidelines, product data and pricing strategies.</div>
+          <div class="toolbar">
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input type="text" id="brandSearch" placeholder="Search brands…" oninput="brandsGridApi.setGridOption('quickFilterText', this.value)">
+            </div>
+            <button class="btn btn-primary" onclick="openAddBrandModal()">+ Add Brand / Supplier</button>
+          </div>
+          <div class="grid-wrap">
+            <div id="brandsGrid" class="ag-theme-alpine" style="width:100%;"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   MOCK DATA
+============================================================ */
+const STORES = ['STORE-001','STORE-002','STORE-003','STORE-004','STORE-005','STORE-006','STORE-007','STORE-008'];
+
+const BRANDS = [
+  {
+    id:'brand-001', name:'Nike', website:'nike.com',
+    description:'Global leader in athletic footwear, apparel and equipment.',
+    contact:'Sarah Chen', email:'sarah.chen@nike.com',
+    icon:'https://placehold.co/40x40/111111/ffffff?text=N',
+    logo:'https://placehold.co/120x40/111111/ffffff?text=NIKE',
+    palette:[{hex:'#111111',label:'Nike Black'},{hex:'#FF6B35',label:'Nike Orange'},{hex:'#FFFFFF',label:'White'}],
+    guidelines:'# Nike Brand Guidelines\n\n## Voice & Tone\nBold, inspiring, motivational. Just Do It.\n\n## Colour Usage\nPrimary: #111111 (Black). Accent: #FF6B35 (Orange).\n\n## Typography\nFutura PT Bold for headlines.',
+    storeAssign:'all', selectedStores:[],
+    pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'SALE',
+    lowStockStores:['STORE-002','STORE-005','STORE-007'],
+    outOfStockStores:['STORE-004'],
+    productCount:4, storeCount:8
+  },
+  {
+    id:'brand-002', name:'Adidas', website:'adidas.com',
+    description:'Iconic sportswear brand with three stripes. Performance and style.',
+    contact:'James Miller', email:'j.miller@adidas.com',
+    icon:'https://placehold.co/40x40/000000/ffffff?text=A',
+    logo:'https://placehold.co/120x40/000000/ffffff?text=adidas',
+    palette:[{hex:'#000000',label:'Black'},{hex:'#FFFFFF',label:'White'},{hex:'#0057A0',label:'Adidas Blue'}],
+    guidelines:'# Adidas Brand Guidelines\n\n## Impossible is Nothing\nBold and inclusive messaging.',
+    storeAssign:'all', selectedStores:[],
+    pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'PCT_OFF',
+    lowStockStores:['STORE-001','STORE-006'],
+    outOfStockStores:['STORE-003','STORE-008'],
+    productCount:4, storeCount:8
+  },
+  {
+    id:'brand-003', name:'Samsung', website:'samsung.com',
+    description:'Consumer electronics and technology products.',
+    contact:'Min-Jun Lee', email:'minjun.lee@samsung.com',
+    icon:'https://placehold.co/40x40/1428A0/ffffff?text=S',
+    logo:'https://placehold.co/120x40/1428A0/ffffff?text=SAMSUNG',
+    palette:[{hex:'#1428A0',label:'Samsung Blue'},{hex:'#FFFFFF',label:'White'},{hex:'#2D2D2D',label:'Charcoal'}],
+    guidelines:'# Samsung Brand Guidelines\n\n## Do Bigger Things\nTechnology for everyone.',
+    storeAssign:'specific', selectedStores:['STORE-001','STORE-002','STORE-003','STORE-004','STORE-005'],
+    pricingStrategy:'group', priceSource:'rrp', offerSticker:'NEW_PRICE',
+    lowStockStores:['STORE-003'],
+    outOfStockStores:[],
+    productCount:4, storeCount:5
+  },
+  {
+    id:'brand-004', name:"Apple", website:'apple.com',
+    description:'Premium consumer electronics, software and services.',
+    contact:'Emma Rodriguez', email:'e.rodriguez@apple.com',
+    icon:'https://placehold.co/40x40/555555/ffffff?text=Ap',
+    logo:'https://placehold.co/120x40/555555/ffffff?text=Apple',
+    palette:[{hex:'#1D1D1F',label:'Carbon'},{hex:'#F5F5F7',label:'Light Grey'},{hex:'#0071E3',label:'Apple Blue'}],
+    guidelines:'# Apple Brand Guidelines\n\n## Think Different\nSimple, human and approachable.',
+    storeAssign:'specific', selectedStores:['STORE-001','STORE-002','STORE-003'],
+    pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'SPECIAL',
+    lowStockStores:['STORE-001'],
+    outOfStockStores:['STORE-002'],
+    productCount:4, storeCount:3
+  },
+  {
+    id:'brand-005', name:"Levi's", website:'levis.com',
+    description:'Iconic denim and casual apparel since 1853.',
+    contact:'Tom Brennan', email:'t.brennan@levis.com',
+    icon:'https://placehold.co/40x40/C41230/ffffff?text=L',
+    logo:'https://placehold.co/120x40/C41230/ffffff?text=LEVI\'S',
+    palette:[{hex:'#C41230',label:"Levi's Red"},{hex:'#FFFFFF',label:'White'},{hex:'#1A1A1A',label:'Dark'}],
+    guidelines:"# Levi's Brand Guidelines\n\n## Original since 1853\nAuthentic, honest, American spirit.",
+    storeAssign:'all', selectedStores:[],
+    pricingStrategy:'decentralised', priceSource:'rrp', offerSticker:'SALE',
+    lowStockStores:['STORE-004','STORE-005','STORE-006'],
+    outOfStockStores:[],
+    productCount:4, storeCount:8
+  },
+  {
+    id:'brand-006', name:'Sony', website:'sony.com',
+    description:'Entertainment electronics, cameras, audio and gaming.',
+    contact:'Yuki Tanaka', email:'y.tanaka@sony.com',
+    icon:'https://placehold.co/40x40/003087/ffffff?text=So',
+    logo:'https://placehold.co/120x40/003087/ffffff?text=SONY',
+    palette:[{hex:'#003087',label:'Sony Blue'},{hex:'#000000',label:'Black'},{hex:'#FFFFFF',label:'White'}],
+    guidelines:'# Sony Brand Guidelines\n\n## Make Believe\nInnovation and creativity at its heart.',
+    storeAssign:'all', selectedStores:[],
+    pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'PCT_OFF',
+    lowStockStores:['STORE-007','STORE-008'],
+    outOfStockStores:['STORE-005'],
+    productCount:4, storeCount:8
+  }
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let brandsGridApi = null;
+let editingBrandId = null;
+let currentPalette  = [];
+
+/* ============================================================
+   GLOBAL TOOLTIP
+============================================================ */
+const TIP = document.getElementById('globalTooltip');
+function showTip(e, text) {
+  TIP.textContent = text;
+  TIP.style.display = 'block';
+  TIP.style.left = (e.clientX + 14) + 'px';
+  TIP.style.top  = (e.clientY - 10) + 'px';
+}
+function moveTip(e) {
+  TIP.style.left = (e.clientX + 14) + 'px';
+  TIP.style.top  = (e.clientY - 10) + 'px';
+}
+function hideTip() { TIP.style.display = 'none'; }
+
+/* ============================================================
+   TOAST
+============================================================ */
+function showToast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+/* ============================================================
+   VIEWS
+============================================================ */
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  const ni = document.getElementById('nav-' + name);
+  if (ni) ni.classList.add('active');
+  if (name === 'dashboard') buildDashboard();
+}
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+function buildDashboard() {
+  const totalProducts = BRANDS.reduce((s,b) => s + b.productCount, 0);
+  const totalLow = BRANDS.reduce((s,b) => s + b.lowStockStores.length, 0);
+  const totalOos = BRANDS.reduce((s,b) => s + b.outOfStockStores.length, 0);
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total Brands</div><div class="stat-value">${BRANDS.length}</div><div class="stat-sub">Active suppliers</div></div>
+    <div class="stat-card"><div class="stat-label">Total Products</div><div class="stat-value">${totalProducts}</div><div class="stat-sub">Across all brands</div></div>
+    <div class="stat-card"><div class="stat-label">Low Stock Alerts</div><div class="stat-value" style="color:var(--warning)">${totalLow}</div><div class="stat-sub">Store-level warnings</div></div>
+    <div class="stat-card"><div class="stat-label">Out of Stock</div><div class="stat-value" style="color:var(--danger)">${totalOos}</div><div class="stat-sub">Campaigns suppressed</div></div>
+  `;
+  document.getElementById('dashBrandRows').innerHTML = BRANDS.map(b => `
+    <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);">
+      <img src="${escHtml(b.icon)}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;">
+      <div style="flex:2;font-size:13px;font-weight:600;">${escHtml(b.name)}</div>
+      <div style="flex:1;font-size:12px;color:var(--text2);">${b.productCount} products</div>
+      <div style="flex:1;font-size:12px;color:var(--text2);">${b.storeCount} stores</div>
+      <div style="flex:1;">
+        ${b.lowStockStores.length ? `<span style="background:var(--warning-light);color:var(--warning);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;">⚠ ${b.lowStockStores.length} low stock</span>` : '<span style="font-size:11px;color:var(--text3);">—</span>'}
+      </div>
+      <div style="flex:1;">
+        ${b.outOfStockStores.length ? `<span style="background:var(--danger-light);color:var(--danger);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;">✕ ${b.outOfStockStores.length} out of stock</span>` : '<span style="font-size:11px;color:var(--text3);">—</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   AG GRID
+============================================================ */
+function initBrandsGrid() {
+  const el = document.getElementById('brandsGrid');
+  brandsGridApi = agGrid.createGrid(el, {
+    domLayout: 'autoHeight',
+    rowHeight: 64,
+    suppressCellFocus: true,
+    suppressMovableColumns: true,
+    defaultColDef: { resizable: true, sortable: true, suppressMenu: true },
+    columnDefs: [
+      {
+        headerName: 'Icon', field: 'icon', width: 68, sortable: false,
+        cellRenderer: p => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;height:100%;';
+          const img = document.createElement('img');
+          img.src = p.value;
+          img.style.cssText = 'width:36px;height:36px;border-radius:8px;object-fit:cover;border:1px solid var(--border);';
+          img.onerror = () => {
+            img.style.display = 'none';
+            const fb = document.createElement('div');
+            fb.style.cssText = 'width:36px;height:36px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;';
+            fb.textContent = (p.data.name||'?').charAt(0).toUpperCase();
+            wrap.appendChild(fb);
+          };
+          wrap.appendChild(img);
+          return wrap;
+        }
+      },
+      {
+        headerName: 'Brand / Supplier', field: 'name', flex: 2,
+        cellRenderer: p => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;flex-direction:column;justify-content:center;height:100%;';
+          const nm = document.createElement('div');
+          nm.style.cssText = 'font-weight:700;font-size:13px;color:var(--primary);cursor:pointer;';
+          nm.textContent = p.value;
+          nm.onclick = () => openEditBrandModal(p.data.id);
+          const sub = document.createElement('div');
+          sub.style.cssText = 'font-size:11px;color:var(--text2);margin-top:2px;';
+          sub.textContent = p.data.website || '';
+          wrap.appendChild(nm);
+          wrap.appendChild(sub);
+          return wrap;
+        }
+      },
+      { headerName: '# Products', field: 'productCount', flex: 1, headerClass: 'ag-right-aligned-header' },
+      {
+        headerName: '# Stores', field: 'storeCount', flex: 1,
+        cellRenderer: p => {
+          const span = document.createElement('span');
+          span.textContent = p.value;
+          return span;
+        }
+      },
+      {
+        headerName: 'Low Stock', field: 'lowStockStores', flex: 1.1,
+        cellRenderer: p => {
+          const list = p.value || [];
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;height:100%;';
+          if (!list.length) {
+            const dash = document.createElement('span');
+            dash.style.cssText = 'font-size:12px;color:var(--text3);';
+            dash.textContent = '—';
+            wrap.appendChild(dash);
+          } else {
+            const badge = document.createElement('span');
+            badge.style.cssText = 'background:var(--warning-light);color:var(--warning);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;cursor:default;';
+            badge.textContent = `⚠ ${list.length} store${list.length>1?'s':''}`;
+            badge.addEventListener('mouseenter', e => showTip(e, 'Low stock at:\n' + list.join('\n')));
+            badge.addEventListener('mousemove',  moveTip);
+            badge.addEventListener('mouseleave', hideTip);
+            wrap.appendChild(badge);
+          }
+          return wrap;
+        }
+      },
+      {
+        headerName: 'Out of Stock', field: 'outOfStockStores', flex: 1.1,
+        cellRenderer: p => {
+          const list = p.value || [];
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;height:100%;';
+          if (!list.length) {
+            const dash = document.createElement('span');
+            dash.style.cssText = 'font-size:12px;color:var(--text3);';
+            dash.textContent = '—';
+            wrap.appendChild(dash);
+          } else {
+            const badge = document.createElement('span');
+            badge.style.cssText = 'background:var(--danger-light);color:var(--danger);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;cursor:default;';
+            badge.textContent = `✕ ${list.length} store${list.length>1?'s':''}`;
+            badge.addEventListener('mouseenter', e => showTip(e, 'Out of stock at:\n' + list.join('\n')));
+            badge.addEventListener('mousemove',  moveTip);
+            badge.addEventListener('mouseleave', hideTip);
+            wrap.appendChild(badge);
+          }
+          return wrap;
+        }
+      },
+      {
+        headerName: 'Pricing', field: 'pricingStrategy', flex: 1,
+        cellRenderer: p => {
+          const span = document.createElement('span');
+          span.style.cssText = 'font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;text-transform:capitalize;color:var(--text2);';
+          span.textContent = (p.value||'centralised');
+          return span;
+        }
+      },
+      {
+        headerName: 'Actions', sortable: false, flex: 0.9,
+        cellRenderer: p => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;gap:6px;height:100%;';
+          const edit = document.createElement('button');
+          edit.className = 'btn btn-ghost btn-sm';
+          edit.textContent = 'Edit';
+          edit.onclick = () => openEditBrandModal(p.data.id);
+          const del = document.createElement('button');
+          del.className = 'btn btn-ghost btn-sm';
+          del.style.color = 'var(--danger)';
+          del.textContent = 'Delete';
+          del.onclick = () => confirmDeleteBrand(p.data.id, p.data.name);
+          wrap.appendChild(edit);
+          wrap.appendChild(del);
+          return wrap;
+        }
+      }
+    ],
+    rowData: BRANDS
+  });
+}
+
+/* ============================================================
+   MODAL HELPERS
+============================================================ */
+function switchBrandTab(num) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('bmTab-' + num).classList.add('active');
+  document.getElementById('bmPane-' + num).classList.add('active');
+}
+
+function openAddBrandModal() {
+  editingBrandId = null;
+  document.getElementById('brandModalTitle').textContent = 'Add Brand / Supplier';
+  clearBrandForm();
+  switchBrandTab('1');
+  document.getElementById('brandModal').classList.add('open');
+}
+
+function openEditBrandModal(id) {
+  const brand = BRANDS.find(b => b.id === id);
+  if (!brand) return;
+  editingBrandId = id;
+  document.getElementById('brandModalTitle').textContent = 'Edit Brand — ' + brand.name;
+  populateBrandForm(brand);
+  switchBrandTab('1');
+  document.getElementById('brandModal').classList.add('open');
+}
+
+function closeBrandModal() {
+  document.getElementById('brandModal').classList.remove('open');
+  hideTip();
+}
+
+function clearBrandForm() {
+  ['bm-name','bm-website','bm-desc','bm-contact','bm-email','bm-guidelines','bm-feedurl','bm-pimurl','bm-pimkey'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('iconPreview').style.display = 'none';
+  document.getElementById('logoPreview').style.display = 'none';
+  document.getElementById('guideFileInfo').style.display = 'none';
+  document.getElementById('prodJsonPreview').style.display = 'none';
+  document.getElementById('pimStatus').textContent = '';
+  document.getElementById('storeAll').checked = true;
+  document.getElementById('storeChipWrap').style.display = 'none';
+  currentPalette = [];
+  renderPalette();
+  buildStoreChips([]);
+  document.getElementById('bm-pricingstrategy').value = 'centralised';
+  updateStrategyDesc();
+  document.querySelector('input[name=priceSource][value=rrp]').checked = true;
+  document.querySelector('.sticker-card.selected')?.classList.remove('selected');
+  document.querySelector('.sticker-card[data-sticker=SALE]').classList.add('selected');
+}
+
+function populateBrandForm(b) {
+  document.getElementById('bm-name').value    = b.name    || '';
+  document.getElementById('bm-website').value = b.website || '';
+  document.getElementById('bm-desc').value    = b.description || '';
+  document.getElementById('bm-contact').value = b.contact || '';
+  document.getElementById('bm-email').value   = b.email   || '';
+  document.getElementById('bm-guidelines').value = b.guidelines || '';
+  document.getElementById('bm-feedurl').value = b.feedUrl || '';
+  document.getElementById('bm-pimurl').value  = b.pimUrl  || '';
+
+  // palette
+  currentPalette = (b.palette || []).map(c => ({...c}));
+  renderPalette();
+
+  // store assignment
+  if (b.storeAssign === 'specific') {
+    document.getElementById('storeSpecific').checked = true;
+    document.getElementById('storeChipWrap').style.display = 'block';
+    buildStoreChips(b.selectedStores || []);
+  } else {
+    document.getElementById('storeAll').checked = true;
+    document.getElementById('storeChipWrap').style.display = 'none';
+    buildStoreChips([]);
+  }
+
+  // pricing
+  document.getElementById('bm-pricingstrategy').value = b.pricingStrategy || 'centralised';
+  updateStrategyDesc();
+  document.querySelector(`input[name=priceSource][value=${b.priceSource||'rrp'}]`).checked = true;
+
+  // sticker
+  document.querySelectorAll('.sticker-card').forEach(c => c.classList.remove('selected'));
+  const sc = document.querySelector(`.sticker-card[data-sticker=${b.offerSticker||'SALE'}]`);
+  if (sc) sc.classList.add('selected');
+
+  // image previews
+  if (b.icon) { document.getElementById('iconPreviewImg').src = b.icon; document.getElementById('iconPreviewName').textContent = b.name + ' icon'; document.getElementById('iconPreviewInfo').textContent = 'Existing image'; document.getElementById('iconPreview').style.display = 'flex'; }
+  if (b.logo) { document.getElementById('logoPreviewImg').src = b.logo; document.getElementById('logoPreviewName').textContent = b.name + ' logo'; document.getElementById('logoPreviewInfo').textContent = 'Existing image'; document.getElementById('logoPreview').style.display = 'flex'; }
+}
+
+/* ============================================================
+   SAVE BRAND
+============================================================ */
+function saveBrand() {
+  const name = document.getElementById('bm-name').value.trim();
+  if (!name) { showToast('Brand name is required', 'error'); switchBrandTab('1'); return; }
+
+  const payload = {
+    name,
+    website:    document.getElementById('bm-website').value.trim(),
+    description:document.getElementById('bm-desc').value.trim(),
+    contact:    document.getElementById('bm-contact').value.trim(),
+    email:      document.getElementById('bm-email').value.trim(),
+    guidelines: document.getElementById('bm-guidelines').value.trim(),
+    feedUrl:    document.getElementById('bm-feedurl').value.trim(),
+    pimUrl:     document.getElementById('bm-pimurl').value.trim(),
+    palette:    [...currentPalette],
+    storeAssign: document.getElementById('storeSpecific').checked ? 'specific' : 'all',
+    selectedStores: document.getElementById('storeSpecific').checked
+      ? Array.from(document.querySelectorAll('.store-chip.selected')).map(c => c.dataset.store)
+      : [],
+    pricingStrategy: document.getElementById('bm-pricingstrategy').value,
+    priceSource: document.querySelector('input[name=priceSource]:checked')?.value || 'rrp',
+    offerSticker: document.querySelector('.sticker-card.selected')?.dataset.sticker || 'SALE',
+    icon: document.getElementById('iconPreviewImg').src || `https://placehold.co/40x40/169bc2/fff?text=${encodeURIComponent(name.charAt(0))}`,
+    logo: document.getElementById('logoPreviewImg').src || '',
+    lowStockStores: [], outOfStockStores: [],
+    productCount: 0, storeCount: 0
+  };
+
+  if (editingBrandId) {
+    const idx = BRANDS.findIndex(b => b.id === editingBrandId);
+    if (idx !== -1) {
+      payload.id = editingBrandId;
+      payload.lowStockStores  = BRANDS[idx].lowStockStores;
+      payload.outOfStockStores= BRANDS[idx].outOfStockStores;
+      payload.productCount    = BRANDS[idx].productCount;
+      payload.storeCount      = BRANDS[idx].storeCount;
+      BRANDS[idx] = payload;
+      showToast(`"${name}" updated successfully`);
+    }
+  } else {
+    payload.id = 'brand-' + Date.now();
+    payload.storeCount = payload.storeAssign === 'all' ? 8 : payload.selectedStores.length;
+    BRANDS.push(payload);
+    showToast(`"${name}" added successfully`);
+  }
+
+  brandsGridApi.setGridOption('rowData', BRANDS);
+  closeBrandModal();
+}
+
+/* ============================================================
+   DELETE BRAND
+============================================================ */
+function confirmDeleteBrand(id, name) {
+  document.getElementById('confirmTitle').textContent = 'Delete Brand?';
+  document.getElementById('confirmMsg').textContent = `"${name}" and all associated data will be removed. This cannot be undone.`;
+  document.getElementById('confirmBtn').onclick = () => {
+    const idx = BRANDS.findIndex(b => b.id === id);
+    if (idx !== -1) BRANDS.splice(idx, 1);
+    brandsGridApi.setGridOption('rowData', BRANDS);
+    closeConfirm();
+    showToast(`"${name}" deleted`, 'info');
+  };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
+
+/* ============================================================
+   IMAGE UPLOAD
+============================================================ */
+function handleImgUpload(type, event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 1024*1024) { showToast('Image too large (max 1MB)', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (type === 'icon') {
+      document.getElementById('iconPreviewImg').src  = e.target.result;
+      document.getElementById('iconPreviewName').textContent = file.name;
+      document.getElementById('iconPreviewInfo').textContent = Math.round(file.size/1024) + 'KB';
+      document.getElementById('iconPreview').style.display  = 'flex';
+    } else {
+      document.getElementById('logoPreviewImg').src  = e.target.result;
+      document.getElementById('logoPreviewName').textContent = file.name;
+      document.getElementById('logoPreviewInfo').textContent = Math.round(file.size/1024) + 'KB';
+      document.getElementById('logoPreview').style.display  = 'flex';
+    }
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function handleGuideUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const info = document.getElementById('guideFileInfo');
+  info.innerHTML = `📄 <strong>${escHtml(file.name)}</strong> &nbsp;(${Math.round(file.size/1024)}KB) — uploaded`;
+  info.style.display = 'block';
+  if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+    const reader = new FileReader();
+    reader.onload = e => { document.getElementById('bm-guidelines').value = e.target.result; };
+    reader.readAsText(file);
+  }
+  event.target.value = '';
+}
+
+function handleProdJson(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('Expected JSON array');
+      const cols = data.length ? Object.keys(data[0]).join(', ') : 'none';
+      const preview = document.getElementById('prodJsonPreview');
+      preview.innerHTML = `<strong>✓ ${data.length} products detected</strong><br><span style="color:var(--text2);">Fields: ${escHtml(cols)}</span>`;
+      preview.style.display = 'block';
+      showToast(`JSON parsed: ${data.length} products`, 'info');
+    } catch(err) {
+      showToast('Invalid JSON: ' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+/* ============================================================
+   COLOUR PALETTE
+============================================================ */
+function renderPalette() {
+  const list = document.getElementById('paletteList');
+  list.innerHTML = currentPalette.map((c,i) => `
+    <div class="palette-swatch">
+      <div class="swatch-dot" style="background:${escHtml(c.hex)};"></div>
+      <span class="swatch-label">${escHtml(c.label||'')}</span>
+      <span class="swatch-hex">${escHtml(c.hex)}</span>
+      <button class="swatch-rm" onclick="removePaletteColour(${i})" title="Remove">×</button>
+    </div>
+  `).join('');
+}
+
+function addPaletteColour() {
+  const hex   = document.getElementById('paletteHexInput').value.trim() || document.getElementById('paletteColorPicker').value;
+  const label = document.getElementById('paletteLabelInput').value.trim();
+  if (!/^#[0-9a-fA-F]{3,6}$/.test(hex)) { showToast('Enter a valid hex colour e.g. #FF0000', 'error'); return; }
+  currentPalette.push({ hex: hex.toLowerCase(), label: label || hex });
+  renderPalette();
+  document.getElementById('paletteLabelInput').value = '';
+  document.getElementById('paletteHexInput').value   = '';
+}
+
+function removePaletteColour(i) {
+  currentPalette.splice(i, 1);
+  renderPalette();
+}
+
+// Sync color picker <-> hex input
+document.getElementById('paletteColorPicker').addEventListener('input', e => {
+  document.getElementById('paletteHexInput').value = e.target.value;
+});
+document.getElementById('paletteHexInput').addEventListener('input', e => {
+  const v = e.target.value;
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) document.getElementById('paletteColorPicker').value = v;
+});
+
+/* ============================================================
+   STORE CHIPS
+============================================================ */
+function toggleStoreSelect() {
+  const specific = document.getElementById('storeSpecific').checked;
+  document.getElementById('storeChipWrap').style.display = specific ? 'block' : 'none';
+  if (specific) buildStoreChips([]);
+}
+
+function buildStoreChips(selected = []) {
+  document.getElementById('storeChips').innerHTML = STORES.map(s => `
+    <div class="store-chip ${selected.includes(s) ? 'selected' : ''}" data-store="${s}" onclick="toggleStoreChip(this)">
+      ${escHtml(s)}
+    </div>
+  `).join('');
+}
+
+function toggleStoreChip(el) { el.classList.toggle('selected'); }
+
+/* ============================================================
+   PRICING STRATEGY
+============================================================ */
+const STRATEGY_DESCS = {
+  centralised:    'HQ Headquarters sets and maintains all product prices. Stores cannot override pricing.',
+  decentralised:  'Each individual store sets their own prices independently. No central price control.',
+  group:          'Pricing is set per store group or region. Groups can have different prices.',
+  individual:     'HQ sets a base price but individual stores can override for local promotions.'
+};
+document.getElementById('bm-pricingstrategy').addEventListener('change', updateStrategyDesc);
+function updateStrategyDesc() {
+  const v = document.getElementById('bm-pricingstrategy').value;
+  document.getElementById('strategyDesc').textContent = STRATEGY_DESCS[v] || '';
+}
+
+/* ============================================================
+   STICKER SELECTION
+============================================================ */
+function selectSticker(el) {
+  document.querySelectorAll('.sticker-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+/* ============================================================
+   PIM TEST CONNECTION
+============================================================ */
+function testPimConnection() {
+  const url = document.getElementById('bm-pimurl').value.trim();
+  const key = document.getElementById('bm-pimkey').value.trim();
+  const st  = document.getElementById('pimStatus');
+  if (!url) { st.style.color = 'var(--danger)'; st.textContent = '✕ Please enter a PIM URL first.'; return; }
+  st.style.color = 'var(--text2)'; st.textContent = '⏳ Testing connection…';
+  setTimeout(() => {
+    if (key.length > 5) {
+      st.style.color = 'var(--success)'; st.textContent = '✓ Connection successful — 1,248 products available.';
+      showToast('PIM connection verified', 'success');
+    } else {
+      st.style.color = 'var(--danger)'; st.textContent = '✕ Connection failed — check your API key.';
+    }
+  }, 1200);
+}
+
+/* ============================================================
+   DRAG & DROP for upload zones
+============================================================ */
+['iconZone','logoZone','guideZone','prodJsonZone'].forEach(id => {
+  const zone = document.getElementById(id);
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const input = zone.querySelector('input[type=file]');
+    if (!input || !e.dataTransfer.files.length) return;
+    const dt = new DataTransfer();
+    dt.items.add(e.dataTransfer.files[0]);
+    input.files = dt.files;
+    input.dispatchEvent(new Event('change'));
+  });
+});
+
+/* ============================================================
+   UTILITIES
+============================================================ */
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  initBrandsGrid();
+});
+</script>
+</body>
+</html>
