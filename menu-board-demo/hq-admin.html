@@ -1917,6 +1917,55 @@ const TEMPLATE_LIBRARY = [
     }
   },
   {
+    id: 'order-summary-board',
+    name: 'Order Summary Board',
+    description: 'Customer-facing display showing the live order — item names, quantities, and total — as items are added via the mobile ordering screen.',
+    category: 'Store Operations',
+    useCases: ['QSR','Café','Restaurant','Retail','Order Display'],
+    phData: ['device_id'],
+    standalone: true,
+    standaloneFile: 'order-summary.html',
+    settings: { showHeader:true, colorScheme:true, iconPosition:false, headerCopy:true, itemTypeFilter:false, categoryFilter:false, soldOutBehavior:false, portrait:true, landscape:true, showClock:true, personalGreeting:false, showStoreName:false, campaignFilter:false },
+    defaults: { showHeader:'true', colorHeader:'#006241', colorHeaderText:'#ffffff', colorAccent:'#CBA258', colorCatBar:'#006241', colorBody:'#f9f4ec', colorItemBg:'#ffffff', colorText:'#1a1a1a', colorDescription:'#666666', colorPrice:'#004d33', colorClockText:'#1e293b', colorClockBg:'#f0f4f8', showClock:'true', timeFormat:'british' },
+    portraitSVG: (W,H) => {
+      const hh=14; const fh=14; const rowH=10; const numRows=3; const gap=3;
+      let rows = '';
+      for (let i=0; i<numRows; i++) {
+        const y = hh + 8 + i*(rowH+gap);
+        rows += `<rect x="4" y="${y}" width="${W-8}" height="${rowH}" rx="2" fill="${C.card}" opacity=".9"/>`;
+        rows += `<rect x="9" y="${y+3}" width="${W*0.18}" height="4" rx="1" fill="${C.header}" opacity=".7"/>`;
+        rows += `<rect x="${9+W*0.22}" y="${y+3}" width="${W*0.35}" height="4" rx="1" fill="${C.text}" opacity=".5"/>`;
+        rows += `<rect x="${W-20}" y="${y+3}" width="12" height="4" rx="1" fill="${C.accent}" opacity=".7"/>`;
+      }
+      return `<rect width="${W}" height="${H}" fill="${C.bg}"/>` +
+        `<rect width="${W}" height="${hh}" fill="${C.header}"/>` +
+        `<rect x="3" y="3.5" width="22" height="7" rx="1.5" fill="rgba(255,255,255,.25)"/>` +
+        `<rect x="${W-25}" y="4" width="20" height="6" rx="1" fill="rgba(255,255,255,.15)"/>` +
+        rows +
+        `<rect y="${H-fh}" width="${W}" height="${fh}" fill="${C.header}"/>` +
+        `<rect x="4" y="${H-fh+5}" width="${W*0.4}" height="4" rx="1" fill="rgba(255,255,255,.3)"/>` +
+        `<rect x="${W-28}" y="${H-fh+5}" width="24" height="4" rx="1" fill="rgba(255,255,255,.6)"/>`;
+    },
+    landscapeSVG: (W,H) => {
+      const hh=11; const fh=11; const rowH=8; const numRows=3; const gap=3;
+      let rows = '';
+      for (let i=0; i<numRows; i++) {
+        const y = hh + 6 + i*(rowH+gap);
+        rows += `<rect x="4" y="${y}" width="${W-8}" height="${rowH}" rx="2" fill="${C.card}" opacity=".9"/>`;
+        rows += `<rect x="9" y="${y+2}" width="${W*0.14}" height="4" rx="1" fill="${C.header}" opacity=".7"/>`;
+        rows += `<rect x="${9+W*0.18}" y="${y+2}" width="${W*0.38}" height="4" rx="1" fill="${C.text}" opacity=".5"/>`;
+        rows += `<rect x="${W-20}" y="${y+2}" width="14" height="4" rx="1" fill="${C.accent}" opacity=".7"/>`;
+      }
+      return `<rect width="${W}" height="${H}" fill="${C.bg}"/>` +
+        `<rect width="${W}" height="${hh}" fill="${C.header}"/>` +
+        `<rect x="4" y="3" width="18" height="5" rx="1" fill="rgba(255,255,255,.25)"/>` +
+        rows +
+        `<rect y="${H-fh}" width="${W}" height="${fh}" fill="${C.header}"/>` +
+        `<rect x="4" y="${H-fh+3.5}" width="${W*0.35}" height="4" rx="1" fill="rgba(255,255,255,.3)"/>` +
+        `<rect x="${W-28}" y="${H-fh+3.5}" width="24" height="4" rx="1" fill="rgba(255,255,255,.6)"/>`;
+    }
+  },
+  {
     id: 'feature-hero-board',
     name: 'Feature Hero Spotlight',
     description: 'One promoted product dominates with large imagery, supporting items shown below.',
@@ -4828,14 +4877,23 @@ function copyOfferBoardUrl(tplId) {
   const brandId = document.getElementById('bEditId').value;
   if (!brandId) { toast('Save the brand first to generate a URL.', 'error'); return; }
   const brandName = (document.getElementById('bName').value || '').trim();
-  const base = window.location.origin + window.location.pathname.replace('hq-admin.html', 'menu-board.html');
+  const libEntry = TEMPLATE_LIBRARY.find(x => x.id === tpl.templateType);
+  const isStandalone = libEntry && libEntry.standalone;
+  const targetFile = isStandalone ? (libEntry.standaloneFile || 'order-summary.html') : 'menu-board.html';
+  const base = window.location.origin + window.location.pathname.replace('hq-admin.html', targetFile);
   const params = new URLSearchParams({ brand: brandName || brandId });
-  if (tpl.templateType) params.set('template', tpl.templateType);
-  params.set('store',       '${StoreCode}');
-  const menuTypes = Array.isArray(tpl.menuTypes) && tpl.menuTypes.length > 0 ? tpl.menuTypes.join(',') : '${MenuType}';
-  params.set('menu',        menuTypes);
-  params.set('device',      '${UniqueDeviceID}');
-  params.set('orientation', 'landscape');
+  if (isStandalone) {
+    // Standalone boards use store + device only (no template/menu/orientation params)
+    params.set('store',  '${StoreCode}');
+    params.set('device', '${UniqueDeviceID}');
+  } else {
+    if (tpl.templateType) params.set('template', tpl.templateType);
+    params.set('store',       '${StoreCode}');
+    const menuTypes = Array.isArray(tpl.menuTypes) && tpl.menuTypes.length > 0 ? tpl.menuTypes.join(',') : '${MenuType}';
+    params.set('menu',        menuTypes);
+    params.set('device',      '${UniqueDeviceID}');
+    params.set('orientation', 'landscape');
+  }
   const url = decodeURIComponent(base + '?' + params.toString());
   navigator.clipboard.writeText(url).then(() => {
     toast('✅ Offer Board URL copied to clipboard.', 'success');

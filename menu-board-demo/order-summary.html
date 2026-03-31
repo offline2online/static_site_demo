@@ -24,6 +24,9 @@
       --item-color:       #004d33;
       --header-text:      #006241;
       --clock-text:       #1e293b;
+      --clock-bg:         #f0f4f8;
+      --item-bg:          #ffffff;
+      --item-desc:        #444444;
       --qr-safe-bottom:   0px;
     }
 
@@ -109,7 +112,7 @@
 
     /* ── CLOCK BAR ─────────────────────────── */
     .clock-bar {
-      background: #f0f4f8;
+      background: var(--clock-bg, #f0f4f8);
       border-top: 1px solid #dde5ee;
       border-bottom: 1px solid #dde5ee;
       display: flex;
@@ -260,7 +263,7 @@
 
     /* Single item row */
     .order-row {
-      background: var(--white);
+      background: var(--item-bg, var(--white));
       border-radius: clamp(8px, 1vw, 16px);
       border: 1px solid var(--border-lt);
       padding: clamp(12px, 1.5vw, 24px) clamp(16px, 2vw, 32px);
@@ -291,7 +294,7 @@
     }
     .order-row-mods {
       font-size: clamp(11px, 1.3vw, 18px);
-      color: var(--text2);
+      color: var(--item-desc, var(--text2));
       margin-top: clamp(3px, 0.4vw, 6px);
       line-height: 1.5;
     }
@@ -498,14 +501,18 @@ function getActiveBrand() {
 function applyColorScheme(brand) {
   const colors = (brand && brand.colors) || {};
   const root = document.documentElement.style;
-  if (colors.header)     root.setProperty('--board-header-bg', colors.header);
-  if (colors.header)     root.setProperty('--item-color',      colors.header);
-  if (colors.headerText) root.setProperty('--header-text',     colors.headerText);
-  if (colors.accent)     root.setProperty('--green',           colors.accent);
-  if (colors.body)       root.setProperty('--cream',           colors.body);
-  if (colors.text)       root.setProperty('--text',            colors.text);
-  if (colors.price)      root.setProperty('--price-color',     colors.price);
-  if (colors.clockText)  root.setProperty('--clock-text',      colors.clockText);
+  if (colors.header)      root.setProperty('--board-header-bg', colors.header);
+  if (colors.header)      root.setProperty('--item-color',      colors.header);
+  if (colors.headerText)  root.setProperty('--header-text',     colors.headerText);
+  if (colors.accent)      root.setProperty('--green',           colors.accent);
+  if (colors.catBar)      root.setProperty('--cat-bar-bg',      colors.catBar);
+  if (colors.body)        root.setProperty('--cream',           colors.body);
+  if (colors.itemBg)      root.setProperty('--item-bg',         colors.itemBg);
+  if (colors.text)        root.setProperty('--text',            colors.text);
+  if (colors.description) root.setProperty('--item-desc',       colors.description);
+  if (colors.price)       root.setProperty('--price-color',     colors.price);
+  if (colors.clockText)   root.setProperty('--clock-text',      colors.clockText);
+  if (colors.clockBg)     root.setProperty('--clock-bg',        colors.clockBg);
 }
 
 function updateClock() {
