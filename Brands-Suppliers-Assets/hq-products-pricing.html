@@ -227,7 +227,7 @@
     .dots-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:18px;line-height:1;color:var(--text2);transition:all .14s;letter-spacing:2px;}
     .dots-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
     .dots-menu-wrap{position:relative;display:inline-flex;align-items:center;}
-    .dots-menu{position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border2);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.13);min-width:170px;z-index:500;overflow:hidden;display:none;}
+    .dots-menu{position:fixed;background:var(--surface);border:1px solid var(--border2);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.13);min-width:170px;z-index:9999;overflow:hidden;display:none;}
     .dots-menu.open{display:block;}
     .dots-menu-item{padding:10px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:9px;color:var(--text);transition:background .1s;white-space:nowrap;}
     .dots-menu-item:hover{background:var(--surface2);}
@@ -846,11 +846,19 @@ function initProductsGrid(){
           `;
           btn.onclick = e => {
             e.stopPropagation();
-            document.querySelectorAll('.dots-menu.open').forEach(m => m.classList.remove('open'));
-            menu.classList.toggle('open');
+            const isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.dots-menu.open').forEach(m => { m.classList.remove('open'); if (m.parentNode === document.body) document.body.removeChild(m); });
+            if (!isOpen) {
+              const rect = btn.getBoundingClientRect();
+              menu.style.top = (rect.bottom + 4) + 'px';
+              menu.style.right = (window.innerWidth - rect.right) + 'px';
+              menu.style.left = 'auto';
+              document.body.appendChild(menu);
+              menu.classList.add('open');
+            }
           };
-          menu.querySelector(`#dmi-edit-${p.data.id}`).onclick = e => { e.stopPropagation(); menu.classList.remove('open'); openEditProductModal(p.data.id); };
-          menu.querySelector(`#dmi-del-${p.data.id}`).onclick = e => { e.stopPropagation(); menu.classList.remove('open'); confirmDelete(p.data.id, p.data.name); };
+          menu.querySelector(`#dmi-edit-${p.data.id}`).onclick = e => { e.stopPropagation(); menu.classList.remove('open'); if (menu.parentNode === document.body) document.body.removeChild(menu); openEditProductModal(p.data.id); };
+          menu.querySelector(`#dmi-del-${p.data.id}`).onclick = e => { e.stopPropagation(); menu.classList.remove('open'); if (menu.parentNode === document.body) document.body.removeChild(menu); confirmDelete(p.data.id, p.data.name); };
           mwrap.appendChild(btn);
           mwrap.appendChild(menu);
           wrap.appendChild(mwrap);
@@ -1605,7 +1613,7 @@ function populateBrandSelect(){
 
 /* ============================================================ INIT */
 document.addEventListener('click', () => {
-  document.querySelectorAll('.dots-menu.open').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.dots-menu.open').forEach(m => { m.classList.remove('open'); if (m.parentNode === document.body) document.body.removeChild(m); });
 });
 
 document.addEventListener('DOMContentLoaded', () => {
