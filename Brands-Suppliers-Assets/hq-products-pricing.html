@@ -309,7 +309,7 @@
     <div class="modal-tabs">
       <div class="modal-tab active" id="pmTab-1" onclick="switchProductTab('1')">Product Details</div>
       <div class="modal-tab" id="pmTab-2" onclick="switchProductTab('2')">Product Assets</div>
-      <div class="modal-tab" id="pmTab-3" onclick="switchProductTab('3')">Price Change Log</div>
+      <div class="modal-tab" id="pmTab-3" onclick="switchProductTab('3')">Pricing Management</div>
     </div>
     <div class="modal-body">
 
@@ -322,22 +322,21 @@
           </div>
           <div class="form-group">
             <label>SKU <span class="req">*</span></label>
-            <input type="text" id="pm-sku" placeholder="e.g. NK-RN-001" style="font-family:monospace;">
+            <input type="text" id="pm-sku" placeholder="e.g. BYR-ASP-001" style="font-family:monospace;">
           </div>
         </div>
         <div class="form-row cols-3">
           <div class="form-group">
             <label>Category</label>
-            <select id="pm-category">
-              <option value="Footwear">Footwear</option>
-              <option value="Apparel">Apparel</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Accessories">Accessories</option>
-            </select>
+            <select id="pm-category" onchange="onCategorySelectChange()"></select>
+            <div id="pm-new-cat-row" style="display:none;gap:6px;align-items:center;margin-top:6px;">
+              <input type="text" id="pm-new-cat-input" placeholder="New category name…" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmNewCategory();}">
+              <button class="btn btn-primary btn-sm" onclick="confirmNewCategory()">Add</button>
+            </div>
           </div>
           <div class="form-group">
             <label>Sub-Category</label>
-            <input type="text" id="pm-subcategory" placeholder="e.g. Running Shoes">
+            <input type="text" id="pm-subcategory" placeholder="e.g. Analgesics">
           </div>
           <div class="form-group">
             <label>Enable Product</label>
@@ -357,26 +356,6 @@
         <div class="form-group">
           <label>Long Description</label>
           <textarea id="pm-longdesc" rows="3" placeholder="Full product description…"></textarea>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>RRP <span class="req">*</span></label>
-            <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="pm-rrp" placeholder="0.00" step="0.01" min="0"></div>
-          </div>
-          <div class="form-group">
-            <label>Offer Price <span style="font-size:10px;font-weight:400;text-transform:none;">(leave blank if none)</span></label>
-            <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="pm-offerprice" placeholder="0.00" step="0.01" min="0"></div>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Schedule Offer From <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
-            <input type="datetime-local" id="pm-scheduledfrom">
-          </div>
-          <div class="form-group">
-            <label>Schedule Offer Until <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
-            <input type="datetime-local" id="pm-scheduleduntil">
-          </div>
         </div>
         <div class="form-group">
           <label>Target Audiences</label>
@@ -411,10 +390,32 @@
         </div>
       </div>
 
-      <!-- TAB 3: Price Change Log -->
+      <!-- TAB 3: Pricing Management -->
       <div class="modal-tab-pane" id="pmPane-3">
+        <div class="section-divider">RRP &amp; Offer Pricing</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>RRP <span class="req">*</span></label>
+            <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="pm-rrp" placeholder="0.00" step="0.01" min="0"></div>
+          </div>
+          <div class="form-group">
+            <label>Offer Price <span style="font-size:10px;font-weight:400;text-transform:none;">(leave blank if none)</span></label>
+            <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="pm-offerprice" placeholder="0.00" step="0.01" min="0"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Schedule Offer From <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
+            <input type="datetime-local" id="pm-scheduledfrom">
+          </div>
+          <div class="form-group">
+            <label>Schedule Offer Until <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
+            <input type="datetime-local" id="pm-scheduleduntil">
+          </div>
+        </div>
+        <div class="section-divider">Price Change History</div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <div style="font-size:13px;font-weight:600;">Price Change History</div>
+          <div></div>
           <button class="btn btn-ghost btn-sm" onclick="toggleLogEntryForm()">+ Add Manual Entry</button>
         </div>
         <div id="logEntryForm" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;">
@@ -434,7 +435,7 @@
           </div>
           <div class="form-group" style="margin-bottom:8px;">
             <label>Reason</label>
-            <input type="text" id="log-reason" placeholder="e.g. Summer sale, PIM sync">
+            <input type="text" id="log-reason" placeholder="e.g. Seasonal promo, supplier price change">
           </div>
           <button class="btn btn-primary btn-sm" onclick="addLogEntry()">Add Entry</button>
         </div>
@@ -556,9 +557,9 @@
 <script>
 /* ============================================================ DATA */
 const _BRANDS_LIST_DEFAULT = [
-  {id:'brand-001',name:'Nike'},{id:'brand-002',name:'Adidas'},
-  {id:'brand-003',name:'Samsung'},{id:'brand-004',name:'Apple'},
-  {id:'brand-005',name:"Levi's"},{id:'brand-006',name:'Sony'}
+  {id:'brand-001',name:'Bayer'},{id:'brand-002',name:'Johnson & Johnson'},
+  {id:'brand-003',name:'GSK'},{id:'brand-004',name:'Pfizer'},
+  {id:'brand-005',name:'Reckitt'},{id:'brand-006',name:'Novartis'}
 ];
 let BRANDS_LIST = (() => { try { const s = localStorage.getItem('ph_brands_list'); return s ? JSON.parse(s) : _BRANDS_LIST_DEFAULT; } catch(e) { return _BRANDS_LIST_DEFAULT; } })();
 
@@ -572,36 +573,36 @@ if (!Object.keys(BRANDS_MAP).length) {
 }
 
 const _PRODUCTS_DEFAULT = [
-  // NIKE
-  {id:'p-001',brandId:'brand-001',brandName:'Nike',sku:'NK-RN-001',name:'Air Max 270',category:'Footwear',subCategory:'Running Shoes',rrp:149.99,offerPrice:119.99,offerActive:true,offerScheduledAt:null,shortDescription:'Iconic Air Max cushioning for all-day comfort.',longDescription:'The Nike Air Max 270 features the biggest Air unit yet for a lifestyle shoe, delivering unparalleled, all-day cushioning.',features:['Air Max unit','Foam midsole','Mesh upper','Rubber outsole'],targetAudiences:['Men','Women','Runners'],thumbnail:'https://placehold.co/60x60/111/fff?text=AM270',enabled:true,images:[{id:'img-001',src:'https://placehold.co/300x200/111/fff?text=AM270+Main',label:'Hero Shot',tags:['primary','hero'],isPrimary:true},{id:'img-002',src:'https://placehold.co/300x200/333/fff?text=AM270+Side',label:'Side Profile',tags:['side'],isPrimary:false}],colours:[{hex:'#111111',label:'Black'},{hex:'#FFFFFF',label:'White'},{hex:'#FF6B35',label:'Orange'}],priceLog:[{date:'2026-03-15 10:22',changedBy:'Sarah Chen',oldPrice:149.99,newPrice:119.99,reason:'Spring sale'},{date:'2026-01-10 09:00',changedBy:'PIM Sync',oldPrice:159.99,newPrice:149.99,reason:'New season pricing'}]},
-  {id:'p-002',brandId:'brand-001',brandName:'Nike',sku:'NK-JK-022',name:'Tech Fleece Hoodie',category:'Apparel',subCategory:'Hoodies',rrp:89.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-04-15T09:00',shortDescription:'Engineered fleece for warmth without the bulk.',longDescription:'Nike Tech Fleece combines innovative fabric with a modern silhouette.',features:['Tech Fleece fabric','Kangaroo pocket','Full zip','Tapered fit'],targetAudiences:['Men'],thumbnail:'https://placehold.co/60x60/222/fff?text=TF+Hood',enabled:true,images:[{id:'img-003',src:'https://placehold.co/300x200/222/fff?text=TechFleece',label:'Front View',tags:['front','primary'],isPrimary:true}],colours:[{hex:'#111111',label:'Black'},{hex:'#404040',label:'Dark Grey'}],priceLog:[{date:'2026-02-01 08:00',changedBy:'Emma Davies',oldPrice:99.99,newPrice:89.99,reason:'Price reduction Q1'}]},
-  {id:'p-003',brandId:'brand-001',brandName:'Nike',sku:'NK-BT-055',name:'Dri-FIT Training Tee',category:'Apparel',subCategory:'T-Shirts',rrp:34.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Sweat-wicking fabric for intense training.',longDescription:'Standard Dri-FIT training tee with moisture management technology.',features:['Dri-FIT technology','Crew neck','Regular fit'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/555/fff?text=DriFIT',enabled:true,images:[],colours:[{hex:'#111111',label:'Black'},{hex:'#FFFFFF',label:'White'},{hex:'#1428A0',label:'Blue'}],priceLog:[]},
-  {id:'p-004',brandId:'brand-001',brandName:'Nike',sku:'NK-BG-011',name:'Heritage Backpack',category:'Accessories',subCategory:'Bags',rrp:54.99,offerPrice:44.99,offerActive:true,offerScheduledAt:null,shortDescription:'Versatile backpack with multiple compartments.',longDescription:'The Nike Heritage backpack offers iconic style with a practical compartment layout.',features:['Laptop sleeve','Two zip compartments','Padded straps'],targetAudiences:['All'],thumbnail:'https://placehold.co/60x60/888/fff?text=Bag',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-01 12:00',changedBy:'Tom Hughes',oldPrice:54.99,newPrice:44.99,reason:'Clearance'}]},
-  // ADIDAS
-  {id:'p-005',brandId:'brand-002',brandName:'Adidas',sku:'AD-UB-001',name:'Ultraboost 23',category:'Footwear',subCategory:'Running Shoes',rrp:179.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Responsive Boost midsole for high-performance running.',longDescription:'Every step in the Ultraboost 23 returns energy with Boost midsole technology.',features:['Boost midsole','Primeknit+ upper','Continental rubber outsole','Torsion system'],targetAudiences:['Runners','Athletes'],thumbnail:'https://placehold.co/60x60/000/fff?text=UB23',enabled:true,images:[],colours:[{hex:'#000000',label:'Core Black'},{hex:'#FFFFFF',label:'White'}],priceLog:[]},
-  {id:'p-006',brandId:'brand-002',brandName:'Adidas',sku:'AD-TF-099',name:'Tiro 23 Tracksuit',category:'Apparel',subCategory:'Tracksuits',rrp:74.99,offerPrice:59.99,offerActive:true,offerScheduledAt:null,shortDescription:'Football-inspired training tracksuit.',longDescription:'Tiro 23 combines football heritage with everyday wearability.',features:['Recycled polyester','Aeroready technology','Tapered leg','Zip pockets'],targetAudiences:['Men','Football fans'],thumbnail:'https://placehold.co/60x60/0057A0/fff?text=Tiro23',enabled:true,images:[],colours:[{hex:'#000000',label:'Black'},{hex:'#FFFFFF',label:'White'}],priceLog:[{date:'2026-03-10 14:00',changedBy:'Admin',oldPrice:74.99,newPrice:59.99,reason:'Weekend offer'}]},
-  {id:'p-007',brandId:'brand-002',brandName:'Adidas',sku:'AD-SN-044',name:'Stan Smith Lux',category:'Footwear',subCategory:'Lifestyle Shoes',rrp:129.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-05-01T08:00',shortDescription:'Premium leather Stan Smith with gold accents.',longDescription:'The Stan Smith Lux elevates the classic with premium full-grain leather.',features:['Full-grain leather upper','Gold foil details','Rubber outsole'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/f5f5f5/333?text=StanLux',enabled:true,images:[],colours:[{hex:'#FFFFFF',label:'White'},{hex:'#FFD700',label:'Gold'}],priceLog:[]},
-  {id:'p-008',brandId:'brand-002',brandName:'Adidas',sku:'AD-CP-012',name:'Adicolor Cap',category:'Accessories',subCategory:'Headwear',rrp:24.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Classic 5-panel cap with embroidered trefoil.',longDescription:'Adicolor cap with heritage styling.',features:['5-panel','Embroidered trefoil','Adjustable strap'],targetAudiences:['All'],thumbnail:'https://placehold.co/60x60/ff3300/fff?text=Cap',enabled:false,images:[],colours:[],priceLog:[]},
-  // SAMSUNG
-  {id:'p-009',brandId:'brand-003',brandName:'Samsung',sku:'SS-TV-065',name:'Galaxy Neo QLED 65"',category:'Electronics',subCategory:'TVs',rrp:1799.99,offerPrice:1499.99,offerActive:true,offerScheduledAt:null,shortDescription:'Neo QLED with 4K upscaling and Quantum Matrix Technology.',longDescription:'Experience next-level picture quality with the Samsung Galaxy Neo QLED 65 inch television.',features:['Neo QLED','4K AI upscaling','Object Tracking Sound','SmartThings hub'],targetAudiences:['Homeowners','Tech enthusiasts'],thumbnail:'https://placehold.co/60x60/1428A0/fff?text=QLED',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-20 09:00',changedBy:'PIM Sync',oldPrice:1799.99,newPrice:1499.99,reason:'Spring sale event'}]},
-  {id:'p-010',brandId:'brand-003',brandName:'Samsung',sku:'SS-WM-029',name:'EcoBubble Washing Machine 9kg',category:'Electronics',subCategory:'Appliances',rrp:699.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'EcoBubble technology cleans effectively at low temperatures.',longDescription:'Samsung EcoBubble 9kg washing machine with AI energy control.',features:['EcoBubble','AI Energy','9kg capacity','B energy rating'],targetAudiences:['Homeowners'],thumbnail:'https://placehold.co/60x60/2D2D2D/fff?text=WashM',enabled:true,images:[],colours:[],priceLog:[]},
-  {id:'p-011',brandId:'brand-003',brandName:'Samsung',sku:'SS-FG-077',name:'French Door Fridge 600L',category:'Electronics',subCategory:'Appliances',rrp:1299.99,offerPrice:999.99,offerActive:true,offerScheduledAt:null,shortDescription:'Smart French door refrigerator with food management AI.',longDescription:'Samsung French Door 600L with AI Smart Inverter and food tracking.',features:['AI Smart Inverter','SpaceMax','Twin Cooling Plus','600L capacity'],targetAudiences:['Homeowners'],thumbnail:'https://placehold.co/60x60/1428A0/fff?text=Fridge',enabled:true,images:[],colours:[],priceLog:[]},
-  {id:'p-012',brandId:'brand-003',brandName:'Samsung',sku:'SS-TAB-S9',name:'Galaxy Tab S9',category:'Electronics',subCategory:'Tablets',rrp:799.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-04-20T09:00',shortDescription:'Flagship Android tablet with Dynamic AMOLED 2X display.',longDescription:'The Samsung Galaxy Tab S9 delivers a premium tablet experience.',features:['Dynamic AMOLED 2X','Snapdragon 8 Gen 2','S Pen included','IP68'],targetAudiences:['Professionals','Creatives'],thumbnail:'https://placehold.co/60x60/555/fff?text=TabS9',enabled:true,images:[],colours:[],priceLog:[]},
-  // APPLE
-  {id:'p-013',brandId:'brand-004',brandName:'Apple',sku:'AP-IPH-15',name:'iPhone 15 Pro',category:'Electronics',subCategory:'Smartphones',rrp:1099.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Titanium design with A17 Pro chip.',longDescription:'iPhone 15 Pro. Forged in titanium and featuring the groundbreaking A17 Pro chip.',features:['A17 Pro chip','Titanium design','USB-C','48MP ProCamera'],targetAudiences:['Professionals','Tech enthusiasts'],thumbnail:'https://placehold.co/60x60/1D1D1F/fff?text=iPhone',enabled:true,images:[],colours:[{hex:'#1D1D1F',label:'Black Titanium'},{hex:'#FFFFFF',label:'White Titanium'}],priceLog:[]},
-  {id:'p-014',brandId:'brand-004',brandName:'Apple',sku:'AP-IPD-13',name:'iPad Pro 13"',category:'Electronics',subCategory:'Tablets',rrp:1299.99,offerPrice:1099.99,offerActive:true,offerScheduledAt:null,shortDescription:'The ultimate iPad experience with M2 chip.',longDescription:'iPad Pro 13 inch with the Apple M2 chip, Liquid Retina XDR display, and ProRes video.',features:['Apple M2','Liquid Retina XDR','ProRes video','USB-C Thunderbolt 4'],targetAudiences:['Creatives','Professionals'],thumbnail:'https://placehold.co/60x60/F5F5F7/333?text=iPadPro',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-25 11:00',changedBy:'Admin',oldPrice:1299.99,newPrice:1099.99,reason:'Trade-in promotion'}]},
-  {id:'p-015',brandId:'brand-004',brandName:'Apple',sku:'AP-AW-S9',name:'Apple Watch Series 9',category:'Electronics',subCategory:'Wearables',rrp:449.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Advanced health monitoring and Double Tap gesture.',longDescription:'Apple Watch Series 9 with the S9 chip and new Double Tap gesture.',features:['S9 chip','Double Tap','Always-On display','Blood oxygen sensor'],targetAudiences:['Health-conscious','Tech enthusiasts'],thumbnail:'https://placehold.co/60x60/0071E3/fff?text=Watch',enabled:true,images:[],colours:[],priceLog:[]},
-  {id:'p-016',brandId:'brand-004',brandName:'Apple',sku:'AP-AC-MGSF',name:'MagSafe Charger',category:'Accessories',subCategory:'Charging',rrp:45.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Wireless MagSafe charging for iPhone.',longDescription:'Apple MagSafe Charger for fast wireless charging aligned magnetically.',features:['15W fast charge','USB-C connector','Magnetic alignment'],targetAudiences:['iPhone users'],thumbnail:'https://placehold.co/60x60/999/fff?text=MagSafe',enabled:true,images:[],colours:[],priceLog:[]},
-  // LEVIS
-  {id:'p-017',brandId:'brand-005',brandName:"Levi's",sku:'LV-501-W32',name:"501 Original Jeans W32",category:'Apparel',subCategory:'Denim',rrp:89.99,offerPrice:71.99,offerActive:true,offerScheduledAt:null,shortDescription:'The original blue jean. Since 1873.',longDescription:"Levi's 501 Original Jeans — the blueprint for all denim that followed.",features:['Button fly','Straight fit','100% cotton denim','Shrink-to-fit option'],targetAudiences:['Men'],thumbnail:'https://placehold.co/60x60/1A5276/fff?text=501',enabled:true,images:[],colours:[{hex:'#1A5276',label:'Medium Stonewash'},{hex:'#1B2631',label:'Dark Indigo'}],priceLog:[{date:'2026-03-18 08:00',changedBy:'Mark Reed',oldPrice:89.99,newPrice:71.99,reason:'20% off denim week'}]},
-  {id:'p-018',brandId:'brand-005',brandName:"Levi's",sku:'LV-STF-W28',name:'Strauss Trucker Jacket W28',category:'Apparel',subCategory:'Jackets',rrp:119.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Iconic trucker jacket in classic denim.',longDescription:"The Levi's Trucker Jacket has been a classic since its debut in 1962.",features:['100% cotton denim','Button closure','Chest pockets','Adjustable waistband'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/2E4057/fff?text=Trucker',enabled:true,images:[],colours:[],priceLog:[]},
-  {id:'p-019',brandId:'brand-005',brandName:"Levi's",sku:'LV-TEE-S',name:'Logo Tee S',category:'Apparel',subCategory:'T-Shirts',rrp:29.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Classic Levi\'s logo tee in relaxed fit.',longDescription:'Clean and classic Levi\'s t-shirt with batwing logo.',features:['100% cotton','Crew neck','Batwing logo','Relaxed fit'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/C41230/fff?text=Tee',enabled:true,images:[],colours:[],priceLog:[]},
-  {id:'p-020',brandId:'brand-005',brandName:"Levi's",sku:'LV-BLT-001',name:'Leather Belt',category:'Accessories',subCategory:'Belts',rrp:34.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Classic leather belt with debossed logo.',longDescription:"Genuine leather belt with Levi's logo on the buckle.",features:['Genuine leather','Metal buckle','Debossed logo'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/8B4513/fff?text=Belt',enabled:false,images:[],colours:[],priceLog:[]},
-  // SONY
-  {id:'p-021',brandId:'brand-006',brandName:'Sony',sku:'SN-WH-1000XM5',name:'WH-1000XM5 Headphones',category:'Electronics',subCategory:'Headphones',rrp:349.99,offerPrice:279.99,offerActive:true,offerScheduledAt:null,shortDescription:'Industry-leading noise cancelling with 30hr battery.',longDescription:'Sony WH-1000XM5 wireless headphones with Auto NC Optimizer and Multipoint connection.',features:['Auto NC Optimizer','30hr battery','Multipoint connection','Speak-to-Chat'],targetAudiences:['Music lovers','Commuters','Professionals'],thumbnail:'https://placehold.co/60x60/003087/fff?text=WH5',enabled:true,images:[],colours:[{hex:'#000000',label:'Black'},{hex:'#E8D5B0',label:'Silver'}],priceLog:[{date:'2026-03-22 10:00',changedBy:'PIM Sync',oldPrice:349.99,newPrice:279.99,reason:'Spring promotion'}]},
-  {id:'p-022',brandId:'brand-006',brandName:'Sony',sku:'SN-PS5-CL',name:'PlayStation 5 Console',category:'Electronics',subCategory:'Gaming',rrp:479.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Next-gen gaming with ultra-high speed SSD.',longDescription:'The PS5 console unleashes new gaming possibilities with ultra-high speed SSD, haptic feedback and 4K gaming.',features:['Ultra-HD Blu-ray','825GB SSD','Haptic feedback','3D Audio'],targetAudiences:['Gamers'],thumbnail:'https://placehold.co/60x60/006FCD/fff?text=PS5',enabled:true,images:[],colours:[],priceLog:[]},
-  {id:'p-023',brandId:'brand-006',brandName:'Sony',sku:'SN-CAM-A7M4',name:'Alpha 7 IV Camera Body',category:'Electronics',subCategory:'Cameras',rrp:2499.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-06-01T09:00',shortDescription:'33MP full-frame mirrorless camera with 4K 60p video.',longDescription:'The Sony Alpha 7 IV is a versatile full-frame mirrorless camera for both stills and video.',features:['33MP BSI sensor','4K 60p 10-bit','759-point AF','5-axis IBIS'],targetAudiences:['Photographers','Videographers'],thumbnail:'https://placehold.co/60x60/1a1a1a/fff?text=A7IV',enabled:true,images:[],colours:[],priceLog:[]},
-  {id:'p-024',brandId:'brand-006',brandName:'Sony',sku:'SN-SPK-XB33',name:'XB33 Extra Bass Speaker',category:'Electronics',subCategory:'Speakers',rrp:149.99,offerPrice:119.99,offerActive:true,offerScheduledAt:null,shortDescription:'Waterproof portable speaker with Extra Bass.',longDescription:'Sony SRS-XB33 with EXTRA BASS, IP67 water resistance and 24hr battery.',features:['EXTRA BASS','IP67 waterproof','24hr battery','Party Connect'],targetAudiences:['Music lovers','Outdoor enthusiasts'],thumbnail:'https://placehold.co/60x60/FF0000/fff?text=XB33',enabled:true,images:[],colours:[],priceLog:[]}
+  // BAYER
+  {id:'p-001',brandId:'brand-001',brandName:'Bayer',sku:'BAY-ASP-100',name:'Aspirin Protect 100mg x98',category:'Pain Relief',subCategory:'Analgesics',rrp:8.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Low-dose aspirin for cardiovascular protection.',longDescription:'Aspirin Protect 100mg helps prevent blood clots with a gastro-resistant coating for better stomach tolerance. Suitable for once-daily cardiovascular protection.',features:['100mg per tablet','Gastro-resistant coating','98 tablets','Once-daily dosing'],targetAudiences:['Adults','Cardiovascular patients'],thumbnail:'https://placehold.co/60x60/CC0000/fff?text=Asp',enabled:true,images:[{id:'img-001',src:'https://placehold.co/300x200/CC0000/fff?text=Aspirin+Main',label:'Product Shot',tags:['primary'],isPrimary:true}],colours:[],priceLog:[{date:'2026-02-10 09:00',changedBy:'PIM Sync',oldPrice:9.49,newPrice:8.99,reason:'Q1 price review'}]},
+  {id:'p-002',brandId:'brand-001',brandName:'Bayer',sku:'BAY-BPN-100',name:'Bepanthen Nappy Care Ointment 100g',category:'Skincare & Wound Care',subCategory:'Nappy Care',rrp:14.49,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Gentle ointment to treat and prevent nappy rash.',longDescription:'Bepanthen Nappy Care Ointment contains Pro-Vitamin B5 (Dexpanthenol) to help skin self-repair and provide a protective barrier against moisture and irritation.',features:['Pro-Vitamin B5','Protective barrier','Fragrance-free','Dermatologically tested'],targetAudiences:['Infants','Parents'],thumbnail:'https://placehold.co/60x60/CC0000/fff?text=Bpn',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-003',brandId:'brand-001',brandName:'Bayer',sku:'BAY-CLR-10',name:'Claritin Allergy Relief 10mg x30',category:'Allergy & Hayfever',subCategory:'Antihistamines',rrp:16.99,offerPrice:13.99,offerActive:true,offerScheduledAt:null,shortDescription:'Non-drowsy 24-hour allergy relief.',longDescription:'Claritin 10mg loratadine tablets provide fast, non-drowsy relief from hayfever, pet allergies and dust mite allergy symptoms. One tablet lasts all day.',features:['Non-drowsy formula','24-hour relief','10mg loratadine','30 tablets'],targetAudiences:['Adults','Teens 12+'],thumbnail:'https://placehold.co/60x60/CC0000/fff?text=Clr',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-15 10:00',changedBy:'Sarah Chen',oldPrice:16.99,newPrice:13.99,reason:'Spring allergy season promo'}]},
+  {id:'p-004',brandId:'brand-001',brandName:'Bayer',sku:'BAY-ALV-24',name:'Aleve Pain Reliever 220mg x24',category:'Pain Relief',subCategory:'NSAIDs',rrp:11.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'All-day pain relief with just one tablet.',longDescription:'Aleve naproxen sodium 220mg provides up to 12 hours of relief from headache, backache, muscular pain and arthritis.',features:['220mg naproxen sodium','Up to 12-hour relief','24 tablets','Suitable for arthritis pain'],targetAudiences:['Adults'],thumbnail:'https://placehold.co/60x60/CC0000/fff?text=Alv',enabled:true,images:[],colours:[],priceLog:[]},
+  // JOHNSON & JOHNSON
+  {id:'p-005',brandId:'brand-002',brandName:'Johnson & Johnson',sku:'JNJ-TYL-50',name:'Tylenol Extra Strength 500mg x50',category:'Pain Relief',subCategory:'Analgesics',rrp:12.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Trusted pain and fever relief for adults.',longDescription:'Tylenol Extra Strength 500mg paracetamol caplets relieve headaches, backache, toothache and muscular pain, and reduce fever effectively.',features:['500mg paracetamol','Fast-acting','50 caplets','Fever reduction'],targetAudiences:['Adults'],thumbnail:'https://placehold.co/60x60/CC0000/fff?text=Tyl',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-006',brandId:'brand-002',brandName:'Johnson & Johnson',sku:'JNJ-BND-40',name:'Band-Aid Flexible Fabric Strips x40',category:'First Aid',subCategory:'Bandages',rrp:6.99,offerPrice:5.49,offerActive:true,offerScheduledAt:null,shortDescription:'Flexible bandages that move with you.',longDescription:'Band-Aid Flexible Fabric Strips conform to fingers and knuckles, providing comfortable all-day protection of minor cuts and scrapes.',features:['Flexible fabric','Stay-on design','Sterile padding','40 assorted strips'],targetAudiences:['All ages','Families'],thumbnail:'https://placehold.co/60x60/CC0000/fff?text=Bnd',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-01 08:00',changedBy:'Admin',oldPrice:6.99,newPrice:5.49,reason:'Multi-buy promotion'}]},
+  {id:'p-007',brandId:'brand-002',brandName:'Johnson & Johnson',sku:'JNJ-LST-500',name:'Listerine Cool Mint Mouthwash 500ml',category:'Oral Care',subCategory:'Mouthwash',rrp:9.49,offerPrice:null,offerActive:false,offerScheduledAt:'2026-04-15T09:00',shortDescription:'Clinically proven to kill 99.9% of germs.',longDescription:'Listerine Cool Mint antiseptic mouthwash kills bacteria missed by brushing, freshens breath for up to 12 hours and helps prevent gum disease.',features:['Kills 99.9% of germs','12-hour fresh breath','ADA accepted','500ml'],targetAudiences:['Adults'],thumbnail:'https://placehold.co/60x60/00802B/fff?text=Lst',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-008',brandId:'brand-002',brandName:'Johnson & Johnson',sku:'JNJ-NTG-88',name:'Neutrogena Ultra Sheer SPF50+ 88ml',category:'Skincare & Wound Care',subCategory:'Sun Protection',rrp:19.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Lightweight, non-greasy broad-spectrum sunscreen.',longDescription:'Neutrogena Ultra Sheer Dry-Touch SPF50+ provides broad-spectrum UVA/UVB protection in a lightweight, fast-absorbing, non-comedogenic formula.',features:['SPF50+','Broad-spectrum UVA/UVB','Non-comedogenic','88ml'],targetAudiences:['Adults','All skin types'],thumbnail:'https://placehold.co/60x60/0066CC/fff?text=Ntg',enabled:true,images:[],colours:[],priceLog:[]},
+  // GSK
+  {id:'p-009',brandId:'brand-003',brandName:'GSK',sku:'GSK-PAN-32',name:'Panadol Advance 500mg x32',category:'Pain Relief',subCategory:'Analgesics',rrp:5.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Fast-acting paracetamol for pain and fever.',longDescription:'Panadol Advance 500mg caplets use OptizorB technology for faster dissolution to relieve headache, period pain and cold and flu symptoms.',features:['500mg paracetamol','OptizorB technology','Faster dissolution','32 caplets'],targetAudiences:['Adults','Teens 12+'],thumbnail:'https://placehold.co/60x60/005EB8/fff?text=Pan',enabled:true,images:[],colours:[],priceLog:[{date:'2026-01-15 09:00',changedBy:'PIM Sync',oldPrice:6.49,newPrice:5.99,reason:'Competitive pricing update'}]},
+  {id:'p-010',brandId:'brand-003',brandName:'GSK',sku:'GSK-VLT-100',name:'Voltaren Emulgel 1.16% 100g',category:'Pain Relief',subCategory:'Topical Analgesics',rrp:17.99,offerPrice:14.99,offerActive:true,offerScheduledAt:null,shortDescription:'Targeted pain relief for muscles and joints.',longDescription:'Voltaren Emulgel contains diclofenac sodium for targeted relief of localised muscle and joint pain, sprains, strains and soft tissue injuries.',features:['1.16% diclofenac sodium','Penetrates deep','Non-greasy gel','100g tube'],targetAudiences:['Adults','Athletes','Active individuals'],thumbnail:'https://placehold.co/60x60/005EB8/fff?text=Vlt',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-10 14:00',changedBy:'Admin',oldPrice:17.99,newPrice:14.99,reason:'Weekend deal'}]},
+  {id:'p-011',brandId:'brand-003',brandName:'GSK',sku:'GSK-SEN-75',name:'Sensodyne Rapid Relief 75ml',category:'Oral Care',subCategory:'Toothpaste',rrp:7.49,offerPrice:null,offerActive:false,offerScheduledAt:'2026-05-01T08:00',shortDescription:'Builds a protective layer over sensitive areas.',longDescription:'Sensodyne Rapid Relief toothpaste works in 60 seconds to relieve tooth sensitivity, building a lasting protective layer with continued twice-daily use.',features:['60-second relief','Twice-daily use','Fluoride protection','75ml'],targetAudiences:['Adults with sensitive teeth'],thumbnail:'https://placehold.co/60x60/005EB8/fff?text=Sen',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-012',brandId:'brand-003',brandName:'GSK',sku:'GSK-NIC-105',name:'Nicorette 2mg Gum x105',category:'Stop Smoking',subCategory:'NRT',rrp:34.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Nicotine replacement gum to help quit smoking.',longDescription:'Nicorette 2mg chewing gum delivers controlled nicotine to help manage cravings when quitting smoking. Available in fresh mint flavour.',features:['2mg nicotine per piece','Fresh mint flavour','105 pieces','Part of a quit programme'],targetAudiences:['Adults quitting smoking'],thumbnail:'https://placehold.co/60x60/005EB8/fff?text=Nic',enabled:false,images:[],colours:[],priceLog:[]},
+  // PFIZER
+  {id:'p-013',brandId:'brand-004',brandName:'Pfizer',sku:'PFZ-CTM-90',name:'Centrum Advance Multivitamin x90',category:'Vitamins & Supplements',subCategory:'Multivitamins',rrp:24.99,offerPrice:19.99,offerActive:true,offerScheduledAt:null,shortDescription:'Complete multivitamin for adults 18+.',longDescription:'Centrum Advance provides a comprehensive blend of 24 essential vitamins and minerals to support energy, immunity and bone health in adults.',features:['24 vitamins & minerals','Immune support','Bone health','90 tablets'],targetAudiences:['Adults 18+'],thumbnail:'https://placehold.co/60x60/0093D0/fff?text=Ctm',enabled:true,images:[{id:'img-002',src:'https://placehold.co/300x200/0093D0/fff?text=Centrum+Main',label:'Product Shot',tags:['primary'],isPrimary:true}],colours:[],priceLog:[{date:'2026-03-20 09:00',changedBy:'PIM Sync',oldPrice:27.99,newPrice:24.99,reason:'Spring health promotion'}]},
+  {id:'p-014',brandId:'brand-004',brandName:'Pfizer',sku:'PFZ-ADV-40',name:'Advil Liquid Gels 200mg x40',category:'Pain Relief',subCategory:'NSAIDs',rrp:13.99,offerPrice:10.99,offerActive:true,offerScheduledAt:null,shortDescription:'Fast-acting ibuprofen in a liquid-filled capsule.',longDescription:'Advil Liquid Gels 200mg ibuprofen capsules are absorbed faster than standard tablets, delivering targeted relief for headaches, muscular pain and fever.',features:['200mg ibuprofen','Liquid gel capsules','Fast absorption','40 capsules'],targetAudiences:['Adults'],thumbnail:'https://placehold.co/60x60/0093D0/fff?text=Adv',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-25 11:00',changedBy:'Admin',oldPrice:13.99,newPrice:10.99,reason:'Promotional offer'}]},
+  {id:'p-015',brandId:'brand-004',brandName:'Pfizer',sku:'PFZ-CLT-120',name:'Caltrate 600mg + Vitamin D3 x120',category:'Vitamins & Supplements',subCategory:'Calcium',rrp:22.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Calcium and Vitamin D for strong bones.',longDescription:'Caltrate 600mg with Vitamin D3 800IU helps maintain bone density and supports muscle function, particularly for adults over 50.',features:['600mg calcium carbonate','Vitamin D3 800IU','Bone density support','120 tablets'],targetAudiences:['Adults 50+','Post-menopausal women'],thumbnail:'https://placehold.co/60x60/0093D0/fff?text=Clt',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-016',brandId:'brand-004',brandName:'Pfizer',sku:'PFZ-CHP-3',name:'Chapstick Classic Original x3',category:'Skincare & Wound Care',subCategory:'Lip Care',rrp:7.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Classic lip balm for soft, protected lips.',longDescription:'Chapstick Classic Original lip balm with SPF 4 moisturises and protects lips from dryness and chapping. Convenient pack of 3.',features:['SPF 4 protection','Long-lasting moisture','Classic flavour','Pack of 3'],targetAudiences:['All ages'],thumbnail:'https://placehold.co/60x60/0093D0/fff?text=Chp',enabled:false,images:[],colours:[],priceLog:[]},
+  // RECKITT
+  {id:'p-017',brandId:'brand-005',brandName:'Reckitt',sku:'RKT-NRF-24',name:'Nurofen Express 200mg x24',category:'Pain Relief',subCategory:'NSAIDs',rrp:9.99,offerPrice:7.99,offerActive:true,offerScheduledAt:null,shortDescription:'Targeted fast-acting ibuprofen pain relief.',longDescription:'Nurofen Express 200mg liquid-filled ibuprofen capsules are absorbed up to 2x faster than standard tablets for quicker relief of headache, period pain and backache.',features:['200mg ibuprofen','Liquid capsules','Faster absorption','24 capsules'],targetAudiences:['Adults'],thumbnail:'https://placehold.co/60x60/E31837/fff?text=Nrf',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-18 08:00',changedBy:'Mark Reed',oldPrice:9.99,newPrice:7.99,reason:'20% off pain relief week'}]},
+  {id:'p-018',brandId:'brand-005',brandName:'Reckitt',sku:'RKT-DTL-500',name:'Dettol Antiseptic Liquid 500ml',category:'First Aid',subCategory:'Antiseptics',rrp:8.49,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Trusted antiseptic to help prevent infection.',longDescription:'Dettol Antiseptic Liquid kills 99.9% of bacteria and viruses. Dilute in water to cleanse cuts, grazes and minor wounds, or use for household hygiene.',features:['Kills 99.9% of bacteria','Multi-purpose use','Concentrated formula','500ml'],targetAudiences:['Families','Households'],thumbnail:'https://placehold.co/60x60/006633/fff?text=Dtl',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-019',brandId:'brand-005',brandName:'Reckitt',sku:'RKT-STP-36',name:'Strepsils Original x36',category:'Cold & Flu',subCategory:'Throat Lozenges',rrp:7.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Soothe and treat sore throats.',longDescription:'Strepsils Original lozenges contain two antiseptics to fight bacteria and soothe sore throat pain.',features:['Two antiseptics','Soothes sore throat','Honey & lemon flavour','36 lozenges'],targetAudiences:['Adults','Teens 12+'],thumbnail:'https://placehold.co/60x60/E31837/fff?text=Stp',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-020',brandId:'brand-005',brandName:'Reckitt',sku:'RKT-GVS-300',name:'Gaviscon Advance Aniseed 300ml',category:'Digestive Health',subCategory:'Antacids',rrp:14.99,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Long-lasting heartburn and acid reflux relief.',longDescription:'Gaviscon Advance forms a soothing raft on top of stomach contents to help prevent acid and non-acid reflux. Aniseed flavour, 300ml.',features:['Alginate raft technology','Fast and long-lasting','Aniseed flavour','300ml'],targetAudiences:['Adults'],thumbnail:'https://placehold.co/60x60/E31837/fff?text=Gvs',enabled:false,images:[],colours:[],priceLog:[]},
+  // NOVARTIS
+  {id:'p-021',brandId:'brand-006',brandName:'Novartis',sku:'NVT-OTV-10',name:'Otrivin 0.1% Nasal Spray 10ml',category:'Cold & Flu',subCategory:'Decongestants',rrp:8.99,offerPrice:6.99,offerActive:true,offerScheduledAt:null,shortDescription:'Fast nasal decongestion for up to 10 hours.',longDescription:'Otrivin 0.1% xylometazoline hydrochloride nasal spray provides fast relief from nasal congestion due to colds, sinusitis and hayfever for up to 10 hours.',features:['0.1% xylometazoline','Up to 10-hour relief','Moisturising formula','10ml'],targetAudiences:['Adults','Teens 12+'],thumbnail:'https://placehold.co/60x60/E40046/fff?text=Otv',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-22 10:00',changedBy:'PIM Sync',oldPrice:9.49,newPrice:8.99,reason:'Competitive pricing update'}]},
+  {id:'p-022',brandId:'brand-006',brandName:'Novartis',sku:'NVT-EXC-24',name:'Excedrin Migraine x24',category:'Pain Relief',subCategory:'Migraine Relief',rrp:12.49,offerPrice:null,offerActive:false,offerScheduledAt:null,shortDescription:'Clinically proven migraine relief.',longDescription:'Excedrin Migraine combines aspirin, paracetamol and caffeine in a triple-action formula clinically proven to relieve migraine headaches.',features:['Triple-action formula','Aspirin + paracetamol + caffeine','Fast-acting','24 tablets'],targetAudiences:['Adults with migraines'],thumbnail:'https://placehold.co/60x60/E40046/fff?text=Exc',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-023',brandId:'brand-006',brandName:'Novartis',sku:'NVT-BNF-261',name:'Benefiber Daily Prebiotic 261g',category:'Digestive Health',subCategory:'Fibre Supplements',rrp:19.99,offerPrice:null,offerActive:false,offerScheduledAt:'2026-06-01T09:00',shortDescription:'Clear, taste-free prebiotic fibre supplement.',longDescription:'Benefiber Daily Prebiotic powder is 100% natural wheat dextrin fibre that dissolves completely in beverages and soft foods without changing taste or texture.',features:['100% natural wheat dextrin','Taste-free','Dissolves completely','261g jar'],targetAudiences:['Adults','Digestive health-conscious'],thumbnail:'https://placehold.co/60x60/E40046/fff?text=Bnf',enabled:true,images:[],colours:[],priceLog:[]},
+  {id:'p-024',brandId:'brand-006',brandName:'Novartis',sku:'NVT-CTF-20',name:'Cataflam Rapid 50mg x20',category:'Pain Relief',subCategory:'NSAIDs',rrp:15.99,offerPrice:12.99,offerActive:true,offerScheduledAt:null,shortDescription:'Fast-acting diclofenac for acute pain relief.',longDescription:'Cataflam Rapid 50mg diclofenac potassium tablets are rapidly absorbed for fast relief of acute pain, dysmenorrhoea, dental pain and post-operative pain.',features:['50mg diclofenac potassium','Rapid absorption','Acute pain relief','20 tablets'],targetAudiences:['Adults'],thumbnail:'https://placehold.co/60x60/E40046/fff?text=Ctf',enabled:true,images:[],colours:[],priceLog:[{date:'2026-03-28 10:00',changedBy:'Admin',oldPrice:15.99,newPrice:12.99,reason:'Launch promotional price'}]}
 ];
 
 let PRODUCTS = (() => { try { const s = localStorage.getItem('ph_products'); return s ? JSON.parse(s) : _PRODUCTS_DEFAULT; } catch(e) { return _PRODUCTS_DEFAULT; } })();
@@ -644,6 +645,46 @@ function showView(name){
   const ni = document.getElementById('nav-' + name);
   if (ni) ni.classList.add('active');
   if (name === 'pricelog') buildGlobalPriceLog();
+}
+
+/* ============================================================ CATEGORY SELECT */
+function buildCategorySelect(currentVal){
+  const sel = document.getElementById('pm-category');
+  if (!sel) return;
+  const cats = [...new Set(PRODUCTS.filter(p => p.category).map(p => p.category))].sort();
+  sel.innerHTML = cats.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('') +
+    '<option value="__new__">＋ Add new category…</option>';
+  if (currentVal && cats.includes(currentVal)) sel.value = currentVal;
+  else if (cats.length) sel.value = cats[0];
+  const row = document.getElementById('pm-new-cat-row');
+  if (row) { row.style.display = 'none'; const inp = document.getElementById('pm-new-cat-input'); if(inp) inp.value = ''; }
+}
+
+function onCategorySelectChange(){
+  const sel = document.getElementById('pm-category');
+  const row = document.getElementById('pm-new-cat-row');
+  if (sel.value === '__new__') {
+    row.style.display = 'flex';
+    document.getElementById('pm-new-cat-input').focus();
+  } else {
+    row.style.display = 'none';
+    document.getElementById('pm-new-cat-input').value = '';
+  }
+}
+
+function confirmNewCategory(){
+  const sel = document.getElementById('pm-category');
+  const inp = document.getElementById('pm-new-cat-input');
+  const val = inp.value.trim();
+  if (!val) { inp.focus(); return; }
+  const exists = [...sel.options].find(o => o.value.toLowerCase() === val.toLowerCase() && o.value !== '__new__');
+  if (exists) { sel.value = exists.value; } else {
+    const opt = new Option(val, val);
+    sel.insertBefore(opt, sel.querySelector('[value="__new__"]'));
+    sel.value = val;
+  }
+  document.getElementById('pm-new-cat-row').style.display = 'none';
+  inp.value = '';
 }
 
 /* ============================================================ FILTERS */
@@ -912,7 +953,7 @@ function clearProductForm(){
   ['pm-brand','pm-sku','pm-name','pm-shortdesc','pm-longdesc','pm-rrp','pm-offerprice','pm-scheduledfrom','pm-scheduleduntil','pm-subcategory'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
-  document.getElementById('pm-category').value = 'Footwear';
+  buildCategorySelect();
   document.getElementById('pm-enabled').checked = true;
   currentAudienceTags = []; currentFeatureTags = [];
   renderTagChips('audiences'); renderTagChips('features');
@@ -932,7 +973,7 @@ function populateProductForm(p){
   document.getElementById('pm-longdesc').value    = p.longDescription || '';
   document.getElementById('pm-rrp').value         = p.rrp || '';
   document.getElementById('pm-offerprice').value  = p.offerPrice || '';
-  document.getElementById('pm-category').value    = p.category || 'Footwear';
+  buildCategorySelect(p.category);
   document.getElementById('pm-subcategory').value = p.subCategory || '';
   document.getElementById('pm-enabled').checked   = p.enabled;
   if (p.offerScheduledAt) {
@@ -959,7 +1000,7 @@ function saveProduct(){
   const rrp  = parseFloat(document.getElementById('pm-rrp').value);
   if (!name) { showToast('Product name is required','error'); switchProductTab('1'); return; }
   if (!sku)  { showToast('SKU is required','error'); switchProductTab('1'); return; }
-  if (isNaN(rrp) || rrp <= 0) { showToast('Valid RRP is required','error'); switchProductTab('1'); return; }
+  if (isNaN(rrp) || rrp <= 0) { showToast('Valid RRP is required','error'); switchProductTab('3'); return; }
 
   const brandId = document.getElementById('pm-brand').value;
   const brand   = BRANDS_LIST.find(b => b.id === brandId);
@@ -1167,7 +1208,7 @@ function renderNutritionContent(n){
 
 function renderSizingContent(sizing){
   return `
-    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Enter size chart data (e.g. UK sizes and EU/US equivalents for footwear or S/M/L/XL for clothing).</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Enter dosage or sizing information (e.g. tablet strength variants, pack sizes or volume options).</div>
     <textarea id="sizingData" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font-family:monospace;font-size:12px;color:var(--text);outline:none;resize:vertical;min-height:120px;" placeholder="UK 6 = EU 39 = US 7&#10;UK 7 = EU 40 = US 8&#10;…">${escHtml(sizing||'')}</textarea>
   `;
 }
