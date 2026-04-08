@@ -223,6 +223,17 @@
     .ag-theme-alpine .ag-row{overflow:visible !important;}
     .grid-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:visible;margin-bottom:16px;}
 
+    /* 3-DOT ACTION MENU */
+    .dots-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:18px;line-height:1;color:var(--text2);transition:all .14s;letter-spacing:2px;}
+    .dots-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+    .dots-menu-wrap{position:relative;display:inline-flex;align-items:center;}
+    .dots-menu{position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border2);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.13);min-width:170px;z-index:500;overflow:hidden;display:none;}
+    .dots-menu.open{display:block;}
+    .dots-menu-item{padding:10px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:9px;color:var(--text);transition:background .1s;white-space:nowrap;}
+    .dots-menu-item:hover{background:var(--surface2);}
+    .dots-menu-item.danger{color:var(--danger);}
+    .dots-menu-item.danger:hover{background:var(--danger-light);}
+
     /* IMAGE ASSET TAG MANAGEMENT */
     .img-tags-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px;}
     .img-tag-chip{display:inline-flex;align-items:center;gap:2px;padding:2px 7px;background:var(--primary-light);color:var(--primary);border:1px solid rgba(22,155,194,.2);border-radius:10px;font-size:10px;font-weight:600;}
@@ -732,10 +743,11 @@ function initProductsGrid(){
         headerName:'Product Name', field:'name', flex:2.5,
         cellRenderer: p => {
           const wrap = document.createElement('div');
-          wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;';
+          wrap.style.cssText = 'display:flex;align-items:center;height:100%;overflow:hidden;';
           const nm = document.createElement('div');
-          nm.style.cssText = 'font-weight:700;font-size:13px;color:var(--primary);cursor:pointer;text-align:center;';
+          nm.style.cssText = 'font-weight:700;font-size:13px;color:var(--primary);cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;';
           nm.textContent = p.value;
+          nm.title = p.value;
           nm.onclick = () => openEditProductModal(p.data.id);
           wrap.appendChild(nm);
           return wrap;
@@ -816,17 +828,32 @@ function initProductsGrid(){
         }
       },
       {
-        headerName:'', sortable:false, flex:0.8,
+        headerName:'', sortable:false, width:54,
         cellRenderer: p => {
           const wrap = document.createElement('div');
-          wrap.style.cssText = 'display:flex;align-items:center;gap:5px;height:100%;';
-          const edit = document.createElement('button');
-          edit.className = 'btn btn-ghost btn-sm'; edit.textContent = 'Edit';
-          edit.onclick = () => openEditProductModal(p.data.id);
-          const del = document.createElement('button');
-          del.className = 'btn btn-ghost btn-sm'; del.style.color = 'var(--danger)'; del.textContent = '✕';
-          del.onclick = () => confirmDelete(p.data.id, p.data.name);
-          wrap.appendChild(edit); wrap.appendChild(del);
+          wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;';
+          const mwrap = document.createElement('div');
+          mwrap.className = 'dots-menu-wrap';
+          const btn = document.createElement('button');
+          btn.className = 'dots-btn';
+          btn.title = 'Options';
+          btn.innerHTML = '&#8943;';
+          const menu = document.createElement('div');
+          menu.className = 'dots-menu';
+          menu.innerHTML = `
+            <div class="dots-menu-item" id="dmi-edit-${p.data.id}">✏️ View / Edit Product</div>
+            <div class="dots-menu-item danger" id="dmi-del-${p.data.id}">🗑 Delete Product</div>
+          `;
+          btn.onclick = e => {
+            e.stopPropagation();
+            document.querySelectorAll('.dots-menu.open').forEach(m => m.classList.remove('open'));
+            menu.classList.toggle('open');
+          };
+          menu.querySelector(`#dmi-edit-${p.data.id}`).onclick = e => { e.stopPropagation(); menu.classList.remove('open'); openEditProductModal(p.data.id); };
+          menu.querySelector(`#dmi-del-${p.data.id}`).onclick = e => { e.stopPropagation(); menu.classList.remove('open'); confirmDelete(p.data.id, p.data.name); };
+          mwrap.appendChild(btn);
+          mwrap.appendChild(menu);
+          wrap.appendChild(mwrap);
           return wrap;
         }
       }
@@ -1577,6 +1604,10 @@ function populateBrandSelect(){
 }
 
 /* ============================================================ INIT */
+document.addEventListener('click', () => {
+  document.querySelectorAll('.dots-menu.open').forEach(m => m.classList.remove('open'));
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   populateBrandSelect();
   initFilterPanels();

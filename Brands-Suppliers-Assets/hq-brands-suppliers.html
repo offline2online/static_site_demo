@@ -314,22 +314,28 @@
       color:var(--primary);
     }
 
-    /* ============================================================ OFFER STICKERS */
+    /* ============================================================ OFFER BADGES */
+    .badge-builder-form { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px; }
     .sticker-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:8px; }
     .sticker-card {
       border:2px solid var(--border); border-radius:8px;
-      padding:14px 10px; text-align:center; cursor:pointer;
-      transition:all .14s; background:var(--surface2);
+      padding:10px 8px; text-align:center; cursor:pointer;
+      transition:all .14s; background:var(--surface2); position:relative;
     }
     .sticker-card:hover { border-color:var(--primary); background:var(--primary-light); }
     .sticker-card.selected { border-color:var(--primary); background:var(--primary-light); }
+    .sticker-card .ob-del { position:absolute;top:4px;right:5px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);line-height:1;padding:0;opacity:.6;transition:.1s; }
+    .sticker-card .ob-del:hover { color:var(--danger); opacity:1; }
     .sticker-preview {
       display:inline-flex; align-items:center; justify-content:center;
       padding:4px 10px; border-radius:4px;
       font-size:12px; font-weight:800; margin-bottom:8px;
-      min-width:56px;
+      min-width:56px; word-break:break-word;
     }
-    .sticker-name { font-size:11px; color:var(--text2); font-weight:500; }
+    .sticker-preview.shape-pill { border-radius:20px; }
+    .sticker-preview.shape-circle { border-radius:50%; width:52px; height:52px; padding:4px; }
+    .sticker-preview.shape-ribbon { border-radius:0; clip-path:polygon(0 0,100% 0,85% 50%,100% 100%,0 100%); padding:4px 20px 4px 10px; }
+    .sticker-name { font-size:11px; color:var(--text2); font-weight:500; margin-top:4px; }
 
     /* ============================================================ JSON PREVIEW */
     .json-preview {
@@ -426,9 +432,9 @@
     </div>
     <div class="modal-tabs">
       <div class="modal-tab active" id="bmTab-1" onclick="switchBrandTab('1')">Brand Details</div>
-      <div class="modal-tab" id="bmTab-2" onclick="switchBrandTab('2')">Guidelines &amp; Colours</div>
-      <div class="modal-tab" id="bmTab-3" onclick="switchBrandTab('3')">Products &amp; Stock</div>
-      <div class="modal-tab" id="bmTab-4" onclick="switchBrandTab('4')">Pricing Strategy</div>
+      <div class="modal-tab" id="bmTab-2" onclick="switchBrandTab('2')">Products &amp; Stock</div>
+      <div class="modal-tab" id="bmTab-3" onclick="switchBrandTab('3')">Pricing Strategy</div>
+      <div class="modal-tab" id="bmTab-4" onclick="switchBrandTab('4')">Brand Kit</div>
     </div>
     <div class="modal-body">
 
@@ -501,36 +507,8 @@
         </div>
       </div>
 
-      <!-- TAB 2: Guidelines & Colours -->
+      <!-- TAB 2: Products & Stock -->
       <div class="modal-tab-pane" id="bmPane-2">
-        <div class="section-divider" style="border-top:none;padding-top:0;">Brand Guidelines</div>
-        <div class="form-group">
-          <label>Guidelines Text / Markdown</label>
-          <textarea id="bm-guidelines" rows="8" placeholder="Paste brand guidelines, usage rules, tone of voice, do's and don'ts…&#10;&#10;Supports Markdown formatting."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Upload Guidelines File <span style="font-size:10px;font-weight:400;text-transform:none;">(.md, .txt, .pdf)</span></label>
-          <div class="upload-zone" id="guideZone" onclick="document.getElementById('guideFile').click()">
-            <div class="uz-icon">📄</div>
-            <div class="uz-title">Click to upload guidelines file</div>
-            <div class="uz-sub">.md, .txt, .pdf · max 5MB</div>
-            <input type="file" id="guideFile" accept=".md,.txt,.pdf" onchange="handleGuideUpload(event)">
-          </div>
-          <div id="guideFileInfo" style="display:none;margin-top:8px;font-size:12px;color:var(--text2);"></div>
-        </div>
-
-        <div class="section-divider">Colour Palette</div>
-        <div class="palette-list" id="paletteList"></div>
-        <div class="palette-add-row">
-          <input type="color" id="paletteColorPicker" value="#169bc2">
-          <input type="text" id="paletteHexInput" placeholder="#169bc2" maxlength="7" style="width:96px;">
-          <input type="text" id="paletteLabelInput" class="label-in" placeholder="Colour name (e.g. Primary Blue)">
-          <button class="btn btn-ghost btn-sm" onclick="addPaletteColour()">+ Add</button>
-        </div>
-      </div>
-
-      <!-- TAB 3: Products & Stock -->
-      <div class="modal-tab-pane" id="bmPane-3">
         <div class="section-divider" style="border-top:none;padding-top:0;">Product Data Source</div>
         <div class="form-group">
           <label>Upload Product JSON</label>
@@ -591,8 +569,8 @@
         </div>
       </div>
 
-      <!-- TAB 4: Pricing Strategy -->
-      <div class="modal-tab-pane" id="bmPane-4">
+      <!-- TAB 3: Pricing Strategy -->
+      <div class="modal-tab-pane" id="bmPane-3">
         <div class="section-divider" style="border-top:none;padding-top:0;">Pricing Model</div>
         <div class="form-group">
           <label>Pricing Strategy</label>
@@ -617,33 +595,86 @@
         </div>
 
         <div class="section-divider">Offer Appearance</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Choose how offer pricing is displayed in campaigns for this brand.</div>
-        <div class="sticker-grid" id="stickerGrid">
-          <div class="sticker-card selected" data-sticker="SALE" onclick="selectSticker(this)">
-            <div class="sticker-preview" style="background:#ff4d4f;color:#fff;">SALE</div>
-            <div class="sticker-name">Sale Badge</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Define how offer pricing is displayed as icons, stickers or badges over campaigns for this brand. Create custom badges and select which one is used as default.</div>
+
+        <!-- Custom badge builder form -->
+        <div class="badge-builder-form">
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Badge Name <span style="font-size:10px;font-weight:400;text-transform:none;">(internal label)</span></label>
+              <input type="text" id="ob-name" placeholder="e.g. Summer Sale">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Display Text <span style="font-size:10px;font-weight:400;text-transform:none;">(shown on badge)</span></label>
+              <input type="text" id="ob-text" placeholder="e.g. SALE, 20% OFF" maxlength="14" oninput="previewOfferBadge()">
+            </div>
           </div>
-          <div class="sticker-card" data-sticker="PCT_OFF" onclick="selectSticker(this)">
-            <div class="sticker-preview" style="background:#D97706;color:#fff;">% OFF</div>
-            <div class="sticker-name">% Off Tag</div>
+          <div class="form-row" style="margin-top:10px;align-items:flex-end;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Background Colour</label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="color" id="ob-bg" value="#ff4d4f" oninput="previewOfferBadge()" style="width:44px;height:36px;padding:2px;border-radius:6px;cursor:pointer;border:1px solid var(--border);">
+                <input type="text" id="ob-bg-hex" value="#ff4d4f" maxlength="7" style="width:88px;" oninput="syncBadgeColor('bg')" placeholder="#ff4d4f">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Text Colour</label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="color" id="ob-fg" value="#ffffff" oninput="previewOfferBadge()" style="width:44px;height:36px;padding:2px;border-radius:6px;cursor:pointer;border:1px solid var(--border);">
+                <input type="text" id="ob-fg-hex" value="#ffffff" maxlength="7" style="width:88px;" oninput="syncBadgeColor('fg')" placeholder="#ffffff">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Shape</label>
+              <select id="ob-shape" onchange="previewOfferBadge()">
+                <option value="rounded">Rounded Rectangle</option>
+                <option value="pill">Pill</option>
+                <option value="circle">Circle</option>
+                <option value="ribbon">Ribbon / Tag</option>
+              </select>
+            </div>
           </div>
-          <div class="sticker-card" data-sticker="NEW_PRICE" onclick="selectSticker(this)">
-            <div class="sticker-preview" style="background:#169bc2;color:#fff;">NEW PRICE</div>
-            <div class="sticker-name">New Price</div>
-          </div>
-          <div class="sticker-card" data-sticker="SPECIAL" onclick="selectSticker(this)">
-            <div class="sticker-preview" style="background:#52c41a;color:#fff;">SPECIAL</div>
-            <div class="sticker-name">Special Offer</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+            <div style="flex:1;">
+              <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Preview</div>
+              <div id="ob-preview" style="display:inline-flex;align-items:center;justify-content:center;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:800;background:#ff4d4f;color:#fff;min-width:64px;text-align:center;">SALE</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addOfferBadge()" style="flex-shrink:0;align-self:flex-end;">+ Add Badge</button>
           </div>
         </div>
 
-        <div class="section-divider">Offer Banner Preview</div>
-        <div id="offerBannerPreview" style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:8px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-top:4px;">
-          <div style="background:#ff4d4f;color:#fff;font-size:12px;font-weight:800;padding:5px 12px;border-radius:4px;">SALE</div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#1e293b;">Example Product Name</div>
-            <div style="font-size:12px;color:#64748b;margin-top:2px;"><s>£49.99 RRP</s> &nbsp;<span style="color:#ff4d4f;font-weight:700;font-size:15px;">£34.99</span></div>
+        <!-- Saved badges -->
+        <div class="section-divider" style="margin-top:14px;">Saved Offer Badges <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(click to set as default for campaigns)</span></div>
+        <div class="sticker-grid" id="offerBadgesGrid">
+          <div class="ob-empty" style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3);font-size:12px;">No badges defined yet. Use the form above to create your first offer badge.</div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Brand Kit -->
+      <div class="modal-tab-pane" id="bmPane-4">
+        <div class="section-divider" style="border-top:none;padding-top:0;">Brand Guidelines</div>
+        <div class="form-group">
+          <label>Guidelines Text / Markdown</label>
+          <textarea id="bm-guidelines" rows="8" placeholder="Paste brand guidelines, usage rules, tone of voice, do's and don'ts…&#10;&#10;Supports Markdown formatting."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Upload Guidelines File <span style="font-size:10px;font-weight:400;text-transform:none;">(.md, .txt, .pdf)</span></label>
+          <div class="upload-zone" id="guideZone" onclick="document.getElementById('guideFile').click()">
+            <div class="uz-icon">📄</div>
+            <div class="uz-title">Click to upload guidelines file</div>
+            <div class="uz-sub">.md, .txt, .pdf · max 5MB</div>
+            <input type="file" id="guideFile" accept=".md,.txt,.pdf" onchange="handleGuideUpload(event)">
           </div>
+          <div id="guideFileInfo" style="display:none;margin-top:8px;font-size:12px;color:var(--text2);"></div>
+        </div>
+
+        <div class="section-divider">Colour Palette</div>
+        <div class="palette-list" id="paletteList"></div>
+        <div class="palette-add-row">
+          <input type="color" id="paletteColorPicker" value="#169bc2">
+          <input type="text" id="paletteHexInput" placeholder="#169bc2" maxlength="7" style="width:96px;">
+          <input type="text" id="paletteLabelInput" class="label-in" placeholder="Colour name (e.g. Primary Blue)">
+          <button class="btn btn-ghost btn-sm" onclick="addPaletteColour()">+ Add</button>
         </div>
       </div>
 
@@ -742,7 +773,7 @@ const _BRANDS_DEFAULT = [
     palette:[{hex:'#111111',label:'Nike Black'},{hex:'#FF6B35',label:'Nike Orange'},{hex:'#FFFFFF',label:'White'}],
     guidelines:'# Nike Brand Guidelines\n\n## Voice & Tone\nBold, inspiring, motivational. Just Do It.\n\n## Colour Usage\nPrimary: #111111 (Black). Accent: #FF6B35 (Orange).\n\n## Typography\nFutura PT Bold for headlines.',
     storeAssign:'all', selectedStores:[],
-    pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'SALE',
+    pricingStrategy:'centralised', priceSource:'rrp', offerBadges:[], selectedBadgeId:null,
     currency:'$',
     lowStockStores:['STORE-002','STORE-005','STORE-007'],
     outOfStockStores:['STORE-004'],
@@ -757,7 +788,7 @@ const _BRANDS_DEFAULT = [
     palette:[{hex:'#000000',label:'Black'},{hex:'#FFFFFF',label:'White'},{hex:'#0057A0',label:'Adidas Blue'}],
     guidelines:'# Adidas Brand Guidelines\n\n## Impossible is Nothing\nBold and inclusive messaging.',
     storeAssign:'all', selectedStores:[],
-    pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'PCT_OFF',
+    pricingStrategy:'centralised', priceSource:'rrp', offerBadges:[], selectedBadgeId:null,
     currency:'$',
     lowStockStores:['STORE-001','STORE-006'],
     outOfStockStores:['STORE-003','STORE-008'],
@@ -772,7 +803,7 @@ const _BRANDS_DEFAULT = [
     palette:[{hex:'#1428A0',label:'Samsung Blue'},{hex:'#FFFFFF',label:'White'},{hex:'#2D2D2D',label:'Charcoal'}],
     guidelines:'# Samsung Brand Guidelines\n\n## Do Bigger Things\nTechnology for everyone.',
     storeAssign:'specific', selectedStores:['STORE-001','STORE-002','STORE-003','STORE-004','STORE-005'],
-    pricingStrategy:'group', priceSource:'rrp', offerSticker:'NEW_PRICE',
+    pricingStrategy:'group', priceSource:'rrp', offerBadges:[], selectedBadgeId:null,
     currency:'$',
     lowStockStores:['STORE-003'],
     outOfStockStores:[],
@@ -787,7 +818,7 @@ const _BRANDS_DEFAULT = [
     palette:[{hex:'#1D1D1F',label:'Carbon'},{hex:'#F5F5F7',label:'Light Grey'},{hex:'#0071E3',label:'Apple Blue'}],
     guidelines:'# Apple Brand Guidelines\n\n## Think Different\nSimple, human and approachable.',
     storeAssign:'specific', selectedStores:['STORE-001','STORE-002','STORE-003'],
-    pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'SPECIAL',
+    pricingStrategy:'centralised', priceSource:'rrp', offerBadges:[], selectedBadgeId:null,
     currency:'$',
     lowStockStores:['STORE-001'],
     outOfStockStores:['STORE-002'],
@@ -802,7 +833,7 @@ const _BRANDS_DEFAULT = [
     palette:[{hex:'#C41230',label:"Levi's Red"},{hex:'#FFFFFF',label:'White'},{hex:'#1A1A1A',label:'Dark'}],
     guidelines:"# Levi's Brand Guidelines\n\n## Original since 1853\nAuthentic, honest, American spirit.",
     storeAssign:'all', selectedStores:[],
-    pricingStrategy:'decentralised', priceSource:'rrp', offerSticker:'SALE',
+    pricingStrategy:'decentralised', priceSource:'rrp', offerBadges:[], selectedBadgeId:null,
     currency:'$',
     lowStockStores:['STORE-004','STORE-005','STORE-006'],
     outOfStockStores:[],
@@ -817,7 +848,7 @@ const _BRANDS_DEFAULT = [
     palette:[{hex:'#003087',label:'Sony Blue'},{hex:'#000000',label:'Black'},{hex:'#FFFFFF',label:'White'}],
     guidelines:'# Sony Brand Guidelines\n\n## Make Believe\nInnovation and creativity at its heart.',
     storeAssign:'all', selectedStores:[],
-    pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'PCT_OFF',
+    pricingStrategy:'centralised', priceSource:'rrp', offerBadges:[], selectedBadgeId:null,
     currency:'$',
     lowStockStores:['STORE-007','STORE-008'],
     outOfStockStores:['STORE-005'],
@@ -840,6 +871,8 @@ function saveBrands(){
 let brandsGridApi = null;
 let editingBrandId = null;
 let currentPalette  = [];
+let currentOfferBadges = [];
+let selectedBadgeId = null;
 
 /* ============================================================
    GLOBAL TOOLTIP
@@ -1096,10 +1129,12 @@ function clearBrandForm() {
   document.getElementById('bm-pricingstrategy').value = 'centralised';
   updateStrategyDesc();
   document.querySelector('input[name=priceSource][value=rrp]').checked = true;
-  document.querySelector('.sticker-card.selected')?.classList.remove('selected');
-  document.querySelector('.sticker-card[data-sticker=SALE]').classList.add('selected');
   document.getElementById('bm-currency').value = '$';
   document.getElementById('bm-currency-tab3').value = '$';
+  currentOfferBadges = [];
+  selectedBadgeId = null;
+  renderOfferBadges();
+  previewOfferBadge();
 }
 
 function populateBrandForm(b) {
@@ -1132,10 +1167,11 @@ function populateBrandForm(b) {
   updateStrategyDesc();
   document.querySelector(`input[name=priceSource][value=${b.priceSource||'rrp'}]`).checked = true;
 
-  // sticker
-  document.querySelectorAll('.sticker-card').forEach(c => c.classList.remove('selected'));
-  const sc = document.querySelector(`.sticker-card[data-sticker=${b.offerSticker||'SALE'}]`);
-  if (sc) sc.classList.add('selected');
+  // offer badges
+  currentOfferBadges = (b.offerBadges || []).map(x => ({...x}));
+  selectedBadgeId = b.selectedBadgeId || (currentOfferBadges.length ? currentOfferBadges[0].id : null);
+  renderOfferBadges();
+  previewOfferBadge();
 
   // currency
   const cur = b.currency || '$';
@@ -1170,7 +1206,8 @@ function saveBrand() {
       : [],
     pricingStrategy: document.getElementById('bm-pricingstrategy').value,
     priceSource: document.querySelector('input[name=priceSource]:checked')?.value || 'rrp',
-    offerSticker: document.querySelector('.sticker-card.selected')?.dataset.sticker || 'SALE',
+    offerBadges: currentOfferBadges.map(b => ({...b})),
+    selectedBadgeId,
     currency: document.getElementById('bm-currency').value,
     icon: document.getElementById('iconPreviewImg').src || `https://placehold.co/40x40/169bc2/fff?text=${encodeURIComponent(name.charAt(0))}`,
     logo: document.getElementById('logoPreviewImg').src || '',
@@ -1383,11 +1420,88 @@ function updateStrategyDesc() {
 }
 
 /* ============================================================
-   STICKER SELECTION
+   OFFER BADGE BUILDER
 ============================================================ */
-function selectSticker(el) {
-  document.querySelectorAll('.sticker-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
+function getBadgeShapeRadius(shape){
+  if (shape === 'pill') return '20px';
+  if (shape === 'circle') return '50%';
+  if (shape === 'ribbon') return '0 4px 4px 0';
+  return '5px';
+}
+
+function previewOfferBadge(){
+  const text  = (document.getElementById('ob-text').value || 'BADGE').trim().toUpperCase() || 'BADGE';
+  const bg    = document.getElementById('ob-bg').value || '#ff4d4f';
+  const fg    = document.getElementById('ob-fg').value || '#ffffff';
+  const shape = document.getElementById('ob-shape').value || 'rounded';
+  const pr    = document.getElementById('ob-preview');
+  pr.textContent = text;
+  pr.style.background = bg;
+  pr.style.color = fg;
+  pr.style.borderRadius = getBadgeShapeRadius(shape);
+  pr.style.width = shape === 'circle' ? '52px' : '';
+  pr.style.height = shape === 'circle' ? '52px' : '';
+  pr.style.padding = shape === 'circle' ? '4px' : '6px 14px';
+  document.getElementById('ob-bg-hex').value = bg;
+  document.getElementById('ob-fg-hex').value = fg;
+}
+
+function syncBadgeColor(which){
+  const hexEl = document.getElementById('ob-' + (which==='bg'?'bg':'fg') + '-hex');
+  const pickerEl = document.getElementById('ob-' + (which==='bg'?'bg':'fg'));
+  const val = hexEl.value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) { pickerEl.value = val; previewOfferBadge(); }
+}
+
+function addOfferBadge(){
+  const name  = document.getElementById('ob-name').value.trim();
+  const text  = document.getElementById('ob-text').value.trim().toUpperCase();
+  if (!name || !text) { showToast('Please enter a badge name and display text', 'error'); return; }
+  const badge = {
+    id: 'ob-' + Date.now(),
+    name,
+    text,
+    bgColor:   document.getElementById('ob-bg').value,
+    textColor: document.getElementById('ob-fg').value,
+    shape:     document.getElementById('ob-shape').value
+  };
+  currentOfferBadges.push(badge);
+  if (!selectedBadgeId) selectedBadgeId = badge.id;
+  renderOfferBadges();
+  document.getElementById('ob-name').value = '';
+  document.getElementById('ob-text').value = '';
+  showToast('Badge "' + badge.name + '" added');
+}
+
+function removeOfferBadge(id){
+  currentOfferBadges = currentOfferBadges.filter(b => b.id !== id);
+  if (selectedBadgeId === id) selectedBadgeId = currentOfferBadges.length ? currentOfferBadges[0].id : null;
+  renderOfferBadges();
+}
+
+function selectOfferBadge(id){
+  selectedBadgeId = id;
+  renderOfferBadges();
+}
+
+function renderOfferBadges(){
+  const grid = document.getElementById('offerBadgesGrid');
+  if (!grid) return;
+  if (!currentOfferBadges.length) {
+    grid.innerHTML = '<div class="ob-empty" style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3);font-size:12px;">No badges defined yet. Use the form above to create your first offer badge.</div>';
+    return;
+  }
+  grid.innerHTML = currentOfferBadges.map(b => {
+    const radius = getBadgeShapeRadius(b.shape);
+    const isCircle = b.shape === 'circle';
+    const previewStyle = `background:${b.bgColor};color:${b.textColor};border-radius:${radius};${isCircle?'width:52px;height:52px;padding:4px;':'padding:5px 12px;'}font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-bottom:6px;word-break:break-word;`;
+    return `<div class="sticker-card${selectedBadgeId===b.id?' selected':''}" onclick="selectOfferBadge('${b.id}')">
+      <button class="ob-del" onclick="event.stopPropagation();removeOfferBadge('${b.id}')" title="Remove badge">✕</button>
+      <div style="${previewStyle}">${escHtml(b.text)}</div>
+      <div class="sticker-name">${escHtml(b.name)}</div>
+      ${selectedBadgeId===b.id?'<div style="font-size:10px;color:var(--primary);font-weight:700;margin-top:3px;">✓ Default</div>':''}
+    </div>`;
+  }).join('');
 }
 
 /* ============================================================
