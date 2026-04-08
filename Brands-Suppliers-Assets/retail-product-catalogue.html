@@ -359,7 +359,7 @@ let STORE_MAPS = [
   {id:'map-ext',label:'External Zone',desc:'Outside area — seasonal and clearance',       url:'https://placehold.co/640x420/e2e8f0/94a3b8?text=External+Zone+Map'}
 ];
 
-const PRODUCTS = [
+const _PRODUCTS_DEFAULT = [
   {id:'p-001',brandId:'brand-001',brandName:'Nike',sku:'NK-RN-001',name:'Air Max 270',category:'Footwear',subCategory:'Running Shoes',rrp:149.99,offerPrice:119.99,offerActive:true,shortDescription:'Iconic Air Max cushioning for all-day comfort.',longDescription:'The Nike Air Max 270 features the biggest Air unit yet for a lifestyle shoe, delivering unparalleled, all-day cushioning. Available in multiple colourways.',features:['Air Max unit','Foam midsole','Mesh upper','Rubber outsole'],targetAudiences:['Men','Women','Runners'],thumbnail:'https://placehold.co/60x60/111/fff?text=AM270',colours:[{hex:'#111',label:'Black'},{hex:'#FF6B35',label:'Orange'},{hex:'#fff',label:'White'}],stock:{'STORE-001':{qty:12,status:'in_stock',log:[]},'STORE-002':{qty:3,status:'low_stock',log:[]},'STORE-003':{qty:0,status:'out_of_stock',log:[]},'STORE-004':{qty:28,status:'in_stock',log:[]},'STORE-005':{qty:5,status:'low_stock',log:[]},'STORE-006':{qty:18,status:'in_stock',log:[]},'STORE-007':{qty:1,status:'low_stock',log:[]},'STORE-008':{qty:22,status:'in_stock',log:[]}},location:{}},
   {id:'p-002',brandId:'brand-001',brandName:'Nike',sku:'NK-JK-022',name:'Tech Fleece Hoodie',category:'Apparel',subCategory:'Hoodies',rrp:89.99,offerPrice:null,offerActive:false,shortDescription:'Engineered fleece for warmth without the bulk.',longDescription:'Nike Tech Fleece combines innovative fabric with a modern silhouette. Perfect for training or casual wear.',features:['Tech Fleece fabric','Kangaroo pocket','Full zip','Tapered fit'],targetAudiences:['Men'],thumbnail:'https://placehold.co/60x60/222/fff?text=TFH',colours:[{hex:'#111',label:'Black'}],stock:{'STORE-001':{qty:8,status:'in_stock',log:[]},'STORE-002':{qty:15,status:'in_stock',log:[]},'STORE-003':{qty:4,status:'in_stock',log:[]},'STORE-004':{qty:0,status:'out_of_stock',log:[]},'STORE-005':{qty:11,status:'in_stock',log:[]},'STORE-006':{qty:2,status:'low_stock',log:[]},'STORE-007':{qty:9,status:'in_stock',log:[]},'STORE-008':{qty:14,status:'in_stock',log:[]}},location:{}},
   {id:'p-003',brandId:'brand-001',brandName:'Nike',sku:'NK-BT-055',name:'Dri-FIT Training Tee',category:'Apparel',subCategory:'T-Shirts',rrp:34.99,offerPrice:null,offerActive:false,shortDescription:'Sweat-wicking fabric for intense training.',longDescription:'Standard Dri-FIT training tee with moisture management technology. Lightweight and comfortable.',features:['Dri-FIT technology','Crew neck','Regular fit'],targetAudiences:['Men','Women'],thumbnail:'https://placehold.co/60x60/555/fff?text=DFT',colours:[],stock:{'STORE-001':{qty:35,status:'in_stock',log:[]},'STORE-002':{qty:22,status:'in_stock',log:[]},'STORE-003':{qty:18,status:'in_stock',log:[]},'STORE-004':{qty:40,status:'in_stock',log:[]},'STORE-005':{qty:3,status:'low_stock',log:[]},'STORE-006':{qty:25,status:'in_stock',log:[]},'STORE-007':{qty:30,status:'in_stock',log:[]},'STORE-008':{qty:16,status:'in_stock',log:[]}},location:{}},
@@ -371,6 +371,17 @@ const PRODUCTS = [
   {id:'p-009',brandId:'brand-005',brandName:"Levi's",sku:'LV-501-W32',name:"501 Original Jeans W32",category:'Apparel',subCategory:'Denim',rrp:89.99,offerPrice:71.99,offerActive:true,shortDescription:'The original blue jean. Since 1873.',longDescription:"Levi's 501 Original Jeans — the blueprint for all denim. Button fly, straight fit, 100% cotton denim.",features:['Button fly','Straight fit','100% cotton denim','Shrink-to-fit option'],targetAudiences:['Men'],thumbnail:'https://placehold.co/60x60/1A5276/fff?text=501',colours:[{hex:'#1A5276',label:'Medium Stonewash'}],stock:{'STORE-001':{qty:18,status:'in_stock',log:[]},'STORE-002':{qty:25,status:'in_stock',log:[]},'STORE-003':{qty:10,status:'in_stock',log:[]},'STORE-004':{qty:2,status:'low_stock',log:[]},'STORE-005':{qty:0,status:'out_of_stock',log:[]},'STORE-006':{qty:14,status:'in_stock',log:[]},'STORE-007':{qty:8,status:'in_stock',log:[]},'STORE-008':{qty:20,status:'in_stock',log:[]}},location:{}},
   {id:'p-010',brandId:'brand-006',brandName:'Sony',sku:'SN-WH-1000XM5',name:'WH-1000XM5 Headphones',category:'Electronics',subCategory:'Headphones',rrp:349.99,offerPrice:279.99,offerActive:true,shortDescription:'Industry-leading noise cancelling with 30hr battery.',longDescription:'Sony WH-1000XM5 wireless headphones with Auto NC Optimizer and multipoint connection for seamless listening.',features:['Auto NC Optimizer','30hr battery','Multipoint connection','Speak-to-Chat'],targetAudiences:['Music lovers','Commuters','Professionals'],thumbnail:'https://placehold.co/60x60/003087/fff?text=WH5',colours:[{hex:'#000',label:'Black'},{hex:'#E8D5B0',label:'Silver'}],stock:{'STORE-001':{qty:7,status:'in_stock',log:[]},'STORE-002':{qty:3,status:'low_stock',log:[]},'STORE-003':{qty:11,status:'in_stock',log:[]},'STORE-004':{qty:5,status:'in_stock',log:[]},'STORE-005':{qty:0,status:'out_of_stock',log:[]},'STORE-006':{qty:8,status:'in_stock',log:[]},'STORE-007':{qty:2,status:'low_stock',log:[]},'STORE-008':{qty:9,status:'in_stock',log:[]}},location:{}}
 ];
+
+let PRODUCTS = (() => {
+  try {
+    const s = localStorage.getItem('ph_products');
+    return s ? JSON.parse(s) : _PRODUCTS_DEFAULT;
+  } catch(e) { return _PRODUCTS_DEFAULT; }
+})();
+
+function saveProducts(){
+  try { localStorage.setItem('ph_products', JSON.stringify(PRODUCTS)); } catch(e) {}
+}
 
 /* ═══════════════════════════════════════════════════════════
    STATE
@@ -387,7 +398,14 @@ let isDragging = false;
    UTILITIES
 ═══════════════════════════════════════════════════════════ */
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtPrice(v){ return v != null ? '£' + parseFloat(v).toFixed(2) : '—'; }
+
+let BRANDS_MAP = {};
+try {
+  const _bs = localStorage.getItem('ph_brands');
+  if (_bs) JSON.parse(_bs).forEach(b => BRANDS_MAP[b.id] = b.currency || '$');
+} catch(e) {}
+
+function fmtPrice(v, symbol='$'){ return v != null ? symbol + parseFloat(v).toFixed(2) : '—'; }
 function getStockForStore(product){ return (product.stock || {})[CURRENT_STORE] || {qty:0,status:'out_of_stock',log:[]}; }
 function getLocationForStore(product){ return (product.location || {})[CURRENT_STORE] || null; }
 
@@ -416,7 +434,7 @@ function setupStore(){
    CATEGORY CHIPS
 ═══════════════════════════════════════════════════════════ */
 function buildCategoryChips(){
-  const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))];
+  const cats = ['All', ...new Set(PRODUCTS.filter(p => p.enabled !== false).map(p => p.category))];
   const row = document.getElementById('catChipsRow');
   row.innerHTML = cats.map(c =>
     `<div class="cat-chip ${c==='All'?'active':''}" data-cat="${escHtml(c)}" onclick="filterByCategory('${escHtml(c)}')">${escHtml(c)}</div>`
@@ -426,9 +444,10 @@ function buildCategoryChips(){
 function filterByCategory(cat){
   activeCategoryFilter = cat === 'All' ? '' : cat;
   document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.dataset.cat === cat));
+  const enabledProducts = PRODUCTS.filter(p => p.enabled !== false);
   const filtered = activeCategoryFilter
-    ? PRODUCTS.filter(p => p.category === activeCategoryFilter)
-    : PRODUCTS;
+    ? enabledProducts.filter(p => p.category === activeCategoryFilter)
+    : enabledProducts;
   const search = document.getElementById('searchInput').value;
   productsGridApi.setGridOption('rowData', filtered);
   if (search) productsGridApi.setGridOption('quickFilterText', search);
@@ -467,7 +486,7 @@ function initProductsGrid(){
         }
       },
       {
-        headerName:'Product', field:'name', flex:2.5,
+        headerName:'Product Name', field:'name', flex:2.5,
         cellRenderer: p => {
           const wrap = document.createElement('div');
           wrap.style.cssText = 'display:flex;flex-direction:column;justify-content:center;height:100%;';
@@ -487,18 +506,19 @@ function initProductsGrid(){
         cellRenderer: p => {
           const wrap = document.createElement('div');
           wrap.style.cssText = 'display:flex;flex-direction:column;justify-content:center;height:100%;';
+          const sym = BRANDS_MAP[p.data.brandId] || '$';
           if (p.data.offerActive && p.data.offerPrice) {
             const offer = document.createElement('div');
             offer.style.cssText = 'font-size:14px;font-weight:800;color:var(--primary);';
-            offer.textContent = fmtPrice(p.data.offerPrice);
+            offer.textContent = fmtPrice(p.data.offerPrice, sym);
             const rrp = document.createElement('div');
             rrp.style.cssText = 'font-size:11px;color:var(--text3);text-decoration:line-through;';
-            rrp.textContent = fmtPrice(p.value);
+            rrp.textContent = fmtPrice(p.value, sym);
             wrap.appendChild(offer); wrap.appendChild(rrp);
           } else {
             const price = document.createElement('div');
             price.style.cssText = 'font-size:14px;font-weight:700;';
-            price.textContent = fmtPrice(p.value);
+            price.textContent = fmtPrice(p.value, sym);
             wrap.appendChild(price);
           }
           return wrap;
@@ -545,7 +565,7 @@ function initProductsGrid(){
         }
       }
     ],
-    rowData: PRODUCTS
+    rowData: PRODUCTS.filter(p => p.enabled !== false)
   });
 }
 
@@ -566,6 +586,7 @@ function cycleStockStatus(productId, currentStatus, params){
   if (!prod.stock[CURRENT_STORE]) prod.stock[CURRENT_STORE] = {qty:0,status:'in_stock',log:[]};
   prod.stock[CURRENT_STORE].status = next;
   params.api.refreshCells({ rowNodes:[params.node], force:true });
+  saveProducts();
   const cfg = getStatusConfig(next);
   showToast(`${prod.name}: ${cfg.label}`, next === 'out_of_stock' ? 'error' : next === 'low_stock' ? 'warning' : 'success');
 }
@@ -591,14 +612,15 @@ function openProductModal(id){
 
   // Pricing
   const pricingDiv = document.getElementById('mPricingDisplay');
+  const prodSym = BRANDS_MAP[prod.brandId] || '$';
   if (prod.offerActive && prod.offerPrice) {
     pricingDiv.innerHTML = `
-      <span class="price-rrp">${fmtPrice(prod.rrp)} RRP</span>
+      <span class="price-rrp">${fmtPrice(prod.rrp, prodSym)} RRP</span>
       <span class="offer-pill">OFFER</span><br>
-      <span class="price-offer">${fmtPrice(prod.offerPrice)}</span>
+      <span class="price-offer">${fmtPrice(prod.offerPrice, prodSym)}</span>
     `;
   } else {
-    pricingDiv.innerHTML = `<span style="font-size:20px;font-weight:800;">${fmtPrice(prod.rrp)}</span><span style="font-size:11px;color:var(--text2);margin-left:4px;">RRP</span>`;
+    pricingDiv.innerHTML = `<span style="font-size:20px;font-weight:800;">${fmtPrice(prod.rrp, prodSym)}</span><span style="font-size:11px;color:var(--text2);margin-left:4px;">RRP</span>`;
   }
 
   // Category badges
@@ -617,8 +639,8 @@ function openProductModal(id){
       ${[
         {label:'SKU',           value:`<code style="font-size:12px;">${escHtml(prod.sku)}</code>`},
         {label:'Brand',         value:escHtml(prod.brandName)},
-        {label:'RRP',           value:`<strong>${fmtPrice(prod.rrp)}</strong>`},
-        {label:'Offer Price',   value:prod.offerActive ? `<strong style="color:var(--primary);">${fmtPrice(prod.offerPrice)}</strong>` : '<span style="color:var(--text3);">—</span>'},
+        {label:'RRP',           value:`<strong>${fmtPrice(prod.rrp, prodSym)}</strong>`},
+        {label:'Offer Price',   value:prod.offerActive ? `<strong style="color:var(--primary);">${fmtPrice(prod.offerPrice, prodSym)}</strong>` : '<span style="color:var(--text3);">—</span>'},
       ].map(r => `
         <div style="padding:10px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px;">${r.label}</div>
@@ -729,6 +751,7 @@ function updateStockCount(){
   const cfg = getStatusConfig(prod.stock[CURRENT_STORE].status);
   document.getElementById('mStockStatusBadgeWrap').innerHTML = `<span class="stock-badge ${cfg.cls}">${cfg.label}</span>`;
   productsGridApi.refreshCells({force:true});
+  saveProducts();
   showToast(`Stock updated to ${newVal} units`);
   populateStockTab(prod);
 }
@@ -742,6 +765,7 @@ function setStockStatus(status){
   const cfg = getStatusConfig(status);
   document.getElementById('mStockStatusBadgeWrap').innerHTML = `<span class="stock-badge ${cfg.cls}">${cfg.label}</span>`;
   productsGridApi.refreshCells({force:true});
+  saveProducts();
   showToast(`Marked as ${cfg.label}`, status === 'out_of_stock' ? 'error' : status === 'low_stock' ? 'warning' : 'success');
 }
 
@@ -864,6 +888,7 @@ function saveLocation(){
     description: document.getElementById('locationDescInput').value.trim()
   };
   productsGridApi.refreshCells({force:true});
+  saveProducts();
   renderMapList(prod);
   showToast('Location saved for ' + CURRENT_STORE);
 }

@@ -487,6 +487,18 @@
             </div>
           </div>
         </div>
+        <div class="section-divider">Currency</div>
+        <div class="form-group">
+          <label>Brand Currency</label>
+          <select id="bm-currency" onchange="document.getElementById('bm-currency-tab3').value=this.value">
+            <option value="$">$ (USD)</option>
+            <option value="€">€ (EUR)</option>
+            <option value="£">£ (GBP)</option>
+            <option value="¥">¥ (JPY)</option>
+            <option value="A$">A$ (AUD)</option>
+            <option value="C$">C$ (CAD)</option>
+          </select>
+        </div>
       </div>
 
       <!-- TAB 2: Guidelines & Colours -->
@@ -563,6 +575,19 @@
         <div id="storeChipWrap" style="display:none;">
           <div class="store-chips" id="storeChips"></div>
           <div style="font-size:11px;color:var(--text3);margin-top:6px;">Click stores to toggle selection</div>
+        </div>
+
+        <div class="section-divider">Pricing Currency</div>
+        <div class="form-group">
+          <label>Currency used for this brand's prices</label>
+          <select id="bm-currency-tab3" onchange="document.getElementById('bm-currency').value=this.value">
+            <option value="$">$ (USD)</option>
+            <option value="€">€ (EUR)</option>
+            <option value="£">£ (GBP)</option>
+            <option value="¥">¥ (JPY)</option>
+            <option value="A$">A$ (AUD)</option>
+            <option value="C$">C$ (CAD)</option>
+          </select>
         </div>
       </div>
 
@@ -718,6 +743,7 @@ const _BRANDS_DEFAULT = [
     guidelines:'# Nike Brand Guidelines\n\n## Voice & Tone\nBold, inspiring, motivational. Just Do It.\n\n## Colour Usage\nPrimary: #111111 (Black). Accent: #FF6B35 (Orange).\n\n## Typography\nFutura PT Bold for headlines.',
     storeAssign:'all', selectedStores:[],
     pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'SALE',
+    currency:'$',
     lowStockStores:['STORE-002','STORE-005','STORE-007'],
     outOfStockStores:['STORE-004'],
     productCount:4, storeCount:8
@@ -732,6 +758,7 @@ const _BRANDS_DEFAULT = [
     guidelines:'# Adidas Brand Guidelines\n\n## Impossible is Nothing\nBold and inclusive messaging.',
     storeAssign:'all', selectedStores:[],
     pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'PCT_OFF',
+    currency:'$',
     lowStockStores:['STORE-001','STORE-006'],
     outOfStockStores:['STORE-003','STORE-008'],
     productCount:4, storeCount:8
@@ -746,6 +773,7 @@ const _BRANDS_DEFAULT = [
     guidelines:'# Samsung Brand Guidelines\n\n## Do Bigger Things\nTechnology for everyone.',
     storeAssign:'specific', selectedStores:['STORE-001','STORE-002','STORE-003','STORE-004','STORE-005'],
     pricingStrategy:'group', priceSource:'rrp', offerSticker:'NEW_PRICE',
+    currency:'$',
     lowStockStores:['STORE-003'],
     outOfStockStores:[],
     productCount:4, storeCount:5
@@ -760,6 +788,7 @@ const _BRANDS_DEFAULT = [
     guidelines:'# Apple Brand Guidelines\n\n## Think Different\nSimple, human and approachable.',
     storeAssign:'specific', selectedStores:['STORE-001','STORE-002','STORE-003'],
     pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'SPECIAL',
+    currency:'$',
     lowStockStores:['STORE-001'],
     outOfStockStores:['STORE-002'],
     productCount:4, storeCount:3
@@ -774,6 +803,7 @@ const _BRANDS_DEFAULT = [
     guidelines:"# Levi's Brand Guidelines\n\n## Original since 1853\nAuthentic, honest, American spirit.",
     storeAssign:'all', selectedStores:[],
     pricingStrategy:'decentralised', priceSource:'rrp', offerSticker:'SALE',
+    currency:'$',
     lowStockStores:['STORE-004','STORE-005','STORE-006'],
     outOfStockStores:[],
     productCount:4, storeCount:8
@@ -788,6 +818,7 @@ const _BRANDS_DEFAULT = [
     guidelines:'# Sony Brand Guidelines\n\n## Make Believe\nInnovation and creativity at its heart.',
     storeAssign:'all', selectedStores:[],
     pricingStrategy:'centralised', priceSource:'rrp', offerSticker:'PCT_OFF',
+    currency:'$',
     lowStockStores:['STORE-007','STORE-008'],
     outOfStockStores:['STORE-005'],
     productCount:4, storeCount:8
@@ -1067,6 +1098,8 @@ function clearBrandForm() {
   document.querySelector('input[name=priceSource][value=rrp]').checked = true;
   document.querySelector('.sticker-card.selected')?.classList.remove('selected');
   document.querySelector('.sticker-card[data-sticker=SALE]').classList.add('selected');
+  document.getElementById('bm-currency').value = '$';
+  document.getElementById('bm-currency-tab3').value = '$';
 }
 
 function populateBrandForm(b) {
@@ -1104,6 +1137,11 @@ function populateBrandForm(b) {
   const sc = document.querySelector(`.sticker-card[data-sticker=${b.offerSticker||'SALE'}]`);
   if (sc) sc.classList.add('selected');
 
+  // currency
+  const cur = b.currency || '$';
+  document.getElementById('bm-currency').value = cur;
+  document.getElementById('bm-currency-tab3').value = cur;
+
   // image previews
   if (b.icon) { document.getElementById('iconPreviewImg').src = b.icon; document.getElementById('iconPreviewName').textContent = b.name + ' icon'; document.getElementById('iconPreviewInfo').textContent = 'Existing image'; document.getElementById('iconPreview').style.display = 'flex'; }
   if (b.logo) { document.getElementById('logoPreviewImg').src = b.logo; document.getElementById('logoPreviewName').textContent = b.name + ' logo'; document.getElementById('logoPreviewInfo').textContent = 'Existing image'; document.getElementById('logoPreview').style.display = 'flex'; }
@@ -1133,6 +1171,7 @@ function saveBrand() {
     pricingStrategy: document.getElementById('bm-pricingstrategy').value,
     priceSource: document.querySelector('input[name=priceSource]:checked')?.value || 'rrp',
     offerSticker: document.querySelector('.sticker-card.selected')?.dataset.sticker || 'SALE',
+    currency: document.getElementById('bm-currency').value,
     icon: document.getElementById('iconPreviewImg').src || `https://placehold.co/40x40/169bc2/fff?text=${encodeURIComponent(name.charAt(0))}`,
     logo: document.getElementById('logoPreviewImg').src || '',
     lowStockStores: [], outOfStockStores: [],

@@ -350,11 +350,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>RRP <span class="req">*</span></label>
-            <div class="price-wrap"><span class="price-sym">£</span><input type="number" id="pm-rrp" placeholder="0.00" step="0.01" min="0"></div>
+            <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="pm-rrp" placeholder="0.00" step="0.01" min="0"></div>
           </div>
           <div class="form-group">
             <label>Offer Price <span style="font-size:10px;font-weight:400;text-transform:none;">(leave blank if none)</span></label>
-            <div class="price-wrap"><span class="price-sym">£</span><input type="number" id="pm-offerprice" placeholder="0.00" step="0.01" min="0"></div>
+            <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="pm-offerprice" placeholder="0.00" step="0.01" min="0"></div>
           </div>
         </div>
         <div class="form-row">
@@ -409,12 +409,12 @@
         <div id="logEntryForm" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;">
           <div class="form-row cols-3">
             <div class="form-group" style="margin-bottom:8px;">
-              <label>Old Price (£)</label>
-              <div class="price-wrap"><span class="price-sym">£</span><input type="number" id="log-old" step="0.01" placeholder="0.00"></div>
+              <label>Old Price</label>
+              <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="log-old" step="0.01" placeholder="0.00"></div>
             </div>
             <div class="form-group" style="margin-bottom:8px;">
-              <label>New Price (£)</label>
-              <div class="price-wrap"><span class="price-sym">£</span><input type="number" id="log-new" step="0.01" placeholder="0.00"></div>
+              <label>New Price</label>
+              <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="log-new" step="0.01" placeholder="0.00"></div>
             </div>
             <div class="form-group" style="margin-bottom:8px;">
               <label>Changed By</label>
@@ -556,6 +556,15 @@ const _BRANDS_LIST_DEFAULT = [
 ];
 let BRANDS_LIST = (() => { try { const s = localStorage.getItem('ph_brands_list'); return s ? JSON.parse(s) : _BRANDS_LIST_DEFAULT; } catch(e) { return _BRANDS_LIST_DEFAULT; } })();
 
+let BRANDS_MAP = {};
+try {
+  const _bs = localStorage.getItem('ph_brands');
+  if (_bs) JSON.parse(_bs).forEach(b => BRANDS_MAP[b.id] = b.currency || '$');
+} catch(e) {}
+if (!Object.keys(BRANDS_MAP).length) {
+  _BRANDS_LIST_DEFAULT.forEach(b => BRANDS_MAP[b.id] = '$');
+}
+
 const _PRODUCTS_DEFAULT = [
   // NIKE
   {id:'p-001',brandId:'brand-001',brandName:'Nike',sku:'NK-RN-001',name:'Air Max 270',category:'Footwear',subCategory:'Running Shoes',rrp:149.99,offerPrice:119.99,offerActive:true,offerScheduledAt:null,shortDescription:'Iconic Air Max cushioning for all-day comfort.',longDescription:'The Nike Air Max 270 features the biggest Air unit yet for a lifestyle shoe, delivering unparalleled, all-day cushioning.',features:['Air Max unit','Foam midsole','Mesh upper','Rubber outsole'],targetAudiences:['Men','Women','Runners'],thumbnail:'https://placehold.co/60x60/111/fff?text=AM270',enabled:true,images:[{id:'img-001',src:'https://placehold.co/300x200/111/fff?text=AM270+Main',label:'Hero Shot',tags:['primary','hero'],isPrimary:true},{id:'img-002',src:'https://placehold.co/300x200/333/fff?text=AM270+Side',label:'Side Profile',tags:['side'],isPrimary:false}],colours:[{hex:'#111111',label:'Black'},{hex:'#FFFFFF',label:'White'},{hex:'#FF6B35',label:'Orange'}],priceLog:[{date:'2026-03-15 10:22',changedBy:'Sarah Chen',oldPrice:149.99,newPrice:119.99,reason:'Spring sale'},{date:'2026-01-10 09:00',changedBy:'PIM Sync',oldPrice:159.99,newPrice:149.99,reason:'New season pricing'}]},
@@ -605,7 +614,7 @@ const GLOBAL_TAGS = ['primary','hero','side','front','back','detail','lifestyle'
 
 /* ============================================================ UTILITIES */
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtPrice(v){ return v != null ? '£' + parseFloat(v).toFixed(2) : '—'; }
+function fmtPrice(v, symbol='$'){ return v != null ? symbol + parseFloat(v).toFixed(2) : '—'; }
 function getOfferStatus(p){
   if (!p.offerPrice) return 'none';
   if (p.offerScheduledAt && new Date(p.offerScheduledAt) > new Date()) return 'scheduled';
@@ -723,15 +732,12 @@ function initProductsGrid(){
         headerName:'Product Name', field:'name', flex:2.5,
         cellRenderer: p => {
           const wrap = document.createElement('div');
-          wrap.style.cssText = 'display:flex;flex-direction:column;justify-content:center;height:100%;';
+          wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;';
           const nm = document.createElement('div');
-          nm.style.cssText = 'font-weight:700;font-size:13px;color:var(--primary);cursor:pointer;';
+          nm.style.cssText = 'font-weight:700;font-size:13px;color:var(--primary);cursor:pointer;text-align:center;';
           nm.textContent = p.value;
           nm.onclick = () => openEditProductModal(p.data.id);
-          const sub = document.createElement('div');
-          sub.style.cssText = 'font-size:11px;color:var(--text2);font-family:monospace;margin-top:2px;';
-          sub.textContent = p.data.sku;
-          wrap.appendChild(nm); wrap.appendChild(sub);
+          wrap.appendChild(nm);
           return wrap;
         }
       },
@@ -762,7 +768,7 @@ function initProductsGrid(){
       { headerName:'Sub-Category', field:'subCategory', flex:1.2 },
       {
         headerName:'RRP', field:'rrp', flex:0.9,
-        valueFormatter: p => fmtPrice(p.value),
+        valueFormatter: p => fmtPrice(p.value, BRANDS_MAP[p.data.brandId] || '$'),
         cellStyle: { fontWeight:'600' }
       },
       {
@@ -771,6 +777,7 @@ function initProductsGrid(){
           const wrap = document.createElement('div');
           wrap.style.cssText = 'display:flex;align-items:center;height:100%;';
           const status = getOfferStatus(p.data);
+          const sym = BRANDS_MAP[p.data.brandId] || '$';
           if (status === 'none') {
             const dash = document.createElement('span');
             dash.style.cssText = 'color:var(--text3);font-size:13px;';
@@ -779,12 +786,12 @@ function initProductsGrid(){
           } else if (status === 'live') {
             const badge = document.createElement('span');
             badge.className = 'offer-badge offer-live';
-            badge.innerHTML = `🟢 ${fmtPrice(p.value)}`;
+            badge.innerHTML = `🟢 ${fmtPrice(p.value, sym)}`;
             wrap.appendChild(badge);
           } else {
             const badge = document.createElement('span');
             badge.className = 'offer-badge offer-scheduled';
-            badge.innerHTML = `🕐 ${fmtPrice(p.value)}`;
+            badge.innerHTML = `🕐 ${fmtPrice(p.value, sym)}`;
             badge.title = 'Scheduled: ' + p.data.offerScheduledAt;
             wrap.appendChild(badge);
           }
@@ -894,7 +901,10 @@ function populateProductForm(p){
   currentProductImages = (p.images || []).map(img => ({...img}));
   renderImgGallery();
   buildAccordions(p.colours||[], p.ingredients||[], p.customisations||[], p.nutrition||{}, p.sizing||'');
-  renderPriceLog(p.priceLog || []);
+  renderPriceLog(p.priceLog || [], BRANDS_MAP[p.brandId] || '$');
+  // Update price input currency symbols to match the brand
+  const sym = BRANDS_MAP[p.brandId] || '$';
+  document.querySelectorAll('.price-sym').forEach(el => el.textContent = sym);
 }
 
 /* ============================================================ SAVE PRODUCT */
@@ -1224,7 +1234,7 @@ function handleAssetUpload(event){
 }
 
 /* ============================================================ PRICE LOG */
-function renderPriceLog(log){
+function renderPriceLog(log, sym='$'){
   document.getElementById('priceLogBody').innerHTML = (log||[]).slice().reverse().map(entry => {
     const change = (entry.newPrice - entry.oldPrice).toFixed(2);
     const cls = change > 0 ? 'change-positive' : 'change-negative';
@@ -1232,9 +1242,9 @@ function renderPriceLog(log){
     return `<tr>
       <td style="white-space:nowrap;">${escHtml(entry.date)}</td>
       <td>${escHtml(entry.changedBy)}</td>
-      <td>${fmtPrice(entry.oldPrice)}</td>
-      <td><strong>${fmtPrice(entry.newPrice)}</strong></td>
-      <td class="${cls}">${sign}£${change}</td>
+      <td>${fmtPrice(entry.oldPrice, sym)}</td>
+      <td><strong>${fmtPrice(entry.newPrice, sym)}</strong></td>
+      <td class="${cls}">${sign}${sym}${change}</td>
       <td style="color:var(--text2);">${escHtml(entry.reason)}</td>
     </tr>`;
   }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);">No price changes recorded</td></tr>';
@@ -1260,7 +1270,7 @@ function addLogEntry(){
     changedBy: by, oldPrice: oldP, newPrice: newP, reason: rsn
   };
   prod.priceLog.push(entry);
-  renderPriceLog(prod.priceLog);
+  renderPriceLog(prod.priceLog, BRANDS_MAP[prod.brandId] || '$');
   ['log-old','log-new','log-by','log-reason'].forEach(id => { document.getElementById(id).value = ''; });
   toggleLogEntryForm();
   showToast('Price log entry added');
@@ -1270,10 +1280,11 @@ function addLogEntry(){
 function buildGlobalPriceLog(){
   const allEntries = [];
   PRODUCTS.forEach(p => {
-    (p.priceLog||[]).forEach(entry => allEntries.push({...entry, productName:p.name, brandName:p.brandName, sku:p.sku}));
+    (p.priceLog||[]).forEach(entry => allEntries.push({...entry, productName:p.name, brandName:p.brandName, sku:p.sku, brandId:p.brandId}));
   });
   allEntries.sort((a,b) => b.date.localeCompare(a.date));
   document.getElementById('globalPriceLogBody').innerHTML = allEntries.map(e => {
+    const sym = BRANDS_MAP[e.brandId] || '$';
     const change = (e.newPrice - e.oldPrice).toFixed(2);
     const cls = change > 0 ? 'change-positive' : 'change-negative';
     const sign = change > 0 ? '+' : '';
@@ -1282,8 +1293,8 @@ function buildGlobalPriceLog(){
       <td style="font-weight:600;cursor:pointer;color:var(--primary);">${escHtml(e.productName)}</td>
       <td>${escHtml(e.brandName)}</td>
       <td><code style="font-size:11px;">${escHtml(e.sku)}</code></td>
-      <td>${fmtPrice(e.oldPrice)}</td>
-      <td><strong>${fmtPrice(e.newPrice)}</strong></td>
+      <td>${fmtPrice(e.oldPrice, sym)}</td>
+      <td><strong>${fmtPrice(e.newPrice, sym)}</strong></td>
       <td>${escHtml(e.changedBy)}</td>
       <td style="color:var(--text2);">${escHtml(e.reason)}</td>
     </tr>`;
