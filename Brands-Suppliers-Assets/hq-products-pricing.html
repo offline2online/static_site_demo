@@ -998,6 +998,34 @@ function populateProductForm(p){
   document.querySelectorAll('.price-sym').forEach(el => el.textContent = sym);
 }
 
+/* ============================================================ READ ACCORDION DATA FROM DOM */
+function readColoursFromDOM(){
+  const swatches = document.querySelectorAll('#acc-colours .colour-swatch');
+  return Array.from(swatches).map(s => ({ hex: s.style.background, label: s.getAttribute('data-label') || s.style.background }));
+}
+function readIngredientsFromDOM(){
+  const chips = document.querySelectorAll('#acc-ingredients .accordion-content .tag-chip');
+  return Array.from(chips).map(c => c.textContent.trim()).filter(Boolean);
+}
+function readCustomisationsFromDOM(){
+  const rows = document.querySelectorAll('#customTableBody tr');
+  return Array.from(rows).map(tr => {
+    const inputs = tr.querySelectorAll('input');
+    const sel    = tr.querySelector('select');
+    return { name: inputs[0]?.value || '', type: sel?.value || 'Add', priceImpact: inputs[1]?.value || '' };
+  }).filter(c => c.name.trim());
+}
+function readNutritionFromDOM(){
+  const keys = ['calories','fat','carbs','protein','fibre','sugar','salt','serving'];
+  const n = {};
+  keys.forEach(k => { const el = document.getElementById('nutr-' + k); if (el && el.value.trim()) n[k] = el.value.trim(); });
+  return n;
+}
+function readSizingFromDOM(){
+  const el = document.getElementById('sizingData');
+  return el ? el.value : '';
+}
+
 /* ============================================================ SAVE PRODUCT */
 function saveProduct(){
   const name = document.getElementById('pm-name').value.trim();
@@ -1013,6 +1041,13 @@ function saveProduct(){
   const offerPrice = offerPriceRaw ? parseFloat(offerPriceRaw) : null;
   const schedFrom  = document.getElementById('pm-scheduledfrom').value;
 
+  // Preserve thumbnail: use primary/first image src, otherwise keep existing, otherwise generate placeholder
+  const existingProduct = editingProductId ? PRODUCTS.find(p => p.id === editingProductId) : null;
+  const primaryImg = currentProductImages.find(img => img.isPrimary) || currentProductImages[0];
+  const thumbnail = primaryImg
+    ? primaryImg.src
+    : (existingProduct?.thumbnail || `https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent(sku)}`);
+
   const payload = {
     id: editingProductId || 'p-' + Date.now(),
     brandId, brandName: brand?.name || '',
@@ -1027,10 +1062,14 @@ function saveProduct(){
     longDescription:  document.getElementById('pm-longdesc').value,
     targetAudiences: [...currentAudienceTags],
     features:        [...currentFeatureTags],
-    thumbnail: `https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent(sku)}`,
+    thumbnail,
     enabled: document.getElementById('pm-enabled').checked,
     images: currentProductImages,
-    colours: [],
+    colours:        readColoursFromDOM(),
+    ingredients:    readIngredientsFromDOM(),
+    customisations: readCustomisationsFromDOM(),
+    nutrition:      readNutritionFromDOM(),
+    sizing:         readSizingFromDOM(),
     priceLog: editingProductId ? (PRODUCTS.find(p => p.id === editingProductId)?.priceLog || []) : []
   };
 
