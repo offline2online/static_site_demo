@@ -519,6 +519,9 @@
             <input type="file" id="prodJsonFile" accept=".json" onchange="handleProdJson(event)">
           </div>
           <div id="prodJsonPreview" style="display:none;" class="json-preview"></div>
+          <div id="prodJsonImportWrap" style="display:none;margin-top:10px;">
+            <button class="btn btn-primary btn-sm" id="prodJsonImportBtn" onclick="importBrandProducts()">Import Products</button>
+          </div>
         </div>
         <div class="form-group">
           <label>Live Product Feed URL <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
@@ -873,6 +876,7 @@ let editingBrandId = null;
 let currentPalette  = [];
 let currentOfferBadges = [];
 let selectedBadgeId = null;
+let pendingProdJson = null;
 
 /* ============================================================
    GLOBAL TOOLTIP
@@ -1120,6 +1124,8 @@ function clearBrandForm() {
   document.getElementById('logoPreview').style.display = 'none';
   document.getElementById('guideFileInfo').style.display = 'none';
   document.getElementById('prodJsonPreview').style.display = 'none';
+  document.getElementById('prodJsonImportWrap').style.display = 'none';
+  pendingProdJson = null;
   document.getElementById('pimStatus').textContent = '';
   document.getElementById('storeAll').checked = true;
   document.getElementById('storeChipWrap').style.display = 'none';
@@ -1328,22 +1334,182 @@ function handleProdJson(event) {
       const cols = Object.keys(sample).slice(0, 8).join(', ');
       const formatLabel = (meta && meta.items) ? 'GS1 VOC' : 'Flat array';
 
+      const isGs1 = !!(meta && Array.isArray(meta.items));
+      const hasImages = items.some(i => Array.isArray(i.images) && i.images.length > 0);
+      const hasPrices = items.some(i => i.price != null);
+      const flags = [
+        hasImages  && '🖼️ Product images',
+        hasPrices  && '💰 Pricing',
+        isGs1      && '🏷️ GS1 VOC format',
+      ].filter(Boolean).join(' &nbsp;·&nbsp; ') || 'Basic fields only';
+
       const preview = document.getElementById('prodJsonPreview');
       preview.innerHTML = `
-        <strong style="color:var(--success);">✓ ${items.length} product${items.length !== 1 ? 's' : ''} detected</strong>
-        <div style="margin-top:4px;font-size:12px;color:var(--text2);">
-          Format: ${escHtml(formatLabel)} &nbsp;·&nbsp; Brand: ${escHtml(brandName)}<br>
-          Sample SKU: <code style="color:var(--primary);">${escHtml(sample.sku || sample.id || '—')}</code>
-          &nbsp;·&nbsp; Fields: ${escHtml(cols)}
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="color:var(--success);font-size:15px;">✓</span>
+          <strong style="color:var(--text);font-size:13px;">${items.length} product${items.length !== 1 ? 's' : ''} detected — ready to import</strong>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;">
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Format</span>
+          <span>${escHtml(formatLabel)}</span>
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Brand</span>
+          <span>${escHtml(brandName)}</span>
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Sample SKU</span>
+          <code style="color:var(--primary);">${escHtml(sample.sku || sample.id || '—')}</code>
+          <span style="color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Includes</span>
+          <span style="color:var(--text2);">${flags}</span>
         </div>`;
       preview.style.display = 'block';
-      showToast(`JSON parsed: ${items.length} products`, 'info');
+
+      pendingProdJson = { items, meta, isGs1 };
+      const btnWrap = document.getElementById('prodJsonImportWrap');
+      document.getElementById('prodJsonImportBtn').textContent = `Import ${items.length} Products`;
+      btnWrap.style.display = 'block';
     } catch(err) {
       showToast('Invalid JSON: ' + err.message, 'error');
     }
   };
   reader.readAsText(file);
   event.target.value = '';
+}
+
+/* ============================================================
+   PRODUCT JSON MAPPING — GS1 VOC & Flat
+============================================================ */
+function _mapGs1ItemForBrand(item, brandId, brandName) {
+  const nutrition = {};
+  if (item.calories != null) nutrition.calories = item.calories;
+  if (item.fat      != null) nutrition.fat      = item.fat;
+  if (item.carbs    != null) nutrition.carbs    = item.carbs;
+  if (item.protein  != null) nutrition.protein  = item.protein;
+
+  const sizes = (item.customization && item.customization.sizes) || [];
+  const sizing = sizes.map(s => {
+    const adj = s.priceAdj ? (s.priceAdj > 0 ? ` (+$${s.priceAdj.toFixed(2)})` : ` ($${s.priceAdj.toFixed(2)})`) : '';
+    return `${s.label}${adj}`;
+  }).join('\n');
+
+  const ingredients = ((item.customization && item.customization.defaultIngredients) || [])
+    .map(i => i.label || i.name || String(i)).filter(Boolean);
+
+  const customisations = [
+    ...((item.customization && item.customization.additions) || []).map(a => ({
+      name: a.label || a.id, type: 'Add',
+      priceImpact: a.priceAdj ? `+$${parseFloat(a.priceAdj).toFixed(2)}` : ''
+    })),
+    ...((item.customization && item.customization.milkOptions) || []).map(m => ({
+      name: m.label || m.id, type: 'Swap',
+      priceImpact: m.priceAdj ? `+$${parseFloat(m.priceAdj).toFixed(2)}` : ''
+    }))
+  ];
+
+  const images = ((item.images) || [])
+    .filter(src => typeof src === 'string' && src.length < 500)
+    .map((src, idx) => ({
+      id: 'img-imp-' + Date.now() + '-' + idx,
+      src,
+      label: idx === 0 ? 'Product Image' : `Image ${idx + 1}`,
+      tags: idx === 0 ? ['primary', 'imported'] : ['imported'],
+      isPrimary: idx === 0
+    }));
+
+  const thumbnail = images.length
+    ? images[0].src
+    : `https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent((item.name||'?').charAt(0).toUpperCase())}`;
+
+  let longDesc = item.longDescription || item.description || '';
+  if (item.productUrl) longDesc += (longDesc ? '\n\n' : '') + 'Product URL: ' + item.productUrl;
+
+  return {
+    id: 'p-imp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6),
+    brandId, brandName,
+    sku:             item.sku || item.id || '',
+    name:            item.name || '',
+    category:        item.category || (item.menuTypes && item.menuTypes[0]) || 'Other',
+    subCategory:     (item.menuTypes && item.menuTypes[0] !== item.category) ? (item.menuTypes[0] || '') : '',
+    rrp:             parseFloat(item.price || 0),
+    offerPrice:      null,
+    offerActive:     false,
+    offerScheduledAt:null,
+    shortDescription:item.shortDescription || (item.description || '').slice(0, 120),
+    longDescription: longDesc,
+    features: [], targetAudiences: [],
+    thumbnail, enabled: item.active !== false,
+    images, colours: [],
+    nutrition, ingredients, customisations, sizing,
+    priceLog: []
+  };
+}
+
+function _mapFlatItemForBrand(item, brandId, brandName) {
+  return {
+    id: 'p-imp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6),
+    brandId, brandName,
+    sku:             item.sku || item.productCode || item.barcode || '',
+    name:            item.name || item.title || item.productName || '',
+    category:        item.category || item.dept || 'Other',
+    subCategory:     item.subCategory || item.sub_category || '',
+    rrp:             parseFloat(item.rrp || item.price || item.retail_price || 0),
+    offerPrice:      item.offerPrice ? parseFloat(item.offerPrice) : null,
+    offerActive:     !!(item.offerPrice || item.offer_price),
+    offerScheduledAt:null,
+    shortDescription:item.shortDescription || item.short_description || (item.description||'').slice(0,120),
+    longDescription: item.longDescription  || item.long_description  || item.description || '',
+    features: item.features || [], targetAudiences: item.targetAudiences || [],
+    thumbnail: item.thumbnail || item.image || item.imageUrl || item.image_url
+      || `https://placehold.co/60x60/169bc2/fff?text=${encodeURIComponent(((item.name||'?').charAt(0)).toUpperCase())}`,
+    enabled: item.active !== false && item.enabled !== false,
+    images: [], colours: [],
+    nutrition: {}, ingredients: [], customisations: [], sizing: '',
+    priceLog: []
+  };
+}
+
+function importBrandProducts() {
+  if (!pendingProdJson) return;
+  const { items, isGs1 } = pendingProdJson;
+
+  const brandName = document.getElementById('bm-name').value.trim() || 'Imported Brand';
+  const brandId   = editingBrandId || ('brand-' + Date.now());
+
+  // Load existing products
+  let products = [];
+  try { const s = localStorage.getItem('ph_products'); if (s) products = JSON.parse(s); } catch(e) {}
+
+  // Track existing SKUs for this brand to skip duplicates
+  const existingSkus = new Set(products.filter(p => p.brandId === brandId).map(p => p.sku));
+
+  let added = 0, skipped = 0, dupes = 0;
+  items.forEach(item => {
+    const mapped = isGs1 ? _mapGs1ItemForBrand(item, brandId, brandName) : _mapFlatItemForBrand(item, brandId, brandName);
+    if (!mapped.name && !mapped.sku) { skipped++; return; }
+    if (!mapped.name) mapped.name = mapped.sku;
+    if (!mapped.sku)  mapped.sku  = 'IMP-' + Date.now() + '-' + added;
+    if (existingSkus.has(mapped.sku)) { dupes++; return; }
+    products.push(mapped);
+    existingSkus.add(mapped.sku);
+    added++;
+  });
+
+  try { localStorage.setItem('ph_products', JSON.stringify(products)); } catch(e) {}
+
+  // Update productCount on the saved brand if editing
+  if (editingBrandId) {
+    const b = BRANDS.find(b => b.id === editingBrandId);
+    if (b) { b.productCount = products.filter(p => p.brandId === editingBrandId).length; saveBrands(); }
+  }
+
+  pendingProdJson = null;
+  document.getElementById('prodJsonImportWrap').style.display = 'none';
+  document.getElementById('prodJsonPreview').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="color:var(--success);font-size:15px;">✓</span>
+      <strong style="color:var(--text);">${added} product${added !== 1 ? 's' : ''} imported to ${escHtml(brandName)}</strong>
+      ${dupes   ? `<span style="font-size:11px;color:var(--text2);">· ${dupes} duplicate${dupes !== 1 ? 's' : ''} skipped</span>` : ''}
+      ${skipped ? `<span style="font-size:11px;color:var(--text2);">· ${skipped} invalid skipped</span>` : ''}
+    </div>`;
+
+  showToast(`${added} product${added !== 1 ? 's' : ''} imported to ${brandName}`);
 }
 
 /* ============================================================
