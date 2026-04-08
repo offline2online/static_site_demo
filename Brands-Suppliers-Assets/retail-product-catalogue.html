@@ -194,8 +194,10 @@
 
     /* ── AG GRID ── */
     .ag-theme-alpine{--ag-header-background-color:var(--surface2);--ag-header-foreground-color:var(--text2);--ag-border-color:var(--border);--ag-row-hover-color:var(--surface2);--ag-selected-row-background-color:var(--primary-light);--ag-font-size:13px;--ag-font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--ag-cell-horizontal-padding:12px;--ag-row-height:68px;}
-    .ag-theme-alpine .ag-header-cell-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+    .ag-theme-alpine .ag-header-cell-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;justify-content:flex-start;}
     .ag-theme-alpine .ag-cell{overflow:visible !important;}
+    .ag-theme-alpine .ag-cell-wrapper{align-items:center;}
+    .ag-theme-alpine .ag-cell-value{text-align:left;display:flex;align-items:center;}
   </style>
 </head>
 <body>
