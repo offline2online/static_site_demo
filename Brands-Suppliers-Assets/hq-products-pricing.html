@@ -402,19 +402,20 @@
           </div>
           <div class="form-group">
             <label>Offer Price <span style="font-size:10px;font-weight:400;text-transform:none;">(leave blank if none)</span></label>
-            <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="pm-offerprice" placeholder="0.00" step="0.01" min="0"></div>
+            <div class="price-wrap"><span class="price-sym">$</span><input type="number" id="pm-offerprice" placeholder="0.00" step="0.01" min="0" oninput="updateOfferStatusPill()"></div>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Schedule Offer From <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
-            <input type="datetime-local" id="pm-scheduledfrom">
+            <input type="datetime-local" id="pm-scheduledfrom" oninput="updateOfferStatusPill()">
           </div>
           <div class="form-group">
             <label>Schedule Offer Until <span style="font-size:10px;font-weight:400;text-transform:none;">(optional)</span></label>
-            <input type="datetime-local" id="pm-scheduleduntil">
+            <input type="datetime-local" id="pm-scheduleduntil" oninput="updateOfferStatusPill()">
           </div>
         </div>
+        <div id="offerStatusPill" style="display:none;margin-bottom:12px;"></div>
         <div class="section-divider">Price Change History</div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <div></div>
@@ -627,9 +628,12 @@ function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&l
 function fmtPrice(v, symbol='$'){ return v != null ? symbol + parseFloat(v).toFixed(2) : '—'; }
 function getOfferStatus(p){
   if (!p.offerPrice) return 'none';
-  if (p.offerScheduledAt && new Date(p.offerScheduledAt) > new Date()) return 'scheduled';
-  if (p.offerActive) return 'live';
-  return 'none';
+  const now   = new Date();
+  const from  = p.offerScheduledAt    ? new Date(p.offerScheduledAt)    : null;
+  const until = p.offerScheduledUntil ? new Date(p.offerScheduledUntil) : null;
+  if (from  && from  > now) return 'scheduled';   // start date is still in the future
+  if (until && until < now) return 'none';         // end date has already passed
+  return 'live';                                   // no start date, or start has passed — offer is active
 }
 
 /* ============================================================ TOAST */
@@ -980,6 +984,7 @@ function clearProductForm(){
   buildAccordions([],[],[],[],[]);
   renderImgGallery();
   document.getElementById('priceLogBody').innerHTML = '';
+  updateOfferStatusPill();
 }
 
 function populateProductForm(p){
@@ -999,6 +1004,10 @@ function populateProductForm(p){
     const local = new Date(new Date(p.offerScheduledAt) - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
     document.getElementById('pm-scheduledfrom').value = local;
   }
+  if (p.offerScheduledUntil) {
+    const local = new Date(new Date(p.offerScheduledUntil) - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+    document.getElementById('pm-scheduleduntil').value = local;
+  }
   currentAudienceTags = [...(p.targetAudiences || [])];
   currentFeatureTags  = [...(p.features || [])];
   renderTagChips('audiences');
@@ -1007,6 +1016,7 @@ function populateProductForm(p){
   renderImgGallery();
   buildAccordions(p.colours||[], p.ingredients||[], p.customisations||[], p.nutrition||{}, p.sizing||'');
   renderPriceLog(p.priceLog || [], BRANDS_MAP[p.brandId] || '$');
+  updateOfferStatusPill();
   // Update price input currency symbols to match the brand
   const sym = BRANDS_MAP[p.brandId] || '$';
   document.querySelectorAll('.price-sym').forEach(el => el.textContent = sym);
@@ -1052,8 +1062,9 @@ function saveProduct(){
   const brandId = document.getElementById('pm-brand').value;
   const brand   = BRANDS_LIST.find(b => b.id === brandId);
   const offerPriceRaw = document.getElementById('pm-offerprice').value;
-  const offerPrice = offerPriceRaw ? parseFloat(offerPriceRaw) : null;
-  const schedFrom  = document.getElementById('pm-scheduledfrom').value;
+  const offerPrice  = offerPriceRaw ? parseFloat(offerPriceRaw) : null;
+  const schedFrom   = document.getElementById('pm-scheduledfrom').value;
+  const schedUntil  = document.getElementById('pm-scheduleduntil').value;
 
   // Preserve thumbnail: use primary/first image src, otherwise keep existing, otherwise generate placeholder
   const existingProduct = editingProductId ? PRODUCTS.find(p => p.id === editingProductId) : null;
@@ -1070,8 +1081,8 @@ function saveProduct(){
     subCategory: document.getElementById('pm-subcategory').value,
     rrp,
     offerPrice,
-    offerActive:    !!(offerPrice && !schedFrom),
-    offerScheduledAt: schedFrom ? new Date(schedFrom).toISOString() : null,
+    offerScheduledAt:    schedFrom  ? new Date(schedFrom).toISOString()  : null,
+    offerScheduledUntil: schedUntil ? new Date(schedUntil).toISOString() : null,
     shortDescription: document.getElementById('pm-shortdesc').value,
     longDescription:  document.getElementById('pm-longdesc').value,
     targetAudiences: [...currentAudienceTags],
@@ -1406,6 +1417,38 @@ function handleAssetUpload(event){
     reader.readAsDataURL(file);
   });
   event.target.value = '';
+}
+
+/* ============================================================ OFFER STATUS PILL */
+function updateOfferStatusPill(){
+  const pill       = document.getElementById('offerStatusPill');
+  const offerRaw   = document.getElementById('pm-offerprice').value;
+  const schedFrom  = document.getElementById('pm-scheduledfrom').value;
+  const schedUntil = document.getElementById('pm-scheduleduntil').value;
+  if (!offerRaw) { pill.style.display = 'none'; return; }
+  const now   = new Date();
+  const from  = schedFrom  ? new Date(schedFrom)  : null;
+  const until = schedUntil ? new Date(schedUntil) : null;
+  let label, bg, color;
+  if (from && from > now) {
+    const diff = Math.round((from - now) / 60000);
+    const humanFrom = diff < 60 ? `in ${diff} min` : from.toLocaleString();
+    label = `🕐 Scheduled — offer goes live ${humanFrom}`;
+    bg = 'var(--warning-light)'; color = 'var(--warning)';
+  } else if (until && until < now) {
+    label = '⛔ Offer expired — the "Until" date has already passed';
+    bg = 'var(--danger-light)'; color = 'var(--danger)';
+  } else if (until) {
+    const diff = Math.round((until - now) / 60000);
+    const humanUntil = diff < 60 ? `in ${diff} min` : until.toLocaleString();
+    label = `🟢 Offer active — expires ${humanUntil}`;
+    bg = 'var(--success-light)'; color = 'var(--success)';
+  } else {
+    label = '🟢 Offer active (no expiry set)';
+    bg = 'var(--success-light)'; color = 'var(--success)';
+  }
+  pill.style.cssText = `display:block;padding:8px 12px;border-radius:6px;font-size:12px;font-weight:600;background:${bg};color:${color};`;
+  pill.textContent = label;
 }
 
 /* ============================================================ PRICE LOG */
@@ -1760,6 +1803,8 @@ document.addEventListener('DOMContentLoaded', () => {
   populateBrandSelect();
   initFilterPanels();
   initProductsGrid();
+  // Refresh grid every 30 seconds so scheduled offers activate/expire automatically
+  setInterval(() => { if (productsGridApi) applyFilters(); }, 30000);
 });
 </script>
 </body>
