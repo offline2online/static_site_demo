@@ -6,6 +6,7 @@
   <title>Products, Pricing &amp; Assets — HQ Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-grid.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/styles/ag-theme-alpine.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@32.3.3/dist/ag-grid-community.min.noStyle.js"></script>
   <style>
     :root {
@@ -326,14 +327,14 @@
     /* TEMPLATE DESIGNER MODAL */
     .modal-designer{z-index:250;}
     .designer-layout{display:flex;flex:1;overflow:hidden;min-height:0;}
-    .designer-controls{width:300px;min-width:300px;border-right:1px solid var(--border);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+    .designer-controls{width:320px;min-width:320px;border-right:1px solid var(--border);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;height:100%;}
     .designer-preview{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;background:var(--surface2);padding:30px;overflow:auto;}
-    .ds-section{border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+    .ds-section{border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0;}
     .ds-section-header{padding:9px 13px;background:var(--surface2);font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:background .12s;}
     .ds-section-header:hover{background:var(--surface3);}
     .ds-section-header .ds-arrow{font-size:10px;transition:transform .2s;color:var(--text3);}
     .ds-section.open .ds-arrow{transform:rotate(180deg);}
-    .ds-section-body{padding:13px;display:flex;flex-direction:column;gap:9px;display:none;}
+    .ds-section-body{padding:13px;flex-direction:column;gap:9px;display:none;}
     .ds-section.open .ds-section-body{display:flex;}
     .ds-row{display:flex;align-items:center;gap:8px;}
     .ds-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;display:block;}
@@ -377,6 +378,25 @@
     .ds-name-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:15px;font-weight:700;color:var(--text);outline:none;transition:border-color .14s;font-family:inherit;}
     .ds-name-row input:focus{border-color:var(--primary);}
     .ds-name-row input::placeholder{font-weight:400;color:var(--text3);}
+
+    /* Material Icons in icon picker */
+    .icon-opt .material-icons{font-size:18px;pointer-events:none;}
+    .material-icon-grid{display:flex;flex-wrap:wrap;gap:4px;max-height:130px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:5px;background:var(--surface);}
+    .material-icon-grid::-webkit-scrollbar{width:4px;}
+    .material-icon-grid::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+    .selected-icon-display{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-top:6px;}
+    .selected-icon-display .material-icons{font-size:20px;}
+    .icon-search-input{position:relative;}
+    .icon-search-input input{padding-right:28px;}
+    .icon-search-input::after{content:"search";font-family:'Material Icons';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text3);pointer-events:none;}
+
+    /* ESL preview */
+    .esl-info-chip{font-size:10px;color:#0d9488;background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.3);border-radius:10px;padding:3px 9px;font-weight:700;}
+    .preview-badge-wrap.sz-esl-sm .badge-live{transform:scale(0.42);transform-origin:center;}
+    .preview-badge-wrap.sz-esl-md .badge-live{transform:scale(0.52);transform-origin:center;}
+    .preview-badge-wrap.sz-esl-lg .badge-live{transform:scale(0.72);transform-origin:center;}
+    .preview-divider{width:100%;height:1px;background:var(--border);margin:4px 0;}
+    .preview-section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;text-align:center;}
   </style>
 </head>
 <body>
@@ -2158,6 +2178,15 @@ function renderBuiltinBadge(key) {
 }
 const BUILTIN_BG = { default:'#f8fafc', bold:'#f0f9ff', minimal:'#fafafa', flash:'#fff1f0', member:'#1e293b' };
 
+/* Editable property equivalents of the built-in CSS badge styles */
+const BUILTIN_TEMPLATE_DATA = {
+  default: { name:'Default Price Badge', bgType:'solid', bgColor:'#ffffff', bgColor2:'#e0f2fe', shape:'rounded', borderEnabled:true, borderColor:'#169bc2', showLabel:false, labelIcon:'local_offer', labelIconType:'material', labelIconColor:'#169bc2', labelText:'SALE', labelColor:'#169bc2', showWas:true, wasColor:'#999999', wasStrike:true, showNow:true, nowColor:'#169bc2', nowSize:'lg', savingDisplay:'none', savingColor:'#169bc2', showName:false, nameColor:'#666666' },
+  bold:    { name:'Bold Savings',        bgType:'solid', bgColor:'#169bc2', bgColor2:'#0f6e91', shape:'rounded', borderEnabled:false, borderColor:'#ffffff', showLabel:false, labelIcon:'bolt', labelIconType:'material', labelIconColor:'#ffffff', labelText:'OFF', labelColor:'#ffffff', showWas:false, wasColor:'#aaaaaa', wasStrike:false, showNow:false, nowColor:'#ffffff', nowSize:'xl', savingDisplay:'pct', savingColor:'#ffffff', showName:false, nameColor:'#cccccc' },
+  minimal: { name:'Minimal',             bgType:'solid', bgColor:'#fafafa', bgColor2:'#f0f0f0', shape:'square', borderEnabled:true, borderColor:'#333333', showLabel:false, labelIcon:'local_offer', labelIconType:'material', labelIconColor:'#333333', labelText:'', labelColor:'#333333', showWas:true, wasColor:'#999999', wasStrike:true, showNow:true, nowColor:'#111111', nowSize:'lg', savingDisplay:'none', savingColor:'#333333', showName:false, nameColor:'#666666' },
+  flash:   { name:'Flash Sale',          bgType:'gradient', bgColor:'#ff4d4f', bgColor2:'#ff7a00', shape:'rounded', borderEnabled:false, borderColor:'#ffffff', showLabel:true, labelIcon:'bolt', labelIconType:'material', labelIconColor:'#ffffff', labelText:'FLASH SALE', labelColor:'#ffffff', showWas:false, wasColor:'rgba(255,255,255,0.6)', wasStrike:false, showNow:false, nowColor:'#ffffff', nowSize:'xl', savingDisplay:'pct', savingColor:'#ffffff', showName:false, nameColor:'#eeeeee' },
+  member:  { name:'Member Exclusive',    bgType:'gradient', bgColor:'#1e293b', bgColor2:'#334155', shape:'rounded', borderEnabled:false, borderColor:'#f59e0b', showLabel:true, labelIcon:'workspace_premium', labelIconType:'material', labelIconColor:'#f59e0b', labelText:'VIB MEMBER', labelColor:'#f59e0b', showWas:false, wasColor:'rgba(255,255,255,0.6)', wasStrike:false, showNow:true, nowColor:'#ffffff', nowSize:'lg', savingDisplay:'none', savingColor:'#f59e0b', showName:false, nameColor:'rgba(255,255,255,0.6)' },
+};
+
 /* ---- Custom badge preview HTML (inline styles from template obj) ---- */
 function renderCustomBadge(tpl) {
   const radius = tpl.shape === 'pill' ? '50px' : tpl.shape === 'square' ? '2px' : '10px';
@@ -2170,9 +2199,13 @@ function renderCustomBadge(tpl) {
                    : tpl.savingDisplay === 'amount' ? 'Save $7.00'
                    : tpl.savingDisplay === 'both'   ? 'Save $7.00 · 28% off'
                    : '';
+  const iconColor = tpl.labelIconColor || tpl.labelColor;
+  const iconHtml = tpl.labelIconType === 'material'
+    ? `<span class="material-icons" style="font-size:13px;vertical-align:middle;line-height:1;color:${iconColor};">${escHtml(tpl.labelIcon)}</span>`
+    : escHtml(tpl.labelIcon);
   return `
     <div style="background:${bg};border-radius:${radius};border:${border};padding:12px 20px;text-align:center;min-width:120px;display:inline-block;">
-      ${tpl.showLabel ? `<div style="font-size:11px;font-weight:800;color:${tpl.labelColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">${escHtml(tpl.labelIcon)} ${escHtml(tpl.labelText)}</div>` : ''}
+      ${tpl.showLabel ? `<div style="font-size:11px;font-weight:800;color:${tpl.labelColor};text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">${iconHtml} ${escHtml(tpl.labelText)}</div>` : ''}
       ${tpl.showWas   ? `<div style="font-size:11px;color:${tpl.wasColor};${tpl.wasStrike?'text-decoration:line-through;':''}margin-bottom:3px;">$24.99</div>` : ''}
       ${tpl.showNow   ? `<div style="font-size:${nowFontSize};font-weight:900;color:${tpl.nowColor};line-height:1.1;margin-bottom:4px;">$17.99</div>` : ''}
       ${savingText    ? `<div style="font-size:11px;font-weight:700;color:${tpl.savingColor};">${escHtml(savingText)}</div>` : ''}
@@ -2187,6 +2220,7 @@ function renderTemplateLibrary() {
 
   const builtinKeys = Object.keys(TEMPLATE_LABELS).filter(k => ['default','bold','minimal','flash','member'].includes(k));
 
+  const builtinMeta = {default:'Price Reduction · Clean',bold:'Price Reduction · Bold',minimal:'Price Reduction · Luxury',flash:'Flash Sale · Urgent',member:'Member Benefit · Premium'};
   const builtinCards = builtinKeys.map(k => `
     <div class="template-card">
       <div class="tc-preview" style="background:${BUILTIN_BG[k] || '#f5f5f5'};">
@@ -2194,8 +2228,11 @@ function renderTemplateLibrary() {
       </div>
       <div class="tc-body">
         <div class="tc-name">${escHtml(TEMPLATE_LABELS[k])}<span class="tc-badge-pill tc-badge-builtin">Built-in</span></div>
-        <div class="tc-meta">${k==='default'?'Price Reduction · Clean':k==='bold'?'Price Reduction · Bold':k==='minimal'?'Price Reduction · Luxury':k==='flash'?'Flash Sale · Urgent':'Member Benefit · Premium'}</div>
+        <div class="tc-meta">${builtinMeta[k]||''}</div>
         <button class="tc-apply" onclick="applyTemplateToAll('${k}')">Apply to All Touchpoints</button>
+        <div class="tc-actions">
+          <button class="tc-edit-btn" onclick="openTemplateDesigner('${k}')">✏ Customise</button>
+        </div>
       </div>
     </div>`).join('');
 
@@ -2238,11 +2275,48 @@ function deleteCustomTemplate(id) {
 
 /* ============================================================ TEMPLATE DESIGNER */
 
-const DESIGNER_ICONS = ['⚡','★','🔥','🕐','👑','💎','🔔','🏷','🎯','💥','🛒','🎁','🌟','✨','❄️','🌈','🦁','🚀'];
+const MATERIAL_ICONS_LIST = [
+  // Sale & Pricing
+  {n:'local_offer',l:'Offer / Tag'},{n:'sell',l:'Sell'},{n:'discount',l:'Discount'},
+  {n:'label',l:'Label'},{n:'loyalty',l:'Loyalty'},{n:'percent',l:'Percent'},
+  {n:'savings',l:'Savings'},{n:'price_change',l:'Price Change'},{n:'price_check',l:'Price Check'},
+  {n:'trending_down',l:'Trending Down'},{n:'shopping_cart',l:'Cart'},{n:'shopping_bag',l:'Bag'},
+  {n:'storefront',l:'Storefront'},{n:'store',l:'Store'},{n:'receipt',l:'Receipt'},
+  {n:'receipt_long',l:'Receipt Long'},{n:'point_of_sale',l:'Point of Sale'},
+  // Flash & Time
+  {n:'bolt',l:'Bolt / Flash'},{n:'flash_on',l:'Flash On'},{n:'timer',l:'Timer'},
+  {n:'alarm',l:'Alarm'},{n:'schedule',l:'Schedule'},{n:'hourglass_empty',l:'Hourglass'},
+  {n:'speed',l:'Speed'},{n:'rocket_launch',l:'Rocket'},{n:'electric_bolt',l:'Electric Bolt'},
+  // Premium & Quality
+  {n:'star',l:'Star'},{n:'grade',l:'Grade / Star'},{n:'verified',l:'Verified'},
+  {n:'workspace_premium',l:'Premium'},{n:'military_tech',l:'Award'},{n:'emoji_events',l:'Trophy'},
+  {n:'diamond',l:'Diamond'},{n:'auto_awesome',l:'Sparkle'},{n:'crown',l:'Crown'},
+  {n:'new_releases',l:'New Release'},
+  // Notification & Alert
+  {n:'notification_important',l:'Important'},{n:'announcement',l:'Announcement'},
+  {n:'campaign',l:'Campaign'},{n:'priority_high',l:'Priority'},
+  {n:'info',l:'Info'},{n:'local_fire_department',l:'Fire / Hot'},{n:'whatshot',l:'What\'s Hot'},
+  // Positive & Social
+  {n:'favorite',l:'Favourite'},{n:'thumb_up',l:'Thumbs Up'},{n:'check_circle',l:'Check Circle'},
+  {n:'celebration',l:'Celebration'},{n:'card_giftcard',l:'Gift Card'},{n:'redeem',l:'Redeem'},
+  {n:'volunteer_activism',l:'Gift / Giving'},{n:'handshake',l:'Handshake'},
+  // Direction & Movement
+  {n:'trending_up',l:'Trending Up'},{n:'arrow_downward',l:'Arrow Down'},
+  {n:'arrow_circle_down',l:'Down Circle'},{n:'south',l:'South'},
+  {n:'swap_vert',l:'Swap'},{n:'compare_arrows',l:'Compare'},
+  // General
+  {n:'add_circle',l:'Add Circle'},{n:'remove_circle',l:'Remove'},
+  {n:'sync',l:'Sync'},{n:'refresh',l:'Refresh'},{n:'tune',l:'Tune'},
+  {n:'settings',l:'Settings'},{n:'flag',l:'Flag'},{n:'push_pin',l:'Pin'},
+  {n:'bookmark',l:'Bookmark'},{n:'touch_app',l:'Touch'},
+  {n:'tap_and_play',l:'Tap & Play'},{n:'qr_code_2',l:'QR Code'},
+];
+
 const DESIGNER_DEFAULTS = {
   name:'', bgType:'solid', bgColor:'#169bc2', bgColor2:'#0f6e91',
   shape:'rounded', borderEnabled:false, borderColor:'#ffffff',
-  showLabel:true, labelIcon:'⚡', labelText:'SALE', labelColor:'#ffffff',
+  showLabel:true, labelIcon:'local_offer', labelIconType:'material', labelIconColor:'#ffffff',
+  labelText:'SALE', labelColor:'#ffffff',
   showWas:true, wasColor:'#aaaaaa', wasStrike:true,
   showNow:true, nowColor:'#ffffff', nowSize:'xl',
   savingDisplay:'pct', savingColor:'#ffffff',
@@ -2253,17 +2327,27 @@ let designerState = {};
 let designerEditId = null;
 
 function openTemplateDesigner(id) {
-  designerEditId = id;
-  if (id) {
+  const builtinKeys = ['default','bold','minimal','flash','member'];
+  if (id && builtinKeys.includes(id)) {
+    // Customise a built-in: clone its visual properties as a new custom template
+    designerEditId = null;
+    designerState = JSON.parse(JSON.stringify({ ...DESIGNER_DEFAULTS, ...BUILTIN_TEMPLATE_DATA[id] }));
+    designerState.id = 'tpl-' + Date.now();
+    document.getElementById('designerModalTitle').textContent = `Customise: ${TEMPLATE_LABELS[id]}`;
+  } else if (id) {
+    // Edit existing custom template
+    designerEditId = id;
     const tpl = CUSTOM_TEMPLATES.find(t => t.id === id);
     if (!tpl) return;
     designerState = JSON.parse(JSON.stringify(tpl));
+    document.getElementById('designerModalTitle').textContent = 'Edit Template';
   } else {
+    // New template from scratch
+    designerEditId = null;
     designerState = JSON.parse(JSON.stringify(DESIGNER_DEFAULTS));
     designerState.id = 'tpl-' + Date.now();
+    document.getElementById('designerModalTitle').textContent = 'New Template';
   }
-
-  document.getElementById('designerModalTitle').textContent = id ? 'Edit Template' : 'New Template';
 
   // Populate controls from state
   _dsPopulateControls();
@@ -2274,8 +2358,8 @@ function openTemplateDesigner(id) {
 
 function _dsPopulateControls() {
   const s = designerState;
-  const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
-  const check = (id, val) => { const el = document.getElementById(id); if(el) el.checked = val; };
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val != null ? val : ''; };
+  const check = (id, val) => { const el = document.getElementById(id); if(el) el.checked = !!val; };
 
   set('ds-name', s.name);
   set('ds-bgColor', s.bgColor);
@@ -2283,6 +2367,7 @@ function _dsPopulateControls() {
   set('ds-borderColor', s.borderColor);
   set('ds-labelText', s.labelText);
   set('ds-labelColor', s.labelColor);
+  set('ds-labelIconColor', s.labelIconColor || s.labelColor);
   set('ds-wasColor', s.wasColor);
   set('ds-nowColor', s.nowColor);
   set('ds-savingColor', s.savingColor);
@@ -2290,19 +2375,16 @@ function _dsPopulateControls() {
 
   check('ds-borderEnabled', s.borderEnabled);
   check('ds-showLabel', s.showLabel);
-  check('ds-showWas', s.wasStrike !== false && s.showWas);
+  check('ds-showWas', s.showWas);
   check('ds-wasStrike', s.wasStrike);
   check('ds-showNow', s.showNow);
   check('ds-showName', s.showName);
-  check('ds-showWas', s.showWas);
 
-  // Build icon grid
-  const grid = document.getElementById('iconPickerGrid');
-  if (grid) {
-    grid.innerHTML = DESIGNER_ICONS.map(ic =>
-      `<div class="icon-opt${ic===s.labelIcon?' selected':''}" onclick="dsSetIcon('${ic}')">${ic}</div>`
-    ).join('');
-  }
+  // Build Material Icons grid
+  const searchEl = document.getElementById('iconSearchInput');
+  if (searchEl) searchEl.value = '';
+  dsSearchIcons('');
+  _dsUpdateSelectedIconDisplay(s.labelIcon, s.labelIconColor || s.labelColor);
 
   // Pill states
   _dsActivatePill('bgpill', s.bgType);
@@ -2359,13 +2441,16 @@ function updateDesignerPreview() {
 /* ---- Designer control helpers ---- */
 function dsSet(key, value) {
   designerState[key] = value;
-  // Conditional field visibility
   if (key === 'bgType')        document.getElementById('bgColor2Wrap').style.display = value === 'gradient' ? '' : 'none';
   if (key === 'borderEnabled') document.getElementById('borderColorWrap').style.display = value ? '' : 'none';
   if (key === 'showLabel')     document.getElementById('labelFieldsWrap').style.display = value ? '' : 'none';
   if (key === 'showWas')       document.getElementById('wasFieldsWrap').style.display = value ? '' : 'none';
   if (key === 'showNow')       document.getElementById('nowFieldsWrap').style.display = value ? '' : 'none';
   if (key === 'savingDisplay') document.getElementById('savingColorWrap').style.display = value === 'none' ? 'none' : '';
+  if (key === 'labelIconColor') {
+    document.querySelectorAll('#iconPickerGrid .material-icons').forEach(el => el.style.color = value);
+    _dsUpdateSelectedIconDisplay(designerState.labelIcon, value);
+  }
   updateDesignerPreview();
 }
 
@@ -2373,17 +2458,56 @@ function dsSetBgType(val)   { designerState.bgType = val;       _dsActivatePill(
 function dsSetShape(val)    { designerState.shape = val;         _dsActivatePill('shapepill', val); updateDesignerPreview(); }
 function dsSetNowSize(val)  { designerState.nowSize = val;       _dsActivatePill('nowpill', val);  updateDesignerPreview(); }
 function dsSetSaving(val)   { designerState.savingDisplay = val; _dsActivatePill('savpill', val);  dsSet('savingDisplay', val); }
-function dsSetIcon(emoji) {
-  designerState.labelIcon = emoji;
-  document.querySelectorAll('.icon-opt').forEach(el => el.classList.toggle('selected', el.textContent === emoji));
+
+function dsSetIcon(iconName) {
+  designerState.labelIcon = iconName;
+  designerState.labelIconType = 'material';
+  document.querySelectorAll('.icon-opt').forEach(el => {
+    const mi = el.querySelector('.material-icons');
+    el.classList.toggle('selected', mi && mi.textContent.trim() === iconName);
+  });
+  _dsUpdateSelectedIconDisplay(iconName, designerState.labelIconColor || designerState.labelColor);
   updateDesignerPreview();
 }
+
+function dsSearchIcons(query) {
+  const q = (query || '').toLowerCase().trim();
+  const filtered = q
+    ? MATERIAL_ICONS_LIST.filter(ic => ic.n.replace(/_/g,' ').includes(q) || ic.l.toLowerCase().includes(q))
+    : MATERIAL_ICONS_LIST;
+  const grid = document.getElementById('iconPickerGrid');
+  if (!grid) return;
+  const sel = designerState.labelIcon || '';
+  const iconColor = designerState.labelIconColor || designerState.labelColor || '#333';
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 4px;">No icons found</div>';
+    return;
+  }
+  grid.innerHTML = filtered.slice(0, 64).map(ic =>
+    `<div class="icon-opt${ic.n===sel?' selected':''}" onclick="dsSetIcon('${ic.n}')" title="${ic.l}">
+      <span class="material-icons" style="color:${iconColor};">${ic.n}</span>
+    </div>`
+  ).join('');
+}
+
+function _dsUpdateSelectedIconDisplay(iconName, color) {
+  const preview = document.getElementById('selectedIconPreview');
+  const nameEl  = document.getElementById('selectedIconName');
+  if (preview) { preview.textContent = iconName || 'local_offer'; preview.style.color = color || '#333'; }
+  if (nameEl)  nameEl.textContent = iconName || '';
+}
+
 function dsSetPreviewSize(sz) {
   const wrap = document.getElementById('previewBadgeWrap');
   if (wrap) wrap.className = `preview-badge-wrap sz-${sz}`;
-  document.querySelectorAll('.preview-size-btn').forEach((btn,i) => {
-    btn.classList.toggle('active', ['sm','md','lg'][i] === sz);
+  document.querySelectorAll('.preview-size-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sz === sz);
   });
+  const eslInfo  = document.getElementById('eslSizeInfo');
+  const eslLabel = document.getElementById('eslSizeLabel');
+  const eslMap   = { 'esl-sm':'1.5" ESL — 200×200 px', 'esl-md':'2.9" ESL — 296×128 px', 'esl-lg':'4.2" ESL — 400×300 px' };
+  if (eslInfo)  eslInfo.style.display  = eslMap[sz] ? '' : 'none';
+  if (eslLabel) eslLabel.textContent   = eslMap[sz] || '';
 }
 function toggleDsSection(id) {
   const sec = document.getElementById('dss-' + id);
@@ -2468,7 +2592,7 @@ function toggleDsSection(id) {
 
 <!-- TEMPLATE DESIGNER MODAL -->
 <div class="modal-overlay modal-designer" id="templateDesignerModal">
-  <div class="modal modal-lg" style="max-height:96vh;">
+  <div class="modal modal-lg" style="height:92vh;max-height:92vh;overflow:hidden;">
     <div class="modal-header" style="padding-bottom:14px;">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:20px;">🎨</span>
@@ -2554,8 +2678,25 @@ function toggleDsSection(id) {
             </label>
             <div id="labelFieldsWrap">
               <div style="margin-bottom:8px;">
-                <span class="ds-label">Icon</span>
-                <div class="icon-picker-grid" id="iconPickerGrid"></div>
+                <span class="ds-label">Icon (Google Material Icons)</span>
+                <!-- Icon search -->
+                <div class="icon-search-input" style="position:relative;margin-bottom:6px;">
+                  <input type="text" class="ds-input" id="iconSearchInput" placeholder="Search icons… (e.g. bolt, star, tag)" oninput="dsSearchIcons(this.value)" style="padding-right:30px;">
+                  <span class="material-icons" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text3);pointer-events:none;">search</span>
+                </div>
+                <!-- Icon grid -->
+                <div class="material-icon-grid" id="iconPickerGrid"></div>
+                <!-- Selected icon display -->
+                <div class="selected-icon-display">
+                  <span style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;">Selected:</span>
+                  <span class="material-icons" id="selectedIconPreview" style="font-size:20px;color:#ffffff;">local_offer</span>
+                  <span id="selectedIconName" style="font-size:11px;color:var(--text3);font-family:monospace;flex:1;">local_offer</span>
+                </div>
+                <!-- Icon colour -->
+                <div class="ds-row" style="margin-top:6px;">
+                  <span class="ds-label" style="margin:0;">Icon Colour</span>
+                  <input type="color" class="ds-color" id="ds-labelIconColor" value="#ffffff" oninput="dsSet('labelIconColor',this.value)">
+                </div>
               </div>
               <div>
                 <span class="ds-label">Label Text</span>
@@ -2660,11 +2801,23 @@ function toggleDsSection(id) {
           <div class="badge-live" id="previewBadge"></div>
         </div>
         <div>
-          <div class="preview-label" style="text-align:center;margin-bottom:8px;">Preview Size</div>
+          <div class="preview-section-label" style="margin-bottom:6px;">Standard Sizes</div>
           <div class="preview-size-btns">
-            <button class="preview-size-btn" onclick="dsSetPreviewSize('sm')">S</button>
-            <button class="preview-size-btn active" onclick="dsSetPreviewSize('md')">M</button>
-            <button class="preview-size-btn" onclick="dsSetPreviewSize('lg')">L</button>
+            <button class="preview-size-btn" data-sz="sm" onclick="dsSetPreviewSize('sm')">S</button>
+            <button class="preview-size-btn active" data-sz="md" onclick="dsSetPreviewSize('md')">M</button>
+            <button class="preview-size-btn" data-sz="lg" onclick="dsSetPreviewSize('lg')">L</button>
+          </div>
+        </div>
+        <div class="preview-divider"></div>
+        <div>
+          <div class="preview-section-label" style="margin-bottom:6px;">ESL Preview</div>
+          <div class="preview-size-btns">
+            <button class="preview-size-btn" data-sz="esl-sm" onclick="dsSetPreviewSize('esl-sm')" title="1.5 inch ESL display">1.5"</button>
+            <button class="preview-size-btn" data-sz="esl-md" onclick="dsSetPreviewSize('esl-md')" title="2.9 inch ESL display">2.9"</button>
+            <button class="preview-size-btn" data-sz="esl-lg" onclick="dsSetPreviewSize('esl-lg')" title="4.2 inch ESL display">4.2"</button>
+          </div>
+          <div id="eslSizeInfo" style="display:none;margin-top:8px;text-align:center;">
+            <span class="esl-info-chip" id="eslSizeLabel"></span>
           </div>
         </div>
         <div style="font-size:11px;color:var(--text3);text-align:center;max-width:240px;line-height:1.5;">
